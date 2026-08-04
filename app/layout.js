@@ -21,6 +21,11 @@ const mono = IBM_Plex_Mono({
 export const metadata = {
   title: "EarbudsTimeline — l'historique complet des écouteurs sans fil",
   description: "L'historique complet des écouteurs sans fil, marque par marque.",
+  openGraph: {
+    title: 'EarbudsTimeline',
+    description: "L'historique complet des écouteurs sans fil, marque par marque.",
+    images: ['/og-image.png'],
+  },
 };
 
 export default function RootLayout({ children }) {
