@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { BatteryCharging, Cpu, Trophy, DollarSign } from 'lucide-react';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
@@ -22,26 +23,39 @@ export default async function HomePage() {
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 mb-12">
-        <div>
-          <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">
-            Explore. Compare. Découvre.
-          </div>
-          <h1 className="font-display font-bold leading-[1.08] text-[clamp(30px,5vw,44px)] mb-3.5">
-            L&apos;évolution complète des <span className="text-accent">écouteurs</span>.
-          </h1>
-          <p className="text-dim max-w-[520px] mb-6 text-[15.5px]">
-            Autonomie, réduction de bruit et poids, marque par marque, modèle par modèle — depuis les
-            premiers vrais sans-fil jusqu&apos;aux derniers modèles Pro.
-          </p>
+        <div className="grid sm:grid-cols-[1fr_auto] gap-6 items-center">
+          <div>
+            <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">
+              Explore. Compare. Découvre.
+            </div>
+            <h1 className="font-display font-bold leading-[1.08] text-[clamp(30px,5vw,44px)] mb-3.5">
+              L&apos;évolution complète des <span className="text-accent">écouteurs</span>.
+            </h1>
+            <p className="text-dim max-w-[520px] mb-6 text-[15.5px]">
+              Autonomie, réduction de bruit et poids, marque par marque, modèle par modèle — depuis les
+              premiers vrais sans-fil jusqu&apos;aux derniers modèles Pro.
+            </p>
 
-          <div className="mb-8">
-            <SearchBar models={models} brands={brands} />
+            <div className="mb-8">
+              <SearchBar models={models} brands={brands} />
+            </div>
+
+            <div className="flex gap-8 flex-wrap">
+              <Stat value={models.length} label="Écouteurs" />
+              <Stat value={brands.length} label="Marques" />
+              <Stat value={yearsCovered} label="Années couvertes" />
+            </div>
           </div>
 
-          <div className="flex gap-8 flex-wrap">
-            <Stat value={models.length} label="Écouteurs" />
-            <Stat value={brands.length} label="Marques" />
-            <Stat value={yearsCovered} label="Années couvertes" />
+          <div className="hidden sm:block shrink-0">
+            <Image
+              src="/hero-earbuds.png"
+              alt=""
+              width={300}
+              height={289}
+              priority
+              className="object-contain"
+            />
           </div>
         </div>
 
