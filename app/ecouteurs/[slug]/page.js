@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Battery, BatteryFull, Droplet, Bluetooth } from 'lucide-react';
 import { getEarbudBySlug, getGammeModels, getBrands, getAllEarbuds } from '@/lib/queries';
 import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct } from '@/lib/format';
 import QuickCompareSelect from '@/components/QuickCompareSelect';
+import EarbudsIcon from '@/components/EarbudsIcon';
+import TimelinePosition from '@/components/TimelinePosition';
 import { Badge, Footer } from '@/components/UI';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export default async function ModelPage({ params }) {
   const m = await getEarbudBySlug(params.slug).catch(() => null);
@@ -20,6 +23,9 @@ export default async function ModelPage({ params }) {
   const brand = brands.find((b) => b.id === m.brand_id);
   const first = lineup[0];
   const isFirst = first.id === m.id;
+  const idx = lineup.findIndex((x) => x.id === m.id);
+  const prev = idx > 0 ? lineup[idx - 1] : null;
+  const next = idx < lineup.length - 1 ? lineup[idx + 1] : null;
 
   function metric(label, key, higherIsBetter, fmt) {
     const cur = Number(m[key]);
@@ -53,89 +59,107 @@ export default async function ModelPage({ params }) {
   }
 
   return (
-    <>
-      <Link
-        href={`/marques/${m.brand_id}`}
-        className="inline-flex items-center gap-1.5 text-dim text-[13px] mb-6 hover:text-accent"
-      >
-        ← Tous les {brand?.name || m.brand_id}
-      </Link>
-      <div className="font-mono text-xs text-dim mb-2.5">
-        🎧 {brand?.name || m.brand_id} · {m.gamme}
-      </div>
-      <h1 className="font-display font-bold text-[clamp(26px,4vw,38px)] mb-2.5">{m.name}</h1>
-      <p className="text-accent text-[15px] mb-7">{m.tagline}</p>
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
+      <div>
+        <Link
+          href={`/marques/${m.brand_id}`}
+          className="inline-flex items-center gap-1.5 text-dim text-[13px] mb-6 hover:text-accent"
+        >
+          ← Tous les {brand?.name || m.brand_id}
+        </Link>
 
-      <div className="flex gap-2 flex-wrap mb-8">
-        <Badge>{fmtDate(m.release_date)}</Badge>
-        {m.marquant && <Badge gold>★ Modèle marquant</Badge>}
-        <Badge>{fmtMoney(m.price)} au lancement</Badge>
-        <Badge>{m.anc ? 'Réduction de bruit active' : 'Sans ANC'}</Badge>
-        <Badge>{m.water_rating}</Badge>
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-6 mb-8">
+          <div className="bg-panel2 border border-line rounded-2xl aspect-square flex items-center justify-center">
+            <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-20 h-20" />
+          </div>
+          <div>
+            <div className="font-mono text-xs text-dim mb-2">
+              {brand?.name || m.brand_id} · {m.gamme}
+            </div>
+            <h1 className="font-display font-bold text-[clamp(24px,3.4vw,34px)] mb-2 leading-tight">{m.name}</h1>
+            <p className="text-accent text-[15px] mb-5">{m.tagline}</p>
+            <div className="flex gap-2 flex-wrap">
+              <Badge>{fmtDate(m.release_date)}</Badge>
+              {m.marquant && <Badge gold>★ Modèle marquant</Badge>}
+              <Badge>{fmtMoney(m.price)} au lancement</Badge>
+              <Badge>{m.anc ? 'Réduction de bruit active' : 'Sans ANC'}</Badge>
+            </div>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-px bg-line border border-line rounded-xl overflow-hidden mb-12">
-        <KeySpec value={fmtH(m.battery_bud_h)} label="Écouteur seul" />
-        <KeySpec value={fmtH(m.battery_case_h)} label="Avec boîtier" />
-        <KeySpec value={fmtG(m.weight_g)} label="Poids / écouteur" />
-        <KeySpec value={m.bluetooth} label="Bluetooth" />
-      </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-line border border-line rounded-xl overflow-hidden mb-12">
+          <KeySpec icon={Battery} value={fmtH(m.battery_bud_h)} label="Écouteur seul" />
+          <KeySpec icon={BatteryFull} value={fmtH(m.battery_case_h)} label="Avec boîtier" />
+          <KeySpec icon={Droplet} value={m.water_rating} label="Résistance" />
+          <KeySpec icon={Bluetooth} value={m.bluetooth} label="Bluetooth" />
+        </div>
 
-      <div className="bg-panel border border-line rounded-2xl px-5 pt-5 pb-1 mb-12">
-        <h2 className="text-[15px] m-0 mb-1">ADN de la gamme</h2>
-        <p className="text-dim text-xs m-0 mb-4">
-          {isFirst
-            ? `Premier modèle de la gamme ${m.gamme} — sert de référence pour les générations suivantes.`
-            : `Suivi depuis ${first.name} (${yearOf(first.release_date)}), premier modèle de la gamme.`}
-        </p>
-        {lineup.length === 1 ? (
-          <p className="text-dim text-[13.5px] py-4">
-            Seul modèle de cette gamme pour le moment — aucune comparaison possible.
+        <div className="bg-panel border border-line rounded-2xl px-5 pt-5 pb-1 mb-12">
+          <h2 className="text-[15px] m-0 mb-1">ADN de la gamme</h2>
+          <p className="text-dim text-xs m-0 mb-4">
+            {isFirst
+              ? `Premier modèle de la gamme ${m.gamme} — sert de référence pour les générations suivantes.`
+              : `Suivi depuis ${first.name} (${yearOf(first.release_date)}), premier modèle de la gamme.`}
           </p>
-        ) : (
-          <>
-            {metric('Autonomie écouteur', 'battery_bud_h', true, fmtH)}
-            {metric('Autonomie totale (boîtier)', 'battery_case_h', true, fmtH)}
-            {metric('Poids par écouteur', 'weight_g', false, fmtG)}
-            {metric('Prix au lancement', 'price', false, fmtMoney)}
-          </>
-        )}
+          {lineup.length === 1 ? (
+            <p className="text-dim text-[13.5px] py-4">
+              Seul modèle de cette gamme pour le moment — aucune comparaison possible.
+            </p>
+          ) : (
+            <>
+              {metric('Autonomie écouteur', 'battery_bud_h', true, fmtH)}
+              {metric('Autonomie totale (boîtier)', 'battery_case_h', true, fmtH)}
+              {metric('Poids par écouteur', 'weight_g', false, fmtG)}
+              {metric('Prix au lancement', 'price', false, fmtMoney)}
+            </>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
+          <SpecGroup title="Audio">
+            <SpecLine k="Puce" v={m.chip} />
+            <SpecLine k="Réduction de bruit" v={m.anc ? 'Oui' : 'Non'} />
+            <SpecLine k="Bluetooth" v={m.bluetooth} />
+          </SpecGroup>
+          <SpecGroup title="Confort & résistance">
+            <SpecLine k="Poids par écouteur" v={fmtG(m.weight_g)} />
+            <SpecLine k="Certification" v={m.water_rating} />
+          </SpecGroup>
+          <SpecGroup title="Autonomie">
+            <SpecLine k="Écouteur seul" v={fmtH(m.battery_bud_h)} />
+            <SpecLine k="Avec boîtier" v={fmtH(m.battery_case_h)} />
+          </SpecGroup>
+          <SpecGroup title="Général">
+            <SpecLine k="Date de sortie" v={fmtDate(m.release_date)} />
+            <SpecLine k="Prix au lancement" v={fmtMoney(m.price)} />
+          </SpecGroup>
+        </div>
+
+        <div className="bg-panel border border-dashed border-line rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap mb-5">
+          <p className="m-0 text-[13.5px] text-dim">Vous possédez déjà des écouteurs ? Comparez-les à ceux-ci.</p>
+          <QuickCompareSelect currentId={m.id} brands={brands} allModels={allModels} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
-        <SpecGroup title="Audio">
-          <SpecLine k="Puce" v={m.chip} />
-          <SpecLine k="Réduction de bruit" v={m.anc ? 'Oui' : 'Non'} />
-          <SpecLine k="Bluetooth" v={m.bluetooth} />
-        </SpecGroup>
-        <SpecGroup title="Confort & résistance">
-          <SpecLine k="Poids par écouteur" v={fmtG(m.weight_g)} />
-          <SpecLine k="Certification" v={m.water_rating} />
-        </SpecGroup>
-        <SpecGroup title="Autonomie">
-          <SpecLine k="Écouteur seul" v={fmtH(m.battery_bud_h)} />
-          <SpecLine k="Avec boîtier" v={fmtH(m.battery_case_h)} />
-        </SpecGroup>
-        <SpecGroup title="Général">
-          <SpecLine k="Date de sortie" v={fmtDate(m.release_date)} />
-          <SpecLine k="Prix au lancement" v={fmtMoney(m.price)} />
-        </SpecGroup>
-      </div>
+      <aside className="flex flex-col gap-5">
+        {(prev || next) && <TimelinePosition prev={prev} current={m} next={next} gammeName={m.gamme} />}
+      </aside>
 
-      <div className="bg-panel border border-dashed border-line rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap mb-5">
-        <p className="m-0 text-[13.5px] text-dim">Vous possédez déjà des écouteurs ? Comparez-les à ceux-ci.</p>
-        <QuickCompareSelect currentId={m.id} brands={brands} allModels={allModels} />
+      <div className="lg:col-span-2">
+        <Footer />
       </div>
-      <Footer />
-    </>
+    </div>
   );
 }
 
-function KeySpec({ value, label }) {
+function KeySpec({ icon: Icon, value, label }) {
   return (
-    <div className="bg-panel px-4 py-4.5">
-      <b className="block font-display text-xl mb-0.5">{value}</b>
-      <span className="text-dim text-[11.5px] uppercase tracking-[0.06em]">{label}</span>
+    <div className="bg-panel px-4 py-4.5 flex items-center gap-3">
+      <Icon size={18} className="text-accent shrink-0" />
+      <div>
+        <b className="block font-display text-lg leading-tight">{value}</b>
+        <span className="text-dim text-[11px] uppercase tracking-[0.06em]">{label}</span>
+      </div>
     </div>
   );
 }

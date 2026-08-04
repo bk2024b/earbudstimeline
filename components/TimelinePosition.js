@@ -1,0 +1,52 @@
+import Link from 'next/link';
+import { yearOf } from '@/lib/format';
+
+export default function TimelinePosition({ prev, current, next, gammeName }) {
+  const items = [
+    prev && { m: prev, state: 'prev' },
+    { m: current, state: 'current' },
+    next && { m: next, state: 'next' },
+  ].filter(Boolean);
+
+  return (
+    <div className="bg-panel border border-line rounded-2xl p-5">
+      <h2 className="text-sm font-semibold mb-1">Position dans la gamme</h2>
+      <p className="text-dim text-xs mb-5">{gammeName}</p>
+      <div className="flex flex-col">
+        {items.map((item, i) => {
+          const isCurrent = item.state === 'current';
+          const isLast = i === items.length - 1;
+          const inner = (
+            <div className="flex items-start gap-3">
+              <div className="flex flex-col items-center">
+                <span
+                  className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${
+                    isCurrent ? 'bg-accent shadow-[0_0_8px_#22D07A]' : 'bg-panel2 border border-dim'
+                  }`}
+                />
+                {!isLast && <span className="w-px flex-1 bg-line my-1" style={{ minHeight: 26 }} />}
+              </div>
+              <div className={isLast ? 'pb-0' : 'pb-6'}>
+                <div className={`font-mono text-[11px] mb-0.5 ${isCurrent ? 'text-accent' : 'text-dim'}`}>
+                  {yearOf(item.m.release_date)}
+                  {item.state === 'prev' && ' · précédent'}
+                  {item.state === 'next' && ' · suivant'}
+                </div>
+                <div className={`text-sm leading-snug ${isCurrent ? 'font-semibold text-white' : 'text-dim'}`}>
+                  {item.m.name}
+                </div>
+              </div>
+            </div>
+          );
+          return isCurrent ? (
+            <div key={item.m.id}>{inner}</div>
+          ) : (
+            <Link key={item.m.id} href={`/ecouteurs/${item.m.id}`} className="hover:opacity-80 transition-opacity">
+              {inner}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
