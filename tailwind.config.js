@@ -4,12 +4,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: '#0B0D12',
-        panel: '#12151C',
-        panel2: '#1A1E27',
-        line: '#262B35',
-        dim: '#8D94A1',
-        accent: '#46E0C8',
+        ink: '#0A0A0B',
+        panel: '#141416',
+        panel2: '#1C1C1F',
+        line: '#27272A',
+        dim: '#9A9AA3',
+        accent: '#22D07A',
         amber: '#FFB454',
       },
       fontFamily: {
