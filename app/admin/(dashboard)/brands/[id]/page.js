@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { updateBrand } from './actions';
+import { updateBrand } from '../actions';
 import FormField from '@/components/admin/FormField';
 
 export const dynamic = 'force-dynamic';
