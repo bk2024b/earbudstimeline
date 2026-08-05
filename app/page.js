@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createBrand } from '../app/admin/actions';
+import { createBrand } from '../actions';
 import FormField from '@/components/admin/FormField';
 
 export default function NewBrandPage({ searchParams }) {
