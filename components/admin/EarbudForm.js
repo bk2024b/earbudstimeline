@@ -2,7 +2,7 @@ import FormField from './FormField';
 
 export default function EarbudForm({ action, brands, defaults = {}, lockId = false, submitLabel = 'Enregistrer' }) {
   return (
-    <form action={action} className="max-w-xl flex flex-col gap-4">
+    <form action={action} encType="multipart/form-data" className="max-w-xl flex flex-col gap-4">
       {!lockId ? (
         <FormField
           label="Identifiant (slug)"
@@ -51,6 +51,27 @@ export default function EarbudForm({ action, brands, defaults = {}, lockId = fal
       </div>
 
       <FormField label="Nom" name="name" placeholder="ex. AirPods Pro 3" defaultValue={defaults.name} required />
+
+      <div>
+        <label className="block text-xs text-dim mb-1.5">Photo (optionnel)</label>
+        {defaults.image_url && (
+          <div className="mb-2.5 w-24 h-24 rounded-lg bg-panel2 border border-line flex items-center justify-center overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={defaults.image_url} alt="" className="w-full h-full object-contain" />
+          </div>
+        )}
+        <input
+          type="file"
+          name="image"
+          accept="image/*"
+          className="w-full text-sm text-dim file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-panel2 file:text-white file:text-xs file:cursor-pointer"
+        />
+        <p className="text-xs text-dim mt-1.5">
+          {defaults.image_url
+            ? 'Laisser vide pour conserver la photo actuelle.'
+            : "Sans photo, l'icône générique de la marque est utilisée à la place."}
+        </p>
+      </div>
       <FormField
         label="Accroche"
         name="tagline"

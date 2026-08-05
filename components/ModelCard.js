@@ -8,8 +8,13 @@ export default function ModelCard({ m, color }) {
       href={`/ecouteurs/${m.id}`}
       className="block bg-panel border border-line rounded-xl p-4 hover:border-accent hover:-translate-y-0.5 transition-all"
     >
-      <div className="w-full aspect-[4/3] rounded-lg bg-panel2 flex items-center justify-center mb-3">
-        <EarbudsIcon color={color || '#9A9AA3'} className="w-14 h-14" />
+      <div className="w-full aspect-[4/3] rounded-lg bg-panel2 flex items-center justify-center mb-3 overflow-hidden">
+        {m.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={m.image_url} alt={m.name} className="w-full h-full object-contain" />
+        ) : (
+          <EarbudsIcon color={color || '#9A9AA3'} className="w-14 h-14" />
+        )}
       </div>
       <div className="flex justify-between items-start gap-2 mb-1.5">
         <h4 className="m-0 text-[14px] font-semibold leading-tight">{m.name}</h4>

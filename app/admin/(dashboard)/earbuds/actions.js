@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { slugify } from '@/lib/slug';
+import { uploadImage } from '@/lib/storage';
 
 function parseEarbudForm(formData) {
   const num = (key) => {
@@ -50,8 +51,18 @@ export async function createEarbud(formData) {
   const id = slugify(idRaw || `${data.brand_id}-${data.name}`);
   if (!id) redirect('/admin/earbuds/new?error=missing');
 
+  let image_url = null;
+  const file = formData.get('image');
+  if (file && file.size > 0) {
+    try {
+      image_url = await uploadImage(file, 'earbuds');
+    } catch (e) {
+      redirect(`/admin/earbuds/new?error=${encodeURIComponent(e.message)}`);
+    }
+  }
+
   const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from('earbuds').insert({ id, ...data });
+  const { error } = await supabase.from('earbuds').insert({ id, ...data, image_url });
   if (error) redirect(`/admin/earbuds/new?error=${encodeURIComponent(error.message)}`);
 
   revalidatePath('/admin/earbuds');
@@ -63,6 +74,15 @@ export async function createEarbud(formData) {
 export async function updateEarbud(id, formData) {
   const data = parseEarbudForm(formData);
   if (!isValid(data)) redirect(`/admin/earbuds/${id}?error=missing`);
+
+  const file = formData.get('image');
+  if (file && file.size > 0) {
+    try {
+      data.image_url = await uploadImage(file, 'earbuds');
+    } catch (e) {
+      redirect(`/admin/earbuds/${id}?error=${encodeURIComponent(e.message)}`);
+    }
+  }
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('earbuds').update(data).eq('id', id);

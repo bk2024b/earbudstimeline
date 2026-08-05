@@ -69,8 +69,13 @@ export default async function ModelPage({ params }) {
         </Link>
 
         <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-6 mb-8">
-          <div className="bg-panel2 border border-line rounded-2xl aspect-square flex items-center justify-center">
-            <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-20 h-20" />
+          <div className="bg-panel2 border border-line rounded-2xl aspect-square flex items-center justify-center overflow-hidden">
+            {m.image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={m.image_url} alt={m.name} className="w-full h-full object-contain" />
+            ) : (
+              <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-20 h-20" />
+            )}
           </div>
           <div>
             <div className="font-mono text-xs text-dim mb-2">
