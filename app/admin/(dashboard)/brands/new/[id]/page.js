@@ -1,61 +1,95 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { updateBrand } from '../../actions';
-import FormField from '@/components/admin/FormField';
+import { BatteryCharging, Cpu, DollarSign } from 'lucide-react';
+import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
+import { computeStats } from '@/lib/stats';
+import ModelCard from '@/components/ModelCard';
+import BrandBadge from '@/components/BrandBadge';
+import StatTile from '@/components/StatTile';
+import { Stat, Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
 
-export default async function EditBrandPage({ params, searchParams }) {
-  const supabase = getSupabaseAdmin();
-  const { data: brand } = await supabase.from('brands').select('*').eq('id', params.id).single();
+export default async function BrandPage({ params, searchParams }) {
+  const brand = await getBrandById(params.brand).catch(() => null);
   if (!brand) notFound();
 
-  const error = searchParams?.error;
+  const models = await getEarbudsByBrand(params.brand);
+  const gammes = [...new Set(models.map((m) => m.gamme))].map((g) => ({
+    name: g,
+    count: models.filter((m) => m.gamme === g).length,
+  }));
+
+  const activeGamme = searchParams.gamme || 'all';
+  const filtered = activeGamme === 'all' ? models : models.filter((m) => m.gamme === activeGamme);
+  const years = models.map((m) => Number(m.release_date.slice(0, 4)));
+  const stats = computeStats(models);
 
   return (
     <>
-      <Link href="/admin/brands" className="text-dim text-xs hover:text-accent mb-4 inline-block">
-        ← Marques
+      <Link href="/" className="inline-flex items-center gap-1.5 text-dim text-[13px] mb-6 hover:text-accent">
+        ← Toutes les marques
       </Link>
-      <h1 className="font-display font-bold text-2xl mb-1">Modifier {brand.name}</h1>
-      <p className="text-dim text-xs mb-6">Identifiant : {brand.id} (non modifiable)</p>
 
-      {error && (
-        <p className="text-rose-400 text-sm mb-4">
-          Erreur : {error === 'missing' ? 'Tous les champs sont requis.' : error}
-        </p>
-      )}
-
-      <form
-        action={updateBrand.bind(null, brand.id)}
-        encType="multipart/form-data"
-        className="max-w-md flex flex-col gap-4"
-      >
-        <FormField label="Nom" name="name" defaultValue={brand.name} required />
-        <FormField label="Couleur (hex)" name="color" defaultValue={brand.color} required />
-
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8 mb-10">
         <div>
-          <label className="block text-xs text-dim mb-1.5">Logo</label>
-          {brand.image_url && (
-            <div className="mb-2.5 w-16 h-16 rounded-lg bg-panel2 border border-line flex items-center justify-center overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={brand.image_url} alt="" className="w-full h-full object-contain" />
+          <div className="flex items-center gap-3 mb-5">
+            <BrandBadge brand={brand} size={40} />
+            <div>
+              <div className="font-mono text-xs text-accent uppercase tracking-[0.14em]">Marque</div>
+              <h1 className="font-display font-bold text-[32px] leading-tight m-0">{brand.name}</h1>
             </div>
-          )}
-          <input
-            type="file"
-            name="image"
-            accept="image/*"
-            className="w-full text-sm text-dim file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-panel2 file:text-white file:text-xs file:cursor-pointer"
-          />
-          <p className="text-xs text-dim mt-1.5">Laisser vide pour conserver le logo actuel.</p>
+          </div>
+          <div className="flex gap-8 flex-wrap">
+            <Stat value={models.length} label="Modèles" />
+            <Stat value={`${Math.min(...years)} → ${Math.max(...years)}`} label="Période" />
+            <Stat value={gammes.length} label="Gammes" />
+          </div>
         </div>
 
-        <button type="submit" className="bg-accent text-ink font-semibold rounded-lg px-4 py-2.5 text-sm mt-2">
-          Enregistrer
-        </button>
-      </form>
+        <aside className="flex flex-col gap-3">
+          <StatTile icon={BatteryCharging} value={`${stats.avgCaseH} h`} label="Autonomie moyenne" />
+          <StatTile icon={Cpu} value={stats.commonBt || '—'} label="Bluetooth le plus courant" />
+          {stats.avgPrice && <StatTile icon={DollarSign} value={`${stats.avgPrice} $`} label="Prix moyen" />}
+        </aside>
+      </div>
+
+      <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">Gammes</h2>
+      <div className="flex gap-2 flex-wrap mb-8">
+        <Chip href={`/marques/${brand.id}`} active={activeGamme === 'all'}>
+          Tous
+        </Chip>
+        {gammes.map((g) => (
+          <Chip
+            key={g.name}
+            href={`/marques/${brand.id}?gamme=${encodeURIComponent(g.name)}`}
+            active={activeGamme === g.name}
+          >
+            {g.name} · {g.count}
+          </Chip>
+        ))}
+      </div>
+
+      <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">Tous les modèles</h2>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
+        {filtered.map((m) => (
+          <ModelCard key={m.id} m={m} color={brand.color} />
+        ))}
+      </div>
+      <Footer />
     </>
+  );
+}
+
+function Chip({ href, active, children }) {
+  return (
+    <Link
+      href={href}
+      className={`px-3.5 py-1.5 rounded-full border text-xs transition-colors ${
+        active ? 'bg-accent/15 border-accent text-accent' : 'border-line text-dim hover:border-accent'
+      }`}
+    >
+      {children}
+    </Link>
   );
 }
