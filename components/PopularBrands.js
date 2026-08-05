@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import BrandBadge from './BrandBadge';
 
 export default function PopularBrands({ brands, models }) {
   const sorted = [...brands]
@@ -21,12 +22,7 @@ export default function PopularBrands({ brands, models }) {
             className="flex items-center justify-between py-2 px-1.5 rounded-lg hover:bg-panel2 transition-colors"
           >
             <div className="flex items-center gap-2.5">
-              <span
-                className="w-7 h-7 rounded-lg flex items-center justify-center font-display font-bold text-[11px] text-ink shrink-0"
-                style={{ background: b.color }}
-              >
-                {b.name.slice(0, 2).toUpperCase()}
-              </span>
+              <BrandBadge brand={b} size={28} />
               <span className="text-sm">{b.name}</span>
             </div>
             <span className="text-dim text-xs whitespace-nowrap">

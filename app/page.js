@@ -7,6 +7,7 @@ import Timeline from '@/components/Timeline';
 import ModelCard from '@/components/ModelCard';
 import SearchBar from '@/components/SearchBar';
 import PopularBrands from '@/components/PopularBrands';
+import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
 import { Stat, Footer } from '@/components/UI';
 
@@ -88,11 +89,8 @@ export default async function HomePage() {
                   href={`/marques/${b.id}`}
                   className="bg-panel border border-line rounded-2xl p-5 hover:border-accent hover:-translate-y-0.5 transition-all"
                 >
-                  <div
-                    className="w-7 h-7 rounded-lg mb-3.5 flex items-center justify-center font-display font-bold text-[13px] text-ink"
-                    style={{ background: b.color }}
-                  >
-                    {b.name.slice(0, 2).toUpperCase()}
+                  <div className="mb-3.5">
+                    <BrandBadge brand={b} size={28} />
                   </div>
                   <h3 className="m-0 mb-1 text-[17px]">{b.name}</h3>
                   <p className="m-0 text-dim text-xs">

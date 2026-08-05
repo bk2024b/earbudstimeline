@@ -4,6 +4,7 @@ import { BatteryCharging, Cpu, DollarSign } from 'lucide-react';
 import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import ModelCard from '@/components/ModelCard';
+import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
 import { Stat, Footer } from '@/components/UI';
 
@@ -33,12 +34,7 @@ export default async function BrandPage({ params, searchParams }) {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8 mb-10">
         <div>
           <div className="flex items-center gap-3 mb-5">
-            <span
-              className="w-10 h-10 rounded-xl flex items-center justify-center font-display font-bold text-ink shrink-0"
-              style={{ background: brand.color }}
-            >
-              {brand.name.slice(0, 2).toUpperCase()}
-            </span>
+            <BrandBadge brand={brand} size={40} />
             <div>
               <div className="font-mono text-xs text-accent uppercase tracking-[0.14em]">Marque</div>
               <h1 className="font-display font-bold text-[32px] leading-tight m-0">{brand.name}</h1>
