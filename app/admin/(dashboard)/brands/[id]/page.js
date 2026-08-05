@@ -27,9 +27,31 @@ export default async function EditBrandPage({ params, searchParams }) {
         </p>
       )}
 
-      <form action={updateBrand.bind(null, brand.id)} className="max-w-md flex flex-col gap-4">
+      <form
+        action={updateBrand.bind(null, brand.id)}
+        encType="multipart/form-data"
+        className="max-w-md flex flex-col gap-4"
+      >
         <FormField label="Nom" name="name" defaultValue={brand.name} required />
         <FormField label="Couleur (hex)" name="color" defaultValue={brand.color} required />
+
+        <div>
+          <label className="block text-xs text-dim mb-1.5">Logo</label>
+          {brand.image_url && (
+            <div className="mb-2.5 w-16 h-16 rounded-lg bg-panel2 border border-line flex items-center justify-center overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={brand.image_url} alt="" className="w-full h-full object-contain" />
+            </div>
+          )}
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            className="w-full text-sm text-dim file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-panel2 file:text-white file:text-xs file:cursor-pointer"
+          />
+          <p className="text-xs text-dim mt-1.5">Laisser vide pour conserver le logo actuel.</p>
+        </div>
+
         <button type="submit" className="bg-accent text-ink font-semibold rounded-lg px-4 py-2.5 text-sm mt-2">
           Enregistrer
         </button>
