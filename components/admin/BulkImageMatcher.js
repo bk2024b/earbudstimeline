@@ -38,30 +38,29 @@ export default function BulkImageMatcher({ earbuds, brands }) {
     const toSend = rows.filter((r) => r.earbudId);
     if (toSend.length === 0) return;
     setSubmitting(true);
-    const fd = new FormData();
-    toSend.forEach((r) => {
+    setResults([]);
+
+    const acc = [];
+    for (const r of toSend) {
+      const fd = new FormData();
       fd.append('files', r.file);
       fd.append('earbudIds', r.earbudId);
-    });
 
-    let res;
-    try {
-      res = await bulkUploadImages(fd);
-    } catch (e) {
-      res = toSend.map((r) => ({ filename: r.file.name, earbudId: r.earbudId, ok: false, error: e.message }));
-    }
-    if (!Array.isArray(res)) {
-      res = toSend.map((r) => ({
-        filename: r.file.name,
-        earbudId: r.earbudId,
-        ok: false,
-        error: 'Requête échouée (fichiers trop volumineux ?)',
-      }));
+      let entry;
+      try {
+        const res = await bulkUploadImages(fd);
+        entry = Array.isArray(res) && res[0]
+          ? res[0]
+          : { filename: r.file.name, earbudId: r.earbudId, ok: false, error: 'Réponse inattendue' };
+      } catch (e) {
+        entry = { filename: r.file.name, earbudId: r.earbudId, ok: false, error: e.message || 'Requête échouée' };
+      }
+      acc.push(entry);
+      setResults([...acc]);
     }
 
-    setResults(res);
     setSubmitting(false);
-    setRows((prev) => prev.filter((r) => !r.earbudId || res.find((x) => x.filename === r.file.name && !x.ok)));
+    setRows((prev) => prev.filter((r) => !r.earbudId || acc.find((x) => x.filename === r.file.name && !x.ok)));
   }
 
   const matchedCount = rows.filter((r) => r.earbudId).length;
@@ -134,7 +133,7 @@ export default function BulkImageMatcher({ earbuds, brands }) {
             disabled={submitting || matchedCount === 0}
             className="mt-2 bg-accent text-ink font-semibold rounded-lg px-4 py-2.5 text-sm disabled:opacity-50 w-fit"
           >
-            {submitting ? 'Import en cours…' : `Importer ${matchedCount} photo${matchedCount > 1 ? 's' : ''}`}
+            {submitting ? `Import en cours… (${results?.length || 0}/${matchedCount})` : `Importer ${matchedCount} photo${matchedCount > 1 ? 's' : ''}`}
           </button>
         </div>
       )}
