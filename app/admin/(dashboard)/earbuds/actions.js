@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { slugify } from '@/lib/slug';
 import { uploadImage } from '@/lib/storage';
+import { validateCsvRow } from '@/lib/earbudsCsv';
 
 function parseEarbudForm(formData) {
   const num = (key) => {
@@ -122,6 +123,63 @@ export async function bulkUploadImages(formData) {
       results.push({ filename: file.name, earbudId, ok: true });
     } catch (e) {
       results.push({ filename: file.name, earbudId, ok: false, error: e.message });
+    }
+  }
+
+  revalidatePath('/admin/earbuds');
+  revalidatePath('/');
+  brandIds.forEach((bId) => revalidatePath(`/marques/${bId}`));
+
+  return results;
+}
+
+// Appelée directement depuis le composant client avec le payload JSON du CSV parsé
+// (pas de <form action>, donc pas de redirect()). Revalide la validation côté serveur
+// par sécurité — ne fait jamais confiance aux données déjà validées côté client.
+export async function importEarbudsCsv(payload) {
+  const rawRows = Array.isArray(payload?.rawRows) ? payload.rawRows : [];
+  const overwrite = Boolean(payload?.overwrite);
+  if (rawRows.length === 0) return [];
+
+  const supabase = getSupabaseAdmin();
+  const [{ data: brands }, { data: existing }] = await Promise.all([
+    supabase.from('brands').select('id'),
+    supabase.from('earbuds').select('id'),
+  ]);
+  const existingIds = (existing || []).map((e) => e.id);
+
+  const results = [];
+  const brandIds = new Set();
+
+  for (const raw of rawRows) {
+    const { id, name, data, errors, isDuplicate } = validateCsvRow(raw, { brands: brands || [], existingIds });
+
+    if (errors.length > 0) {
+      results.push({ id: id || '?', name, ok: false, error: errors.join(', ') });
+      continue;
+    }
+    if (isDuplicate && !overwrite) {
+      results.push({
+        id,
+        name,
+        ok: false,
+        error: 'id déjà existant (ignoré — coche "écraser les doublons" pour le mettre à jour)',
+      });
+      continue;
+    }
+
+    try {
+      let error;
+      if (isDuplicate) {
+        ({ error } = await supabase.from('earbuds').update(data).eq('id', id));
+      } else {
+        ({ error } = await supabase.from('earbuds').insert({ id, ...data }));
+      }
+      if (error) throw error;
+      brandIds.add(data.brand_id);
+      results.push({ id, name, ok: true, updated: isDuplicate });
+    } catch (e) {
+      results.push({ id, name, ok: false, error: e.message });
     }
   }
 

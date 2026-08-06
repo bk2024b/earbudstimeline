@@ -20,7 +20,13 @@ export default async function EarbudsList({ searchParams }) {
     <>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="font-display font-bold text-2xl">Écouteurs</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Link
+            href="/admin/earbuds/import-csv"
+            className="border border-line text-dim hover:text-accent rounded-lg px-4 py-2 text-sm"
+          >
+            📄 Import CSV
+          </Link>
           <Link
             href="/admin/earbuds/bulk-images"
             className="border border-line text-dim hover:text-accent rounded-lg px-4 py-2 text-sm"
