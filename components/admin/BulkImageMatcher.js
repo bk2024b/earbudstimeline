@@ -43,7 +43,22 @@ export default function BulkImageMatcher({ earbuds, brands }) {
       fd.append('files', r.file);
       fd.append('earbudIds', r.earbudId);
     });
-    const res = await bulkUploadImages(fd);
+
+    let res;
+    try {
+      res = await bulkUploadImages(fd);
+    } catch (e) {
+      res = toSend.map((r) => ({ filename: r.file.name, earbudId: r.earbudId, ok: false, error: e.message }));
+    }
+    if (!Array.isArray(res)) {
+      res = toSend.map((r) => ({
+        filename: r.file.name,
+        earbudId: r.earbudId,
+        ok: false,
+        error: 'Requête échouée (fichiers trop volumineux ?)',
+      }));
+    }
+
     setResults(res);
     setSubmitting(false);
     setRows((prev) => prev.filter((r) => !r.earbudId || res.find((x) => x.filename === r.file.name && !x.ok)));
