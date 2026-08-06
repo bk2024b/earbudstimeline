@@ -95,6 +95,43 @@ export async function updateEarbud(id, formData) {
   redirect('/admin/earbuds');
 }
 
+// Appelée directement depuis le composant client (pas de <form action>), donc pas de redirect().
+// files[i] est associé à earbudIds[i] (même ordre d'insertion dans le FormData).
+export async function bulkUploadImages(formData) {
+  const files = formData.getAll('files');
+  const earbudIds = formData.getAll('earbudIds');
+  const supabase = getSupabaseAdmin();
+  const brandIds = new Set();
+
+  const results = [];
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const earbudId = earbudIds[i]?.toString();
+    if (!file || file.size === 0 || !earbudId) continue;
+
+    try {
+      const image_url = await uploadImage(file, 'earbuds');
+      const { data, error } = await supabase
+        .from('earbuds')
+        .update({ image_url })
+        .eq('id', earbudId)
+        .select('brand_id')
+        .single();
+      if (error) throw error;
+      if (data?.brand_id) brandIds.add(data.brand_id);
+      results.push({ filename: file.name, earbudId, ok: true });
+    } catch (e) {
+      results.push({ filename: file.name, earbudId, ok: false, error: e.message });
+    }
+  }
+
+  revalidatePath('/admin/earbuds');
+  revalidatePath('/');
+  brandIds.forEach((bId) => revalidatePath(`/marques/${bId}`));
+
+  return results;
+}
+
 export async function deleteEarbud(id, brandId) {
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('earbuds').delete().eq('id', id);

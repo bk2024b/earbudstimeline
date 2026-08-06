@@ -20,9 +20,17 @@ export default async function EarbudsList({ searchParams }) {
     <>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="font-display font-bold text-2xl">Écouteurs</h1>
-        <Link href="/admin/earbuds/new" className="bg-accent text-ink font-semibold rounded-lg px-4 py-2 text-sm">
-          + Nouvel écouteur
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/admin/earbuds/bulk-images"
+            className="border border-line text-dim hover:text-accent rounded-lg px-4 py-2 text-sm"
+          >
+            📤 Import multiple
+          </Link>
+          <Link href="/admin/earbuds/new" className="bg-accent text-ink font-semibold rounded-lg px-4 py-2 text-sm">
+            + Nouvel écouteur
+          </Link>
+        </div>
       </div>
 
       {searchParams?.error && <p className="text-rose-400 text-sm mb-4">Erreur : {searchParams.error}</p>}
