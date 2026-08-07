@@ -15,6 +15,9 @@ export default function Header() {
         <Link href="/comparer" className="hover:text-white transition-colors">
           Comparateur
         </Link>
+        <Link href="/blog" className="hover:text-white transition-colors">
+          Blog
+        </Link>
       </nav>
     </div>
   );

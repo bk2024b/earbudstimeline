@@ -16,6 +16,9 @@ export default function AdminLayout({ children }) {
           <Link href="/admin/earbuds" className="px-3 py-2 rounded-lg hover:bg-panel hover:text-white transition-colors">
             Écouteurs
           </Link>
+          <Link href="/admin/articles" className="px-3 py-2 rounded-lg hover:bg-panel hover:text-white transition-colors">
+            Articles
+          </Link>
         </nav>
         <form action={logout} className="sm:mt-auto">
           <button type="submit" className="text-xs text-dim hover:text-white text-left transition-colors">

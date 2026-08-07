@@ -17,7 +17,20 @@ module.exports = {
         body: ['var(--font-body)', 'sans-serif'],
         mono: ['var(--font-mono)', 'monospace'],
       },
+      typography: {
+        invert: {
+          css: {
+            '--tw-prose-body': '#E4E4E7',
+            '--tw-prose-headings': '#FFFFFF',
+            '--tw-prose-links': '#22D07A',
+            '--tw-prose-bold': '#FFFFFF',
+            '--tw-prose-quotes': '#9A9AA3',
+            '--tw-prose-quote-borders': '#27272A',
+            '--tw-prose-bullets': '#9A9AA3',
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 };
