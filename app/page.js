@@ -9,6 +9,7 @@ import SearchBar from '@/components/SearchBar';
 import PopularBrands from '@/components/PopularBrands';
 import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
+import EvolutionChart from '@/components/EvolutionChart';
 import { Stat, Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
@@ -111,6 +112,10 @@ export default async function HomePage() {
           {stats.avgPrice && (
             <StatTile icon={DollarSign} value={`${stats.avgPrice} $`} label="Prix moyen au lancement" />
           )}
+
+          <div className="mt-2">
+            <EvolutionChart models={models} />
+          </div>
         </aside>
       </div>
 
