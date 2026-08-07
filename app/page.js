@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { BatteryCharging, Cpu, Trophy, DollarSign } from 'lucide-react';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
-import Timeline from '@/components/Timeline';
+import InteractiveTimeline from '@/components/InteractiveTimeline';
 import ModelCard from '@/components/ModelCard';
 import SearchBar from '@/components/SearchBar';
 import PopularBrands from '@/components/PopularBrands';
@@ -66,7 +66,7 @@ export default async function HomePage() {
         </aside>
       </div>
 
-      <Timeline models={models} brands={brands} />
+      <InteractiveTimeline models={models} brands={brands} />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
         <div>
