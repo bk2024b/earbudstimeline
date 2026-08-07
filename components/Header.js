@@ -12,8 +12,8 @@ export default function Header() {
         <Link href="/#marques" className="hover:text-white transition-colors">
           Marques
         </Link>
-        <Link href="/comparer" className="hover:text-white transition-colors">
-          Comparateur
+        <Link href="/comparaisons" className="hover:text-white transition-colors">
+          Comparaisons
         </Link>
         <Link href="/blog" className="hover:text-white transition-colors">
           Blog
