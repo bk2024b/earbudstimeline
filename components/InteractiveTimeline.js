@@ -6,10 +6,10 @@ import BrandBadge from './BrandBadge';
 
 const BT_OPTIONS = ['5.3', '5.2', '5.1', '5.0'];
 
-export default function InteractiveTimeline({ models, brands }) {
+export default function InteractiveTimeline({ models, brands, initialAnc = 'all', initialBt = 'all' }) {
   const [brandFilter, setBrandFilter] = useState('all');
-  const [ancFilter, setAncFilter] = useState('all'); // all | yes | no
-  const [minBt, setMinBt] = useState('all');
+  const [ancFilter, setAncFilter] = useState(initialAnc);
+  const [minBt, setMinBt] = useState(initialBt);
   const maxPriceInData = useMemo(
     () => Math.max(...models.filter((m) => m.price).map((m) => Number(m.price)), 0),
     [models]
