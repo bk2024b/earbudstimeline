@@ -1,4 +1,5 @@
 import { getAllEarbuds, getBrands, getPublishedArticles } from '@/lib/queries';
+import { slugify } from '@/lib/slug';
 import { SITE_URL } from '@/lib/seo';
 
 export default async function sitemap() {
@@ -20,6 +21,16 @@ export default async function sitemap() {
     priority: 0.8,
   }));
 
+  const gammeKeys = new Set(models.map((m) => `${m.brand_id}::${slugify(m.gamme)}`));
+  const gammeRoutes = [...gammeKeys].map((key) => {
+    const [brandId, gammeSlug] = key.split('::');
+    return {
+      url: `${SITE_URL}/marques/${brandId}/${gammeSlug}`,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    };
+  });
+
   const modelRoutes = models.map((m) => ({
     url: `${SITE_URL}/ecouteurs/${m.id}`,
     lastModified: m.release_date,
@@ -34,5 +45,5 @@ export default async function sitemap() {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...brandRoutes, ...modelRoutes, ...articleRoutes];
+  return [...staticRoutes, ...brandRoutes, ...gammeRoutes, ...modelRoutes, ...articleRoutes];
 }

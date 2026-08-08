@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { BatteryCharging, Cpu, DollarSign } from 'lucide-react';
 import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
+import { slugify } from '@/lib/slug';
 import { buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 import ModelCard from '@/components/ModelCard';
 import BrandBadge from '@/components/BrandBadge';
@@ -30,18 +31,17 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function BrandPage({ params, searchParams }) {
+export default async function BrandPage({ params }) {
   const brand = await getBrandById(params.brand).catch(() => null);
   if (!brand) notFound();
 
   const models = await getEarbudsByBrand(params.brand);
   const gammes = [...new Set(models.map((m) => m.gamme))].map((g) => ({
     name: g,
+    slug: slugify(g),
     count: models.filter((m) => m.gamme === g).length,
   }));
 
-  const activeGamme = searchParams.gamme || 'all';
-  const filtered = activeGamme === 'all' ? models : models.filter((m) => m.gamme === activeGamme);
   const years = models.map((m) => Number(m.release_date.slice(0, 4)));
   const stats = computeStats(models);
 
@@ -82,40 +82,24 @@ export default async function BrandPage({ params, searchParams }) {
 
       <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">Gammes</h2>
       <div className="flex gap-2 flex-wrap mb-8">
-        <Chip href={`/marques/${brand.id}`} active={activeGamme === 'all'}>
-          Tous
-        </Chip>
         {gammes.map((g) => (
-          <Chip
+          <Link
             key={g.name}
-            href={`/marques/${brand.id}?gamme=${encodeURIComponent(g.name)}`}
-            active={activeGamme === g.name}
+            href={`/marques/${brand.id}/${g.slug}`}
+            className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors"
           >
             {g.name} · {g.count}
-          </Chip>
+          </Link>
         ))}
       </div>
 
       <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">Tous les modèles</h2>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
-        {filtered.map((m) => (
+        {models.map((m) => (
           <ModelCard key={m.id} m={m} color={brand.color} />
         ))}
       </div>
       <Footer />
     </>
-  );
-}
-
-function Chip({ href, active, children }) {
-  return (
-    <Link
-      href={href}
-      className={`px-3.5 py-1.5 rounded-full border text-xs transition-colors ${
-        active ? 'bg-accent/15 border-accent text-accent' : 'border-line text-dim hover:border-accent'
-      }`}
-    >
-      {children}
-    </Link>
   );
 }
