@@ -3,12 +3,32 @@ import { notFound } from 'next/navigation';
 import { BatteryCharging, Cpu, DollarSign } from 'lucide-react';
 import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
+import { buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 import ModelCard from '@/components/ModelCard';
 import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
 import { Stat, Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }) {
+  const brand = await getBrandById(params.brand).catch(() => null);
+  if (!brand) return { title: 'Marque introuvable — EarbudsTimeline' };
+
+  const models = await getEarbudsByBrand(params.brand);
+  const years = models.map((m) => Number(m.release_date.slice(0, 4)));
+  const period = years.length ? `${Math.min(...years)}–${Math.max(...years)}` : '';
+
+  return {
+    title: `${brand.name} — Tous les écouteurs ${brand.name} (${period}) | EarbudsTimeline`,
+    description: `Historique complet des écouteurs ${brand.name} : ${models.length} modèles référencés de ${period}. Autonomie, ANC, prix de lancement et évolution génération par génération.`,
+    openGraph: {
+      title: `${brand.name} — EarbudsTimeline`,
+      description: `${models.length} écouteurs ${brand.name} référencés, de ${period}.`,
+      images: brand.image_url ? [brand.image_url] : undefined,
+    },
+  };
+}
 
 export default async function BrandPage({ params, searchParams }) {
   const brand = await getBrandById(params.brand).catch(() => null);
@@ -27,6 +47,12 @@ export default async function BrandPage({ params, searchParams }) {
 
   return (
     <>
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Accueil', url: '/' },
+          { name: brand.name, url: `/marques/${brand.id}` },
+        ])}
+      />
       <Link href="/" className="inline-flex items-center gap-1.5 text-dim text-[13px] mb-6 hover:text-accent">
         ← Toutes les marques
       </Link>

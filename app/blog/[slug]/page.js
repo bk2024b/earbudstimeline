@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
 import { getArticleBySlug } from '@/lib/queries';
+import { buildArticleJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 
 function fmtPublished(iso) {
   if (!iso) return '';
@@ -38,6 +39,14 @@ export default async function ArticlePage({ params }) {
 
   return (
     <article>
+      <JsonLd data={buildArticleJsonLd(article)} />
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Accueil', url: '/' },
+          { name: 'Blog', url: '/blog' },
+          { name: article.title, url: `/blog/${article.id}` },
+        ])}
+      />
       <Link href="/blog" className="text-xs text-dim hover:text-accent">
         ← Retour au blog
       </Link>

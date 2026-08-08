@@ -6,6 +6,26 @@ import { Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
 
+export async function generateMetadata({ searchParams }) {
+  if (!searchParams.a || !searchParams.b) {
+    return {
+      title: 'Comparateur d’écouteurs — EarbudsTimeline',
+      description: 'Comparez deux écouteurs sans fil : autonomie, ANC, poids, prix et Bluetooth, côte à côte.',
+    };
+  }
+  const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]);
+  const a = models.find((m) => m.id === searchParams.a);
+  const b = models.find((m) => m.id === searchParams.b);
+  if (!a || !b) {
+    return { title: 'Comparateur d’écouteurs — EarbudsTimeline' };
+  }
+  const brandName = (id) => brands.find((br) => br.id === id)?.name || id;
+  return {
+    title: `${a.name} vs ${b.name} — Comparatif complet | EarbudsTimeline`,
+    description: `${a.name} (${brandName(a.brand_id)}) contre ${b.name} (${brandName(b.brand_id)}) : autonomie, réduction de bruit, poids, prix et Bluetooth comparés en détail.`,
+  };
+}
+
 export default async function ComparePage({ searchParams }) {
   const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]);
   const a = models.find((m) => m.id === searchParams.a);

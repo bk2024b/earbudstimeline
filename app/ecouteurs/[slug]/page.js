@@ -4,6 +4,7 @@ import { Battery, BatteryFull, Droplet, Bluetooth } from 'lucide-react';
 import { getEarbudBySlug, getGammeModels, getBrands, getAllEarbuds } from '@/lib/queries';
 import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct } from '@/lib/format';
 import { getComparisonSuggestions } from '@/lib/compare';
+import { buildProductJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 import QuickCompareSelect from '@/components/QuickCompareSelect';
 import ComparisonSuggestions from '@/components/ComparisonSuggestions';
 import EarbudsIcon from '@/components/EarbudsIcon';
@@ -11,6 +12,27 @@ import TimelinePosition from '@/components/TimelinePosition';
 import { Badge, Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }) {
+  const m = await getEarbudBySlug(params.slug).catch(() => null);
+  if (!m) return { title: 'Écouteur introuvable — EarbudsTimeline' };
+
+  const brands = await getBrands();
+  const brand = brands.find((b) => b.id === m.brand_id);
+  const year = new Date(m.release_date).getFullYear();
+  const title = `${m.name} — Fiche complète, specs et comparaisons | EarbudsTimeline`;
+  const description = `${m.name} (${brand?.name || m.brand_id}, ${year}) : ${m.tagline} Autonomie, ANC, Bluetooth, prix au lancement et comparaisons.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: `${m.name} — ${brand?.name || m.brand_id}`,
+      description: m.tagline,
+      images: m.image_url ? [m.image_url] : undefined,
+    },
+  };
+}
 
 export default async function ModelPage({ params }) {
   const m = await getEarbudBySlug(params.slug).catch(() => null);
@@ -64,6 +86,14 @@ export default async function ModelPage({ params }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
+      <JsonLd data={buildProductJsonLd(m, brand)} />
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Accueil', url: '/' },
+          { name: brand?.name || m.brand_id, url: `/marques/${m.brand_id}` },
+          { name: m.name, url: `/ecouteurs/${m.id}` },
+        ])}
+      />
       <div>
         <Link
           href={`/marques/${m.brand_id}`}
