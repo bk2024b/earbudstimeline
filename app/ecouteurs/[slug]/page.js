@@ -157,8 +157,13 @@ export default async function ModelPage({ params }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
           <SpecGroup title="Audio">
             <SpecLine k="Puce" v={m.chip} />
+            <SpecLine k="Codecs" v={m.codec} />
             <SpecLine k="Réduction de bruit" v={m.anc ? 'Oui' : 'Non'} />
+          </SpecGroup>
+          <SpecGroup title="Connectivité">
             <SpecLine k="Bluetooth" v={m.bluetooth} />
+            <SpecLine k="USB-C" v={m.usb_c ? 'Oui' : 'Non'} />
+            <SpecLine k="Multipoint" v={m.multipoint ? 'Oui' : 'Non'} />
           </SpecGroup>
           <SpecGroup title="Confort & résistance">
             <SpecLine k="Poids par écouteur" v={fmtG(m.weight_g)} />

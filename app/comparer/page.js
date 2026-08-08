@@ -59,8 +59,11 @@ export default async function ComparePage({ searchParams }) {
             <Row label="Poids / écouteur" a={a.weight_g} b={b.weight_g} fmt={fmtG} />
             <Row label="Prix au lancement" a={a.price} b={b.price} fmt={fmtMoney} />
             <RawRow label="Réduction de bruit" a={a.anc ? 'Oui' : 'Non'} b={b.anc ? 'Oui' : 'Non'} />
-            <RawRow label="Certification" a={a.water_rating} b={b.water_rating} last />
-            <RawRow label="Bluetooth" a={a.bluetooth} b={b.bluetooth} last />
+            <RawRow label="Certification" a={a.water_rating} b={b.water_rating} />
+            <RawRow label="Bluetooth" a={a.bluetooth} b={b.bluetooth} />
+            <RawRow label="USB-C" a={a.usb_c ? 'Oui' : 'Non'} b={b.usb_c ? 'Oui' : 'Non'} />
+            <RawRow label="Multipoint" a={a.multipoint ? 'Oui' : 'Non'} b={b.multipoint ? 'Oui' : 'Non'} />
+            <RawRow label="Codecs" a={a.codec} b={b.codec} last />
           </div>
         </>
       )}

@@ -27,6 +27,9 @@ function parseEarbudForm(formData) {
     water_rating: formData.get('water_rating')?.toString().trim() || 'Non résistant',
     chip: formData.get('chip')?.toString().trim() || '—',
     bluetooth: formData.get('bluetooth')?.toString().trim() || '',
+    usb_c: formData.get('usb_c') === 'on',
+    multipoint: formData.get('multipoint') === 'on',
+    codec: formData.get('codec')?.toString().trim() || '—',
   };
 }
 

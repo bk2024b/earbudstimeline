@@ -134,12 +134,27 @@ export default function EarbudForm({ action, brands, defaults = {}, lockId = fal
         />
         <FormField label="Puce" name="chip" placeholder="ex. Apple H2" defaultValue={defaults.chip} />
         <FormField label="Bluetooth" name="bluetooth" placeholder="ex. 5.3" defaultValue={defaults.bluetooth} required />
+        <FormField
+          label="Codecs"
+          name="codec"
+          placeholder="ex. AAC, SBC, LDAC"
+          defaultValue={defaults.codec}
+          hint="Séparés par une virgule."
+        />
       </div>
 
-      <div className="flex gap-6 py-1">
+      <div className="flex gap-6 py-1 flex-wrap">
         <label className="flex items-center gap-2 text-sm text-dim">
           <input type="checkbox" name="anc" defaultChecked={defaults.anc} className="accent-accent" />
           Réduction de bruit active
+        </label>
+        <label className="flex items-center gap-2 text-sm text-dim">
+          <input type="checkbox" name="usb_c" defaultChecked={defaults.usb_c} className="accent-accent" />
+          USB-C
+        </label>
+        <label className="flex items-center gap-2 text-sm text-dim">
+          <input type="checkbox" name="multipoint" defaultChecked={defaults.multipoint} className="accent-accent" />
+          Multipoint
         </label>
         <label className="flex items-center gap-2 text-sm text-dim">
           <input type="checkbox" name="marquant" defaultChecked={defaults.marquant} className="accent-accent" />

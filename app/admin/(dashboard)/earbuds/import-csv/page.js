@@ -24,7 +24,8 @@ export default async function ImportCsvPage() {
         Colonnes attendues : <code>id</code> (optionnel), <code>brand_id</code>, <code>gamme</code>, <code>name</code>,{' '}
         <code>tagline</code>, <code>release_date</code> (AAAA-MM-JJ), <code>price</code>, <code>marquant</code>,{' '}
         <code>anc</code>, <code>battery_bud_h</code>, <code>battery_case_h</code>, <code>weight_g</code>,{' '}
-        <code>water_rating</code>, <code>chip</code>, <code>bluetooth</code>. Marques disponibles :{' '}
+        <code>water_rating</code>, <code>chip</code>, <code>bluetooth</code>, <code>usb_c</code>,{' '}
+        <code>multipoint</code>, <code>codec</code> (ces 3 derniers optionnels). Marques disponibles :{' '}
         {(brands || []).map((b) => b.id).join(', ')}.
       </p>
 
