@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowRight, BatteryCharging, Cpu, DollarSign } from 'lucide-react';
-import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
+import { getBrandById, getEarbudsByBrand, getPublishedArticles } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { buildDiffBullets } from '@/lib/compare';
 import { buildComparisonSlug } from '@/lib/compareSlug';
+import { findRelatedArticles } from '@/lib/relatedArticles';
+import RelatedArticles from '@/components/RelatedArticles';
 import { fmtDate, fmtMoney, yearOf, pct } from '@/lib/format';
 import { slugify } from '@/lib/slug';
 import { buildBreadcrumbJsonLd, JsonLd, absoluteUrl } from '@/lib/seo';
@@ -49,6 +51,9 @@ export async function generateMetadata({ params }) {
 export default async function GammePage({ params }) {
   const { brand, gammeName, models } = await loadGamme(params.brand, params.gamme);
   if (!brand || models.length === 0) notFound();
+
+  const articles = await getPublishedArticles();
+  const relatedArticles = findRelatedArticles(articles, [brand.name, gammeName]);
 
   const first = models[0];
   const last = models[models.length - 1];
@@ -217,6 +222,8 @@ export default async function GammePage({ params }) {
           </div>
         </>
       )}
+
+      <RelatedArticles articles={relatedArticles} />
 
       <Footer />
     </>

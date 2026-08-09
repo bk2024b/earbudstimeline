@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
-import { getArticleBySlug } from '@/lib/queries';
+import { getArticleBySlug, getBrands } from '@/lib/queries';
 import { buildArticleJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 
 function fmtPublished(iso) {
@@ -36,6 +36,9 @@ export default async function ArticlePage({ params }) {
   if (!article) notFound();
 
   const safeHtml = DOMPurify.sanitize(article.content_html || '');
+  const brands = await getBrands();
+  const haystack = `${article.title} ${article.excerpt}`.toLowerCase();
+  const mentionedBrand = brands.find((b) => haystack.includes(b.name.toLowerCase()));
 
   return (
     <article>
@@ -64,6 +67,29 @@ export default async function ArticlePage({ params }) {
       )}
 
       <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: safeHtml }} />
+
+      <div className="flex flex-wrap gap-2 mt-10 pt-6 border-t border-line">
+        {mentionedBrand && (
+          <Link
+            href={`/marques/${mentionedBrand.id}`}
+            className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors"
+          >
+            Tous les {mentionedBrand.name} →
+          </Link>
+        )}
+        <Link
+          href="/technologies"
+          className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors"
+        >
+          Explorer par technologie →
+        </Link>
+        <Link
+          href="/comparaisons"
+          className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors"
+        >
+          Voir des comparaisons →
+        </Link>
+      </div>
     </article>
   );
 }

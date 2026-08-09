@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Battery, BatteryFull, Droplet, Bluetooth } from 'lucide-react';
-import { getEarbudBySlug, getGammeModels, getBrands, getAllEarbuds } from '@/lib/queries';
+import { getEarbudBySlug, getGammeModels, getBrands, getAllEarbuds, getPublishedArticles } from '@/lib/queries';
+import { findRelatedArticles } from '@/lib/relatedArticles';
 import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct } from '@/lib/format';
 import { getComparisonSuggestions } from '@/lib/compare';
 import { slugify } from '@/lib/slug';
 import { buildProductJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 import QuickCompareSelect from '@/components/QuickCompareSelect';
 import ComparisonSuggestions from '@/components/ComparisonSuggestions';
+import RelatedArticles from '@/components/RelatedArticles';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import TimelinePosition from '@/components/TimelinePosition';
 import { Badge, Footer } from '@/components/UI';
@@ -39,10 +41,11 @@ export default async function ModelPage({ params }) {
   const m = await getEarbudBySlug(params.slug).catch(() => null);
   if (!m) notFound();
 
-  const [lineup, brands, allModels] = await Promise.all([
+  const [lineup, brands, allModels, articles] = await Promise.all([
     getGammeModels(m.brand_id, m.gamme),
     getBrands(),
     getAllEarbuds(),
+    getPublishedArticles(),
   ]);
 
   const brand = brands.find((b) => b.id === m.brand_id);
@@ -53,6 +56,7 @@ export default async function ModelPage({ params }) {
   const next = idx < lineup.length - 1 ? lineup[idx + 1] : null;
   const brandOf = (id) => brands.find((b) => b.id === id);
   const comparisonSuggestions = getComparisonSuggestions(m, { prev, next, allModels });
+  const relatedArticles = findRelatedArticles(articles, [brand.name, m.gamme, m.name]);
 
   function metric(label, key, higherIsBetter, fmt) {
     const cur = Number(m[key]);
@@ -188,6 +192,8 @@ export default async function ModelPage({ params }) {
         </Link>
 
         <ComparisonSuggestions model={m} suggestions={comparisonSuggestions} brandOf={brandOf} />
+
+        <RelatedArticles articles={relatedArticles} />
 
         <div className="bg-panel border border-dashed border-line rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap mb-5">
           <p className="m-0 text-[13.5px] text-dim">Vous possédez déjà des écouteurs ? Comparez-les à ceux-ci.</p>
