@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import DOMPurify from 'isomorphic-dompurify';
+import sanitizeHtml from 'sanitize-html';
 import { getArticleBySlug, getBrands } from '@/lib/queries';
 import { buildArticleJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 
@@ -35,10 +35,21 @@ export default async function ArticlePage({ params }) {
   }
   if (!article) notFound();
 
-  const safeHtml = DOMPurify.sanitize(article.content_html || '');
-  const brands = await getBrands();
-  const haystack = `${article.title} ${article.excerpt}`.toLowerCase();
-  const mentionedBrand = brands.find((b) => haystack.includes(b.name.toLowerCase()));
+  const safeHtml = sanitizeHtml(article.content_html || '', {
+    allowedTags: ['h2', 'h3', 'p', 'strong', 'em', 's', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'br', 'code', 'pre'],
+    allowedAttributes: {
+      a: ['href', 'target', 'rel', 'class'],
+      img: ['src', 'alt', 'class'],
+    },
+  });
+  let mentionedBrand = null;
+  try {
+    const brands = await getBrands();
+    const haystack = `${article.title} ${article.excerpt}`.toLowerCase();
+    mentionedBrand = brands.find((b) => haystack.includes(b.name.toLowerCase())) || null;
+  } catch {
+    // pas bloquant : la page s'affiche sans le lien "Tous les X" si ça échoue
+  }
 
   return (
     <article>
