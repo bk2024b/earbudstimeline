@@ -4,6 +4,7 @@ import { Battery, BatteryFull, Droplet, Bluetooth } from 'lucide-react';
 import { getEarbudBySlug, getGammeModels, getBrands, getAllEarbuds } from '@/lib/queries';
 import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct } from '@/lib/format';
 import { getComparisonSuggestions } from '@/lib/compare';
+import { slugify } from '@/lib/slug';
 import { buildProductJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 import QuickCompareSelect from '@/components/QuickCompareSelect';
 import ComparisonSuggestions from '@/components/ComparisonSuggestions';
@@ -157,13 +158,13 @@ export default async function ModelPage({ params }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
           <SpecGroup title="Audio">
             <SpecLine k="Puce" v={m.chip} />
-            <SpecLine k="Codecs" v={m.codec} />
-            <SpecLine k="Réduction de bruit" v={m.anc ? 'Oui' : 'Non'} />
+            <SpecLine k="Codecs" v={m.codec} href={m.codec && m.codec !== '—' ? `/technologies/codecs/${slugify(m.codec.split(',')[0].trim())}` : undefined} />
+            <SpecLine k="Réduction de bruit" v={m.anc ? 'Oui' : 'Non'} href={m.anc ? '/technologies/anc' : undefined} />
           </SpecGroup>
           <SpecGroup title="Connectivité">
-            <SpecLine k="Bluetooth" v={m.bluetooth} />
-            <SpecLine k="USB-C" v={m.usb_c ? 'Oui' : 'Non'} />
-            <SpecLine k="Multipoint" v={m.multipoint ? 'Oui' : 'Non'} />
+            <SpecLine k="Bluetooth" v={m.bluetooth} href={m.bluetooth ? `/technologies/bluetooth/${m.bluetooth}` : undefined} />
+            <SpecLine k="USB-C" v={m.usb_c ? 'Oui' : 'Non'} href={m.usb_c ? '/technologies/usb-c' : undefined} />
+            <SpecLine k="Multipoint" v={m.multipoint ? 'Oui' : 'Non'} href={m.multipoint ? '/technologies/multipoint' : undefined} />
           </SpecGroup>
           <SpecGroup title="Confort & résistance">
             <SpecLine k="Poids par écouteur" v={fmtG(m.weight_g)} />
@@ -226,11 +227,17 @@ function SpecGroup({ title, children }) {
   );
 }
 
-function SpecLine({ k, v }) {
+function SpecLine({ k, v, href }) {
   return (
     <div className="flex justify-between py-2.5 border-t border-line text-[13.5px]">
       <span className="text-dim">{k}</span>
-      <span className="font-mono">{v}</span>
+      {href ? (
+        <Link href={href} className="font-mono text-accent hover:underline">
+          {v}
+        </Link>
+      ) : (
+        <span className="font-mono">{v}</span>
+      )}
     </div>
   );
 }

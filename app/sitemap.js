@@ -2,6 +2,7 @@ import { getAllEarbuds, getBrands, getPublishedArticles } from '@/lib/queries';
 import { slugify } from '@/lib/slug';
 import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
 import { buildComparisonSlug } from '@/lib/compareSlug';
+import { getBluetoothVersionList, getCodecList } from '@/lib/tech';
 import { SITE_URL } from '@/lib/seo';
 
 export default async function sitemap() {
@@ -11,7 +12,7 @@ export default async function sitemap() {
     getPublishedArticles(),
   ]);
 
-  const staticRoutes = ['', '/comparaisons', '/comparer', '/blog', '/annees'].map((path) => ({
+  const staticRoutes = ['', '/comparaisons', '/comparer', '/blog', '/annees', '/technologies', '/technologies/anc', '/technologies/usb-c', '/technologies/multipoint'].map((path) => ({
     url: `${SITE_URL}${path}`,
     changeFrequency: 'weekly',
     priority: path === '' ? 1 : 0.7,
@@ -47,6 +48,18 @@ export default async function sitemap() {
     priority: 0.7,
   }));
 
+  const btRoutes = getBluetoothVersionList(models).map((v) => ({
+    url: `${SITE_URL}/technologies/bluetooth/${v.version}`,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }));
+
+  const codecRoutes = getCodecList(models).map((c) => ({
+    url: `${SITE_URL}/technologies/codecs/${c.slug}`,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }));
+
   const modelRoutes = models.map((m) => ({
     url: `${SITE_URL}/ecouteurs/${m.id}`,
     lastModified: m.release_date,
@@ -61,5 +74,5 @@ export default async function sitemap() {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...brandRoutes, ...gammeRoutes, ...yearRoutes, ...comparisonRoutes, ...modelRoutes, ...articleRoutes];
+  return [...staticRoutes, ...brandRoutes, ...gammeRoutes, ...yearRoutes, ...comparisonRoutes, ...btRoutes, ...codecRoutes, ...modelRoutes, ...articleRoutes];
 }
