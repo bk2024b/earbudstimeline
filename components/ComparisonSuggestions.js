@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { buildDiffBullets } from '@/lib/compare';
 import { yearOf } from '@/lib/format';
+import { buildComparisonSlug } from '@/lib/compareSlug';
 
 export default function ComparisonSuggestions({ model, suggestions, brandOf }) {
   if (suggestions.length === 0) return null;
@@ -33,7 +34,7 @@ export default function ComparisonSuggestions({ model, suggestions, brandOf }) {
           </ul>
         )}
         <Link
-          href={`/comparer?a=${model.id}&b=${primary.model.id}`}
+          href={`/comparaisons/${buildComparisonSlug(model.id, primary.model.id)}`}
           className="inline-block mt-4 text-accent text-xs hover:underline"
         >
           Voir la comparaison complète →
@@ -59,7 +60,7 @@ export default function ComparisonSuggestions({ model, suggestions, brandOf }) {
                   </p>
                 </div>
                 <Link
-                  href={`/comparer?a=${model.id}&b=${other.id}`}
+                  href={`/comparaisons/${buildComparisonSlug(model.id, other.id)}`}
                   className="shrink-0 bg-accent text-ink font-semibold rounded-lg px-3 py-1.5 text-xs"
                 >
                   Comparer

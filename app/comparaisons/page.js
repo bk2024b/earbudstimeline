@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
+import { buildComparisonSlug } from '@/lib/compareSlug';
 import { yearOf } from '@/lib/format';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import CompareSelectors from '@/components/CompareSelectors';
@@ -9,8 +10,9 @@ import { Footer } from '@/components/UI';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Comparaisons — EarbudsTimeline',
-  description: "Comparaisons populaires entre générations d'écouteurs et entre marques concurrentes.",
+  title: 'Toutes les comparaisons d’écouteurs — EarbudsTimeline',
+  description:
+    "Comparez des écouteurs sans fil entre générations et entre marques concurrentes : autonomie, ANC, poids, prix et Bluetooth.",
 };
 
 export default async function ComparaisonsPage() {
@@ -50,7 +52,7 @@ function Section({ title, pairs, brandOf }) {
         {pairs.map(({ a, b }) => (
           <Link
             key={`${a.id}-${b.id}`}
-            href={`/comparer?a=${a.id}&b=${b.id}`}
+            href={`/comparaisons/${buildComparisonSlug(a.id, b.id)}`}
             className="bg-panel border border-line rounded-xl p-4 hover:border-accent transition-colors flex flex-col gap-2.5"
           >
             <div className="flex items-center gap-2 text-[13.5px]">

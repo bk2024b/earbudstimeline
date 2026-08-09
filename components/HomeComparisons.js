@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import EarbudsIcon from './EarbudsIcon';
+import { buildComparisonSlug } from '@/lib/compareSlug';
 
 export default function HomeComparisons({ pairs, brandOf }) {
   if (pairs.length === 0) return null;
@@ -26,7 +27,7 @@ export default function HomeComparisons({ pairs, brandOf }) {
               <EarbudsIcon color={brandOf(b.brand_id)?.color || '#9A9AA3'} className="w-6 h-6 shrink-0" />
             </div>
             <Link
-              href={`/comparer?a=${a.id}&b=${b.id}`}
+              href={`/comparaisons/${buildComparisonSlug(a.id, b.id)}`}
               className="shrink-0 bg-accent text-ink font-semibold rounded-lg px-3 py-1.5 text-xs"
             >
               Comparer

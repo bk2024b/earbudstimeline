@@ -4,6 +4,7 @@ import { ArrowRight, BatteryCharging, Cpu, DollarSign } from 'lucide-react';
 import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { buildDiffBullets } from '@/lib/compare';
+import { buildComparisonSlug } from '@/lib/compareSlug';
 import { fmtDate, fmtMoney, yearOf, pct } from '@/lib/format';
 import { slugify } from '@/lib/slug';
 import { buildBreadcrumbJsonLd, JsonLd, absoluteUrl } from '@/lib/seo';
@@ -186,7 +187,7 @@ export default async function GammePage({ params }) {
                     <ArrowRight size={13} className="text-dim shrink-0" />
                     <span className="font-medium">{cur.name}</span>
                     <Link
-                      href={`/comparer?a=${prev.id}&b=${cur.id}`}
+                      href={`/comparaisons/${buildComparisonSlug(prev.id, cur.id)}`}
                       className="ml-auto text-accent text-xs hover:underline shrink-0"
                     >
                       Comparer →

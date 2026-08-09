@@ -1,5 +1,7 @@
 import { getAllEarbuds, getBrands, getPublishedArticles } from '@/lib/queries';
 import { slugify } from '@/lib/slug';
+import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
+import { buildComparisonSlug } from '@/lib/compareSlug';
 import { SITE_URL } from '@/lib/seo';
 
 export default async function sitemap() {
@@ -37,6 +39,14 @@ export default async function sitemap() {
     priority: 0.6,
   }));
 
+  const pairs = [...getGenerationalPairs(models), ...getRivalPairs(models, 40)];
+  const comparisonSlugs = new Set(pairs.map(({ a, b }) => buildComparisonSlug(a.id, b.id)));
+  const comparisonRoutes = [...comparisonSlugs].map((slug) => ({
+    url: `${SITE_URL}/comparaisons/${slug}`,
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
   const modelRoutes = models.map((m) => ({
     url: `${SITE_URL}/ecouteurs/${m.id}`,
     lastModified: m.release_date,
@@ -51,5 +61,5 @@ export default async function sitemap() {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...brandRoutes, ...gammeRoutes, ...yearRoutes, ...modelRoutes, ...articleRoutes];
+  return [...staticRoutes, ...brandRoutes, ...gammeRoutes, ...yearRoutes, ...comparisonRoutes, ...modelRoutes, ...articleRoutes];
 }
