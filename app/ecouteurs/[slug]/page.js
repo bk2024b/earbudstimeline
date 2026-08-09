@@ -179,6 +179,13 @@ export default async function ModelPage({ params }) {
           </SpecGroup>
         </div>
 
+        <Link
+          href={`/annees/${yearOf(m.release_date)}`}
+          className="inline-block text-accent text-xs hover:underline mb-8"
+        >
+          Voir tous les écouteurs sortis en {yearOf(m.release_date)} →
+        </Link>
+
         <ComparisonSuggestions model={m} suggestions={comparisonSuggestions} brandOf={brandOf} />
 
         <div className="bg-panel border border-dashed border-line rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap mb-5">

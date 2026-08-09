@@ -9,7 +9,7 @@ export default async function sitemap() {
     getPublishedArticles(),
   ]);
 
-  const staticRoutes = ['', '/comparaisons', '/comparer', '/blog'].map((path) => ({
+  const staticRoutes = ['', '/comparaisons', '/comparer', '/blog', '/annees'].map((path) => ({
     url: `${SITE_URL}${path}`,
     changeFrequency: 'weekly',
     priority: path === '' ? 1 : 0.7,
@@ -31,6 +31,12 @@ export default async function sitemap() {
     };
   });
 
+  const yearRoutes = [...new Set(models.map((m) => Number(m.release_date.slice(0, 4))))].map((y) => ({
+    url: `${SITE_URL}/annees/${y}`,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }));
+
   const modelRoutes = models.map((m) => ({
     url: `${SITE_URL}/ecouteurs/${m.id}`,
     lastModified: m.release_date,
@@ -45,5 +51,5 @@ export default async function sitemap() {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...brandRoutes, ...gammeRoutes, ...modelRoutes, ...articleRoutes];
+  return [...staticRoutes, ...brandRoutes, ...gammeRoutes, ...yearRoutes, ...modelRoutes, ...articleRoutes];
 }

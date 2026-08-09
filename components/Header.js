@@ -12,6 +12,9 @@ export default function Header() {
         <Link href="/#marques" className="hover:text-white transition-colors">
           Marques
         </Link>
+        <Link href="/annees" className="hover:text-white transition-colors">
+          Années
+        </Link>
         <Link href="/comparaisons" className="hover:text-white transition-colors">
           Comparaisons
         </Link>
