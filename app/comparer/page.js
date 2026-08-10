@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { buildComparisonSlug } from '@/lib/compareSlug';
+import { canonicalFor } from '@/lib/seo';
 import CompareSelectors from '@/components/CompareSelectors';
 import { Footer } from '@/components/UI';
 
@@ -9,6 +10,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Comparateur d’écouteurs — EarbudsTimeline',
   description: 'Comparez deux écouteurs sans fil : autonomie, ANC, poids, prix, USB-C, multipoint et codecs, côte à côte.',
+  ...canonicalFor('/comparer'),
 };
 
 export default async function ComparePage({ searchParams }) {

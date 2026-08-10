@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import sanitizeHtml from 'sanitize-html';
 import { getArticleBySlug, getBrands } from '@/lib/queries';
-import { buildArticleJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
+import { buildArticleJsonLd, buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 
 function fmtPublished(iso) {
   if (!iso) return '';
@@ -15,6 +15,7 @@ export async function generateMetadata({ params }) {
     return {
       title: `${article.title} — EarbudsTimeline`,
       description: article.excerpt,
+      ...canonicalFor(`/blog/${article.id}`),
       openGraph: {
         title: article.title,
         description: article.excerpt,

@@ -4,7 +4,7 @@ import { BatteryCharging, Cpu, DollarSign } from 'lucide-react';
 import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { slugify } from '@/lib/slug';
-import { buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import ModelCard from '@/components/ModelCard';
 import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
@@ -23,6 +23,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `${brand.name} — Tous les écouteurs ${brand.name} (${period}) | EarbudsTimeline`,
     description: `Historique complet des écouteurs ${brand.name} : ${models.length} modèles référencés de ${period}. Autonomie, ANC, prix de lancement et évolution génération par génération.`,
+    ...canonicalFor(`/marques/${brand.id}`),
     openGraph: {
       title: `${brand.name} — EarbudsTimeline`,
       description: `${models.length} écouteurs ${brand.name} référencés, de ${period}.`,

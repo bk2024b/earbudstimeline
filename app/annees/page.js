@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getAllEarbuds } from '@/lib/queries';
-import { buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Écouteurs par année — EarbudsTimeline',
   description: "Tous les écouteurs sans fil référencés, classés par année de sortie, de la première à la plus récente.",
+  ...canonicalFor('/annees'),
 };
 
 export default async function AnneesPage() {

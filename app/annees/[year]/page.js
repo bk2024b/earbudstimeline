@@ -4,7 +4,7 @@ import { BatteryCharging, Cpu, Trophy, DollarSign } from 'lucide-react';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { pct } from '@/lib/format';
-import { buildBreadcrumbJsonLd, absoluteUrl, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, absoluteUrl, canonicalFor, JsonLd } from '@/lib/seo';
 import ModelCard from '@/components/ModelCard';
 import StatTile from '@/components/StatTile';
 import { Stat, Footer } from '@/components/UI';
@@ -30,6 +30,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `Écouteurs sortis en ${year} — Tous les modèles (${models.length}) | EarbudsTimeline`,
     description: `Tous les écouteurs sans fil sortis en ${year} : ${models.length} modèles chez ${brandCount} marque${brandCount > 1 ? 's' : ''}. Autonomie moyenne, ANC, prix de lancement et tendances de l'année.`,
+    ...canonicalFor(`/annees/${year}`),
     openGraph: {
       title: `Écouteurs sortis en ${year}`,
       description: `${models.length} modèles référencés, ${brandCount} marque${brandCount > 1 ? 's' : ''}.`,

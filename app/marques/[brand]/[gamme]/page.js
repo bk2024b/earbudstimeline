@@ -9,7 +9,7 @@ import { findRelatedArticles } from '@/lib/relatedArticles';
 import RelatedArticles from '@/components/RelatedArticles';
 import { fmtDate, fmtMoney, yearOf, pct } from '@/lib/format';
 import { slugify } from '@/lib/slug';
-import { buildBreadcrumbJsonLd, JsonLd, absoluteUrl } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, JsonLd, absoluteUrl, canonicalFor } from '@/lib/seo';
 import BrandBadge from '@/components/BrandBadge';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import StatTile from '@/components/StatTile';
@@ -40,6 +40,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `${brand.name} ${gammeName} — Tous les modèles et leur évolution (${period}) | EarbudsTimeline`,
     description: `Chronologie complète de la gamme ${brand.name} ${gammeName} : ${models.length} modèle${models.length > 1 ? 's' : ''} de ${period}, évolution génération par génération, autonomie, ANC et prix.`,
+    ...canonicalFor(`/marques/${params.brand}/${params.gamme}`),
     openGraph: {
       title: `${brand.name} ${gammeName} — EarbudsTimeline`,
       description: `${models.length} modèle${models.length > 1 ? 's' : ''} référencé${models.length > 1 ? 's' : ''}, de ${period}.`,

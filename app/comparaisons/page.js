@@ -3,6 +3,7 @@ import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
 import { buildComparisonSlug } from '@/lib/compareSlug';
 import { yearOf } from '@/lib/format';
+import { canonicalFor } from '@/lib/seo';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import CompareSelectors from '@/components/CompareSelectors';
 import { Footer } from '@/components/UI';
@@ -13,6 +14,7 @@ export const metadata = {
   title: 'Toutes les comparaisons d’écouteurs — EarbudsTimeline',
   description:
     "Comparez des écouteurs sans fil entre générations et entre marques concurrentes : autonomie, ANC, poids, prix et Bluetooth.",
+  ...canonicalFor('/comparaisons'),
 };
 
 export default async function ComparaisonsPage() {

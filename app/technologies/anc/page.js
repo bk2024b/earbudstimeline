@@ -1,5 +1,6 @@
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import TechHubPage from '@/components/TechHubPage';
+import { canonicalFor } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,7 @@ export async function generateMetadata() {
   const models = await getAllEarbuds();
   const count = models.filter((m) => m.anc).length;
   return {
+    ...canonicalFor('/technologies/anc'),
     title: `Écouteurs avec réduction de bruit active (ANC) — ${count} modèles | EarbudsTimeline`,
     description: `Tous les écouteurs sans fil avec ANC référencés sur EarbudsTimeline : ${count} modèles, toutes marques confondues.`,
   };

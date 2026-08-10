@@ -55,10 +55,11 @@ export default function HeroArcTimeline({ models, brands }) {
             className="absolute flex flex-col items-center gap-1.5 group"
             style={{ left: `${leftPct}%`, top: topPx, transform: 'translate(-50%, 8px)', width: 80 }}
           >
-            <span className="font-mono text-[10px] text-dim group-hover:text-accent transition-colors">
+            <span className="sr-only">{m.name}</span>
+            <span aria-hidden="true" className="font-mono text-[10px] text-dim group-hover:text-accent transition-colors">
               {new Date(m.release_date).getFullYear()}
             </span>
-            <span className="w-14 h-14 rounded-xl bg-panel2 border border-line flex items-center justify-center overflow-hidden group-hover:border-accent transition-colors">
+            <span aria-hidden="true" className="w-14 h-14 rounded-xl bg-panel2 border border-line flex items-center justify-center overflow-hidden group-hover:border-accent transition-colors">
               {m.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={m.image_url} alt="" className="w-full h-full object-contain p-1.5" />

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getAllEarbuds } from '@/lib/queries';
 import { getBluetoothVersionList, getCodecList } from '@/lib/tech';
-import { buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Technologies — ANC, Bluetooth, USB-C, codecs | EarbudsTimeline',
   description: 'Tous les écouteurs sans fil classés par technologie : réduction de bruit, USB-C, multipoint, version Bluetooth et codecs audio.',
+  ...canonicalFor('/technologies'),
 };
 
 function Card({ href, title, count }) {

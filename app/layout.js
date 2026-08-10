@@ -1,6 +1,7 @@
 import './globals.css';
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
 import Header from '@/components/Header';
+import { SITE_URL } from '@/lib/seo';
 
 const display = Space_Grotesk({
   subsets: ['latin'],
@@ -19,8 +20,10 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "EarbudsTimeline — l'historique complet des écouteurs sans fil",
   description: "L'historique complet des écouteurs sans fil, marque par marque.",
+  alternates: { canonical: '/' },
   openGraph: {
     title: 'EarbudsTimeline',
     description: "L'historique complet des écouteurs sans fil, marque par marque.",

@@ -6,7 +6,7 @@ import { findRelatedArticles } from '@/lib/relatedArticles';
 import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct } from '@/lib/format';
 import { getComparisonSuggestions } from '@/lib/compare';
 import { slugify } from '@/lib/slug';
-import { buildProductJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
+import { buildProductJsonLd, buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import QuickCompareSelect from '@/components/QuickCompareSelect';
 import ComparisonSuggestions from '@/components/ComparisonSuggestions';
 import RelatedArticles from '@/components/RelatedArticles';
@@ -29,6 +29,7 @@ export async function generateMetadata({ params }) {
   return {
     title,
     description,
+    ...canonicalFor(`/ecouteurs/${m.id}`),
     openGraph: {
       title: `${m.name} — ${brand?.name || m.brand_id}`,
       description: m.tagline,

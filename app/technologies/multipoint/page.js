@@ -1,33 +1,42 @@
+import { notFound } from 'next/navigation';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import TechHubPage from '@/components/TechHubPage';
+import { canonicalFor } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata() {
+export async function generateMetadata({ params }) {
+  const version = params.version;
   const models = await getAllEarbuds();
-  const count = models.filter((m) => m.multipoint).length;
+  const count = models.filter((m) => m.bluetooth === version).length;
+  if (count === 0) return { title: 'Version Bluetooth introuvable — EarbudsTimeline' };
+
   return {
-    title: `Écouteurs multipoint — ${count} modèles | EarbudsTimeline`,
-    description: `Tous les écouteurs sans fil compatibles multipoint référencés sur EarbudsTimeline : ${count} modèles, toutes marques confondues.`,
+    title: `Écouteurs Bluetooth ${version} — ${count} modèles | EarbudsTimeline`,
+    description: `Tous les écouteurs sans fil équipés du Bluetooth ${version} référencés sur EarbudsTimeline : ${count} modèles, toutes marques confondues.`,
+    ...canonicalFor(`/technologies/bluetooth/${version}`),
   };
 }
 
-export default async function MultipointPage() {
+export default async function BluetoothVersionPage({ params }) {
+  const version = params.version;
   const [allModels, brands] = await Promise.all([getAllEarbuds(), getBrands()]);
-  const models = allModels.filter((m) => m.multipoint);
+  const models = allModels.filter((m) => m.bluetooth === version);
+  if (models.length === 0) notFound();
+
   const brandCount = new Set(models.map((m) => m.brand_id)).size;
 
   return (
     <TechHubPage
       eyebrow="Technologie"
-      title="Écouteurs multipoint"
-      intro={`${models.length} écouteurs référencés supportent le multipoint, chez ${brandCount} marque${brandCount > 1 ? 's' : ''}. Le multipoint permet de rester connecté à deux appareils Bluetooth en même temps — un ordinateur et un téléphone, par exemple — et de basculer automatiquement de l'un à l'autre.`}
+      title={`Écouteurs Bluetooth ${version}`}
+      intro={`${models.length} écouteurs référencés utilisent le Bluetooth ${version}, chez ${brandCount} marque${brandCount > 1 ? 's' : ''}. La version Bluetooth influence la portée, la stabilité de la connexion et parfois la consommation énergétique du casque.`}
       models={models}
       brands={brands}
       breadcrumbItems={[
         { name: 'Accueil', url: '/' },
         { name: 'Technologies', url: '/technologies' },
-        { name: 'Multipoint', url: '/technologies/multipoint' },
+        { name: `Bluetooth ${version}`, url: `/technologies/bluetooth/${version}` },
       ]}
     />
   );

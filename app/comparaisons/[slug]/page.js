@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { fmtH, fmtG, fmtMoney, yearOf } from '@/lib/format';
 import { parseComparisonSlug, buildComparisonSlug, isCanonicalSlug } from '@/lib/compareSlug';
-import { buildBreadcrumbJsonLd, absoluteUrl, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, absoluteUrl, canonicalFor, JsonLd } from '@/lib/seo';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import { Footer } from '@/components/UI';
 
@@ -28,6 +28,7 @@ export async function generateMetadata({ params }) {
   return {
     title: `${a.name} vs ${b.name} — Comparatif complet | EarbudsTimeline`,
     description: `${a.name} (${brandName(a.brand_id)}) contre ${b.name} (${brandName(b.brand_id)}) : autonomie, réduction de bruit, poids, prix, USB-C, multipoint et codecs comparés en détail.`,
+    ...canonicalFor(`/comparaisons/${buildComparisonSlug(a.id, b.id)}`),
     openGraph: {
       title: `${a.name} vs ${b.name}`,
       description: `Comparatif complet entre le ${a.name} et le ${b.name}.`,

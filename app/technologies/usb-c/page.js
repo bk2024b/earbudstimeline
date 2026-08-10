@@ -1,5 +1,6 @@
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import TechHubPage from '@/components/TechHubPage';
+import { canonicalFor } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,7 @@ export async function generateMetadata() {
   const models = await getAllEarbuds();
   const count = models.filter((m) => m.usb_c).length;
   return {
+    ...canonicalFor('/technologies/usb-c'),
     title: `Écouteurs avec boîtier USB-C — ${count} modèles | EarbudsTimeline`,
     description: `Tous les écouteurs sans fil dont le boîtier de charge est en USB-C : ${count} modèles référencés sur EarbudsTimeline.`,
   };
