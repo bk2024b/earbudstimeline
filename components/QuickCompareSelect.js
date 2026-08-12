@@ -1,8 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
-export default function QuickCompareSelect({ currentId, brands, allModels }) {
+export default function QuickCompareSelect({ currentId, brands, allModels, placeholder = '...' }) {
   const router = useRouter();
 
   return (
@@ -13,7 +13,7 @@ export default function QuickCompareSelect({ currentId, brands, allModels }) {
       }}
       className="bg-panel2 border border-line rounded-lg px-3 py-2 text-[13.5px] max-w-[240px]"
     >
-      <option value="">Choisir un modèle...</option>
+      <option value="">{placeholder}</option>
       {brands.map((b) => (
         <optgroup key={b.id} label={b.name}>
           {allModels

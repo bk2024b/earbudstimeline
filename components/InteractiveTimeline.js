@@ -1,12 +1,15 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import BrandBadge from './BrandBadge';
 
 const BT_OPTIONS = ['5.3', '5.2', '5.1', '5.0'];
 
 export default function InteractiveTimeline({ models, brands, initialAnc = 'all', initialBt = 'all' }) {
+  const t = useTranslations('timeline');
+  const tc = useTranslations('common');
   const [brandFilter, setBrandFilter] = useState('all');
   const [ancFilter, setAncFilter] = useState(initialAnc);
   const [minBt, setMinBt] = useState(initialBt);
@@ -52,10 +55,8 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
   return (
     <div className="bg-panel border border-line rounded-2xl p-5 mb-12">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
-        <h2 className="text-[15px] m-0">Timeline interactive</h2>
-        <p className="m-0 text-dim text-xs">
-          {filtered.length} résultat{filtered.length > 1 ? 's' : ''}
-        </p>
+        <h2 className="text-[15px] m-0">{t('interactive')}</h2>
+        <p className="m-0 text-dim text-xs">{t('results', { count: filtered.length })}</p>
       </div>
 
       <div className="flex gap-1.5 flex-wrap mb-4">
@@ -66,7 +67,7 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
             brandFilter === 'all' ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-white'
           }`}
         >
-          Tous
+          {t('all')}
         </button>
         {brands.map((b) => (
           <button
@@ -86,35 +87,35 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
 
       <div className="bg-panel2 border border-line rounded-xl p-4 mb-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="m-0 text-xs text-dim uppercase tracking-[0.08em]">Filtres avancés</p>
+          <p className="m-0 text-xs text-dim uppercase tracking-[0.08em]">{t('advancedFilters')}</p>
           {filtersActive && (
             <button type="button" onClick={resetFilters} className="text-xs text-accent hover:underline">
-              Réinitialiser
+              {t('reset')}
             </button>
           )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 items-end">
           <label className="flex flex-col gap-1.5 text-xs">
-            <span className="text-dim">Réduction de bruit</span>
+            <span className="text-dim">{t('ancFilter')}</span>
             <select
               value={ancFilter}
               onChange={(e) => setAncFilter(e.target.value)}
               className="bg-panel border border-line rounded-lg px-2.5 py-2 text-[13px]"
             >
-              <option value="all">Toutes</option>
-              <option value="yes">Avec ANC</option>
-              <option value="no">Sans ANC</option>
+              <option value="all">{t('ancAll')}</option>
+              <option value="yes">{t('ancWith')}</option>
+              <option value="no">{t('ancWithout')}</option>
             </select>
           </label>
 
           <label className="flex flex-col gap-1.5 text-xs">
-            <span className="text-dim">Bluetooth minimum</span>
+            <span className="text-dim">{t('minBluetooth')}</span>
             <select
               value={minBt}
               onChange={(e) => setMinBt(e.target.value)}
               className="bg-panel border border-line rounded-lg px-2.5 py-2 text-[13px]"
             >
-              <option value="all">Toutes versions</option>
+              <option value="all">{t('allVersions')}</option>
               {BT_OPTIONS.map((v) => (
                 <option key={v} value={v}>
                   {v}+
@@ -125,7 +126,7 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
 
           <label className="flex flex-col gap-1.5 text-xs">
             <span className="text-dim">
-              Prix max : <span className="font-mono text-white">{maxPrice} $</span>
+              {t('maxPrice')} : <span className="font-mono text-white">{maxPrice} $</span>
             </span>
             <input
               type="range"
@@ -140,7 +141,7 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
       </div>
 
       {rows.length === 0 ? (
-        <p className="text-dim text-sm py-8 text-center">Aucun écouteur ne correspond à ces filtres.</p>
+        <p className="text-dim text-sm py-8 text-center">{t('noResults')}</p>
       ) : (
         <div className="overflow-x-auto">
           <div style={{ minWidth: Math.max(600, years.length * 90) }}>
@@ -159,7 +160,7 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
           </div>
         </div>
       )}
-      <p className="text-dim text-[11px] mt-3">Cliquez sur un modèle pour voir sa fiche.</p>
+      <p className="text-dim text-[11px] mt-3">{t('clickHint')}</p>
     </div>
   );
 }
@@ -185,9 +186,12 @@ function RowCells({ brand, items, years }) {
               key={m.id}
               href={`/ecouteurs/${m.id}`}
               title={m.name}
+              aria-label={m.name}
               className="w-2.5 h-2.5 rounded-full shrink-0 transition-transform hover:scale-150"
               style={{ background: brand.color }}
-            />
+            >
+              <span className="sr-only">{m.name}</span>
+            </Link>
           ))}
         </div>
       ))}

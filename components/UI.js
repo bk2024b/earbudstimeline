@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { getBrands, getAllEarbuds } from '@/lib/queries';
 
 export function Stat({ value, label }) {
@@ -10,8 +11,12 @@ export function Stat({ value, label }) {
   );
 }
 
-export async function Footer() {
-  const [brands, models] = await Promise.all([getBrands(), getAllEarbuds()]);
+export async function Footer({ locale }) {
+  const [brands, models, t] = await Promise.all([
+    getBrands(),
+    getAllEarbuds(),
+    getTranslations({ locale, namespace: 'footer' }),
+  ]);
   const topBrands = [...brands]
     .map((b) => ({ ...b, count: models.filter((m) => m.brand_id === b.id).length }))
     .sort((a, b) => b.count - a.count)
@@ -20,15 +25,15 @@ export async function Footer() {
   return (
     <footer className="pt-10 border-t border-line mt-8">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8 text-xs">
-        <FooterCol title="Explorer">
-          <FooterLink href="/#marques">Toutes les marques</FooterLink>
-          <FooterLink href="/annees">Par année</FooterLink>
-          <FooterLink href="/technologies">Par technologie</FooterLink>
-          <FooterLink href="/comparaisons">Comparaisons</FooterLink>
+        <FooterCol title={t('explore')}>
+          <FooterLink href="/#marques">{t('allBrands')}</FooterLink>
+          <FooterLink href="/annees">{t('byYear')}</FooterLink>
+          <FooterLink href="/technologies">{t('byTechnology')}</FooterLink>
+          <FooterLink href="/comparaisons">{t('allComparisons')}</FooterLink>
           <FooterLink href="/blog">Blog</FooterLink>
         </FooterCol>
 
-        <FooterCol title="Marques">
+        <FooterCol title={t('brands')}>
           {topBrands.map((b) => (
             <FooterLink key={b.id} href={`/marques/${b.id}`}>
               {b.name}
@@ -36,21 +41,19 @@ export async function Footer() {
           ))}
         </FooterCol>
 
-        <FooterCol title="Technologies">
-          <FooterLink href="/technologies/anc">Réduction de bruit (ANC)</FooterLink>
-          <FooterLink href="/technologies/usb-c">USB-C</FooterLink>
-          <FooterLink href="/technologies/multipoint">Multipoint</FooterLink>
+        <FooterCol title={t('technologies')}>
+          <FooterLink href="/technologies/anc">{t('anc')}</FooterLink>
+          <FooterLink href="/technologies/usb-c">{t('usbC')}</FooterLink>
+          <FooterLink href="/technologies/multipoint">{t('multipoint')}</FooterLink>
         </FooterCol>
 
-        <FooterCol title="Outils">
-          <FooterLink href="/comparer">Comparateur</FooterLink>
-          <FooterLink href="/comparaisons">Toutes les comparaisons</FooterLink>
+        <FooterCol title={t('tools')}>
+          <FooterLink href="/comparer">{t('comparator')}</FooterLink>
+          <FooterLink href="/comparaisons">{t('allComparisons')}</FooterLink>
         </FooterCol>
       </div>
 
-      <p className="text-dim text-xs text-center pt-5 border-t border-line">
-        © 2026 EarbudsTimeline — dans la continuité de PhoneTimeline
-      </p>
+      <p className="text-dim text-xs text-center pt-5 border-t border-line">{t('copyright')}</p>
     </footer>
   );
 }

@@ -1,14 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { EVOLUTION_METRICS, computeYearlySeries } from '@/lib/evolution';
-
-const TABS = [
-  { id: 'autonomie', label: 'Autonomie' },
-  { id: 'poids', label: 'Poids' },
-  { id: 'bluetooth', label: 'Bluetooth' },
-  { id: 'prix', label: 'Prix' },
-];
 
 const W = 460;
 const H = 200;
@@ -18,8 +12,17 @@ const PAD_T = 16;
 const PAD_B = 26;
 
 export default function EvolutionChart({ models }) {
+  const t = useTranslations('evolution');
   const [tab, setTab] = useState('autonomie');
   const metric = EVOLUTION_METRICS[tab];
+
+  const TABS = [
+    { id: 'autonomie', label: t('battery') },
+    { id: 'poids', label: t('weight') },
+    { id: 'bluetooth', label: t('bluetooth') },
+    { id: 'prix', label: t('price') },
+  ];
+  const metricLabel = TABS.find((x) => x.id === tab)?.label || '';
 
   const series = useMemo(
     () => computeYearlySeries(models, metric.key, { onlyPresent: metric.onlyPresent, parse: metric.parse }),
@@ -29,8 +32,8 @@ export default function EvolutionChart({ models }) {
   if (series.length < 2) {
     return (
       <div className="bg-panel border border-line rounded-2xl p-5">
-        <h2 className="text-[15px] m-0 mb-1">Graphiques d&apos;évolution</h2>
-        <p className="text-dim text-xs">Pas assez de données pour tracer une évolution.</p>
+        <h2 className="text-[15px] m-0 mb-1">{t('title')}</h2>
+        <p className="text-dim text-xs">{t('notEnough')}</p>
       </div>
     );
   }
@@ -51,25 +54,25 @@ export default function EvolutionChart({ models }) {
 
   return (
     <div className="bg-panel border border-line rounded-2xl p-5">
-      <h2 className="text-[15px] m-0 mb-3.5">Graphiques d&apos;évolution</h2>
+      <h2 className="text-[15px] m-0 mb-3.5">{t('title')}</h2>
 
       <div className="flex gap-1.5 mb-4 flex-wrap">
-        {TABS.map((t) => (
+        {TABS.map((tab_) => (
           <button
-            key={t.id}
+            key={tab_.id}
             type="button"
-            onClick={() => setTab(t.id)}
+            onClick={() => setTab(tab_.id)}
             className={`px-2.5 py-1.5 rounded-md text-xs font-medium border ${
-              tab === t.id ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-white'
+              tab === tab_.id ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-white'
             }`}
           >
-            {t.label}
+            {tab_.label}
           </button>
         ))}
       </div>
 
       <p className="text-dim text-[11px] mb-2">
-        {metric.label} {metric.unit && `(${metric.unit})`}
+        {metricLabel} {metric.unit && `(${metric.unit})`}
       </p>
 
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto overflow-visible">
@@ -106,9 +109,7 @@ export default function EvolutionChart({ models }) {
         ))}
       </svg>
 
-      <p className="text-dim text-[11px] mt-1">
-        Évolution {metric.label.toLowerCase()} des écouteurs au fil du temps.
-      </p>
+      <p className="text-dim text-[11px] mt-1">{t('trendSuffix', { metric: metricLabel.toLowerCase() })}</p>
     </div>
   );
 }

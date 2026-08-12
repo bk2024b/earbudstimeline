@@ -1,7 +1,10 @@
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { yearOf } from '@/lib/format';
 
-export default function TimelinePosition({ prev, current, next, gammeName }) {
+export default async function TimelinePosition({ prev, current, next, gammeName, locale }) {
+  const t = await getTranslations({ locale, namespace: 'timelinePosition' });
+
   const items = [
     prev && { m: prev, state: 'prev' },
     { m: current, state: 'current' },
@@ -10,7 +13,7 @@ export default function TimelinePosition({ prev, current, next, gammeName }) {
 
   return (
     <div className="bg-panel border border-line rounded-2xl p-5">
-      <h2 className="text-sm font-semibold mb-1">Position dans la gamme</h2>
+      <h2 className="text-sm font-semibold mb-1">{t('title')}</h2>
       <p className="text-dim text-xs mb-5">{gammeName}</p>
       <div className="flex flex-col">
         {items.map((item, i) => {
@@ -29,8 +32,8 @@ export default function TimelinePosition({ prev, current, next, gammeName }) {
               <div className={isLast ? 'pb-0' : 'pb-6'}>
                 <div className={`font-mono text-[11px] mb-0.5 ${isCurrent ? 'text-accent' : 'text-dim'}`}>
                   {yearOf(item.m.release_date)}
-                  {item.state === 'prev' && ' · précédent'}
-                  {item.state === 'next' && ' · suivant'}
+                  {item.state === 'prev' && ` · ${t('prev')}`}
+                  {item.state === 'next' && ` · ${t('next')}`}
                 </div>
                 <div className={`text-sm leading-snug ${isCurrent ? 'font-semibold text-white' : 'text-dim'}`}>
                   {item.m.name}

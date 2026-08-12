@@ -1,8 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 
 export default function CompareSelectors({ brands, models, a, b }) {
+  const t = useTranslations('comparer');
   const router = useRouter();
 
   function update(key, value) {
@@ -34,7 +36,7 @@ export default function CompareSelectors({ brands, models, a, b }) {
         onChange={(e) => update('a', e.target.value)}
         className="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-[13.5px]"
       >
-        <option value="">Écouteur A...</option>
+        <option value="">{t('optionA')}</option>
         <Options />
       </select>
       <select
@@ -42,7 +44,7 @@ export default function CompareSelectors({ brands, models, a, b }) {
         onChange={(e) => update('b', e.target.value)}
         className="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-[13.5px]"
       >
-        <option value="">Écouteur B...</option>
+        <option value="">{t('optionB')}</option>
         <Options />
       </select>
     </div>

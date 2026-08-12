@@ -1,10 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/navigation';
 
 export default function SearchBar({ models, brands }) {
+  const t = useTranslations('searchBar');
   const [q, setQ] = useState('');
   const router = useRouter();
   const brandName = (id) => brands.find((b) => b.id === id)?.name || id;
@@ -30,12 +31,12 @@ export default function SearchBar({ models, brands }) {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Rechercher un écouteur, une marque..."
+          placeholder={t('placeholder')}
           className="flex-1 bg-transparent outline-none text-sm placeholder:text-dim"
         />
         <button
           type="submit"
-          aria-label="Rechercher"
+          aria-label={t('ariaLabel')}
           className="bg-accent text-ink rounded-full w-8 h-8 flex items-center justify-center shrink-0 hover:opacity-90 transition-opacity"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">

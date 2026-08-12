@@ -1,16 +1,19 @@
+import { getTranslations } from 'next-intl/server';
 import { ShieldCheck, Zap, Search, Heart } from 'lucide-react';
 
-const ITEMS = [
-  { icon: ShieldCheck, title: 'Données fiables', desc: 'Fiches vérifiées, structurées par modèle et par génération.' },
-  { icon: Zap, title: 'Toujours à jour', desc: 'Nouveaux modèles et corrections ajoutés en continu.' },
-  { icon: Search, title: 'Recherche avancée', desc: 'Filtrez par marque, ANC, Bluetooth et prix.' },
-  { icon: Heart, title: '100% indépendant', desc: "Aucune marque ne finance ce site. Juste la passion de l'audio." },
-];
+export default async function TrustBar({ locale }) {
+  const t = await getTranslations({ locale, namespace: 'trust' });
 
-export default function TrustBar() {
+  const items = [
+    { icon: ShieldCheck, title: t('reliableTitle'), desc: t('reliableDesc') },
+    { icon: Zap, title: t('freshTitle'), desc: t('freshDesc') },
+    { icon: Search, title: t('searchTitle'), desc: t('searchDesc') },
+    { icon: Heart, title: t('independentTitle'), desc: t('independentDesc') },
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-      {ITEMS.map(({ icon: Icon, title, desc }) => (
+      {items.map(({ icon: Icon, title, desc }) => (
         <div key={title} className="flex items-start gap-3">
           <span className="w-9 h-9 rounded-lg bg-accent/15 text-accent flex items-center justify-center shrink-0">
             <Icon size={17} />

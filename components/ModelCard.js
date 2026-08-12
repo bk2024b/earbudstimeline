@@ -1,8 +1,11 @@
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { yearOf, fmtH, fmtG } from '@/lib/format';
 import EarbudsIcon from './EarbudsIcon';
 
-export default function ModelCard({ m, color }) {
+export default async function ModelCard({ m, color, locale }) {
+  const t = await getTranslations({ locale, namespace: 'modelCard' });
+
   return (
     <Link
       href={`/ecouteurs/${m.id}`}
@@ -31,10 +34,10 @@ export default function ModelCard({ m, color }) {
       </div>
       <div className="flex gap-3 font-mono text-[11px] text-dim flex-wrap">
         <span>
-          Boîtier <b className="text-white font-semibold">{fmtH(m.battery_case_h)}</b>
+          {t('case')} <b className="text-white font-semibold">{fmtH(m.battery_case_h)}</b>
         </span>
         <span>
-          Poids <b className="text-white font-semibold">{fmtG(m.weight_g)}</b>
+          {t('weight')} <b className="text-white font-semibold">{fmtG(m.weight_g)}</b>
         </span>
       </div>
     </Link>
