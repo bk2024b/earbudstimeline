@@ -4,11 +4,29 @@ import { useState } from 'react';
 import FormField from './FormField';
 import RichTextEditor from './RichTextEditor';
 
-export default function ArticleForm({ action, defaults = {}, lockId = false, submitLabel = 'Enregistrer' }) {
+export default function ArticleForm({ action, defaults = {}, sourceArticle = null, lockId = false, submitLabel = 'Enregistrer' }) {
   const [status, setStatus] = useState(defaults.status || 'draft');
+  const locale = defaults.locale || (sourceArticle ? 'en' : 'fr');
 
   return (
     <form action={action} encType="multipart/form-data" className="max-w-3xl flex flex-col gap-4">
+      {sourceArticle && (
+        <div className="bg-panel2 border border-line rounded-xl p-4 mb-2">
+          <p className="text-xs text-accent uppercase tracking-[0.08em] mb-2">
+            Traduction de l&apos;article français « {sourceArticle.title} »
+          </p>
+          <p className="text-xs text-dim mb-1">
+            <b className="text-white">Titre FR :</b> {sourceArticle.title}
+          </p>
+          <p className="text-xs text-dim">
+            <b className="text-white">Extrait FR :</b> {sourceArticle.excerpt}
+          </p>
+        </div>
+      )}
+
+      <input type="hidden" name="locale" value={locale} />
+      {sourceArticle && <input type="hidden" name="translation_of" value={sourceArticle.id} />}
+
       {!lockId && (
         <FormField
           label="Identifiant (slug, optionnel)"

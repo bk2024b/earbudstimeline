@@ -17,6 +17,7 @@ function parseEarbudForm(formData) {
     gamme: formData.get('gamme')?.toString().trim() || '',
     name: formData.get('name')?.toString().trim() || '',
     tagline: formData.get('tagline')?.toString().trim() || '',
+    tagline_en: formData.get('tagline_en')?.toString().trim() || null,
     release_date: formData.get('release_date')?.toString() || '',
     price: num('price'),
     marquant: formData.get('marquant') === 'on',

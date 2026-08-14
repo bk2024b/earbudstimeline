@@ -43,8 +43,13 @@ export async function createArticle(formData) {
   }
 
   const supabase = getSupabaseAdmin();
+  const locale = formData.get('locale')?.toString() === 'en' ? 'en' : 'fr';
+  const translation_of = formData.get('translation_of')?.toString().trim() || null;
+
   const { error } = await supabase.from('articles').insert({
     id,
+    locale,
+    translation_of,
     ...data,
     cover_image_url,
     reading_minutes: computeReadingMinutes(data.content_html),

@@ -27,7 +27,7 @@ function fmtPublished(iso, locale) {
 export default async function BlogPage({ params }) {
   const { locale } = params;
   const [articles, t, tc] = await Promise.all([
-    getPublishedArticles(),
+    getPublishedArticles(locale),
     getTranslations({ locale, namespace: 'blog' }),
     getTranslations({ locale, namespace: 'common' }),
   ]);

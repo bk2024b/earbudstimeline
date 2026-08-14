@@ -85,7 +85,7 @@ export default async function AnneePage({ params }) {
           { name: homeLabel, url: '/' },
           { name: locale === 'en' ? 'Years' : 'Années', url: '/annees' },
           { name: String(year), url: `/annees/${year}` },
-        ])}
+        ], locale)}
       />
       <JsonLd
         data={{
@@ -95,7 +95,7 @@ export default async function AnneePage({ params }) {
           itemListElement: models.map((m, i) => ({
             '@type': 'ListItem',
             position: i + 1,
-            url: absoluteUrl(`/ecouteurs/${m.id}`),
+            url: absoluteUrl(`/ecouteurs/${m.id}`, locale),
             name: m.name,
           })),
         }}

@@ -14,7 +14,7 @@ export default async function TechHubPage({ eyebrow, title, intro, models, brand
 
   return (
     <>
-      <JsonLd data={buildBreadcrumbJsonLd(breadcrumbItems)} />
+      <JsonLd data={buildBreadcrumbJsonLd(breadcrumbItems, locale)} />
       <JsonLd
         data={{
           '@context': 'https://schema.org',
@@ -23,7 +23,7 @@ export default async function TechHubPage({ eyebrow, title, intro, models, brand
           itemListElement: sorted.map((m, i) => ({
             '@type': 'ListItem',
             position: i + 1,
-            url: absoluteUrl(`/ecouteurs/${m.id}`),
+            url: absoluteUrl(`/ecouteurs/${m.id}`, locale),
             name: m.name,
           })),
         }}

@@ -66,7 +66,7 @@ export default async function GammePage({ params }) {
   if (!brand || models.length === 0) notFound();
 
   const [articles, t, tDiff] = await Promise.all([
-    getPublishedArticles(),
+    getPublishedArticles(locale),
     getTranslations({ locale, namespace: 'gammePage' }),
     getTranslations({ locale, namespace: 'diff' }),
   ]);
@@ -89,7 +89,7 @@ export default async function GammePage({ params }) {
           { name: homeLabel, url: '/' },
           { name: brand.name, url: `/marques/${brand.id}` },
           { name: gammeName, url: `/marques/${brand.id}/${gammeSlug}` },
-        ])}
+        ], locale)}
       />
       <JsonLd
         data={{
@@ -99,7 +99,7 @@ export default async function GammePage({ params }) {
           itemListElement: models.map((m, i) => ({
             '@type': 'ListItem',
             position: i + 1,
-            url: absoluteUrl(`/ecouteurs/${m.id}`),
+            url: absoluteUrl(`/ecouteurs/${m.id}`, locale),
             name: m.name,
           })),
         }}

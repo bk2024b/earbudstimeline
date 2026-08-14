@@ -22,7 +22,7 @@ export default async function ImportCsvPage() {
 
       <p className="text-sm text-dim mb-6 max-w-2xl">
         Colonnes attendues : <code>id</code> (optionnel), <code>brand_id</code>, <code>gamme</code>, <code>name</code>,{' '}
-        <code>tagline</code>, <code>release_date</code> (AAAA-MM-JJ), <code>price</code>, <code>marquant</code>,{' '}
+        <code>tagline</code>, <code>tagline_en</code> (optionnel), <code>release_date</code> (AAAA-MM-JJ), <code>price</code>, <code>marquant</code>,{' '}
         <code>anc</code>, <code>battery_bud_h</code>, <code>battery_case_h</code>, <code>weight_g</code>,{' '}
         <code>water_rating</code>, <code>chip</code>, <code>bluetooth</code>, <code>usb_c</code>,{' '}
         <code>multipoint</code>, <code>codec</code> (ces 3 derniers optionnels). Marques disponibles :{' '}

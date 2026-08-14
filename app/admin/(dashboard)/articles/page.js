@@ -9,8 +9,12 @@ export default async function ArticlesListPage() {
   const supabase = getSupabaseAdmin();
   const { data: articles } = await supabase
     .from('articles')
-    .select('id, title, status, reading_minutes, published_at, created_at')
+    .select('id, locale, translation_of, title, status, reading_minutes, published_at, created_at')
     .order('created_at', { ascending: false });
+
+  const byId = new Map((articles || []).map((a) => [a.id, a]));
+  const hasTranslation = (a) =>
+    a.locale === 'en' ? Boolean(a.translation_of) : (articles || []).some((x) => x.translation_of === a.id);
 
   return (
     <>
@@ -25,8 +29,11 @@ export default async function ArticlesListPage() {
         {(articles || []).map((a) => (
           <div key={a.id} className="flex items-center justify-between gap-3 bg-panel border border-line rounded-xl px-4 py-3">
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium truncate">{a.title}</span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full shrink-0 bg-panel2 text-dim font-mono uppercase">
+                  {a.locale}
+                </span>
                 <span
                   className={`text-[11px] px-2 py-0.5 rounded-full shrink-0 ${
                     a.status === 'published' ? 'bg-emerald-400/15 text-emerald-400' : 'bg-amber/15 text-amber'
@@ -34,12 +41,25 @@ export default async function ArticlesListPage() {
                 >
                   {a.status === 'published' ? 'Publié' : 'Brouillon'}
                 </span>
+                {a.locale === 'en' && a.translation_of && byId.get(a.translation_of) && (
+                  <span className="text-[11px] text-dim shrink-0">
+                    ↳ traduction de « {byId.get(a.translation_of).title} »
+                  </span>
+                )}
               </div>
               <p className="text-xs text-dim mt-0.5">
                 {a.reading_minutes} min de lecture · {a.id}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              {a.locale === 'fr' && !hasTranslation(a) && (
+                <Link
+                  href={`/admin/articles/new?translationOf=${a.id}`}
+                  className="text-xs text-accent hover:underline px-2 py-1"
+                >
+                  Traduire →
+                </Link>
+              )}
               <Link href={`/admin/articles/${a.id}`} className="text-xs text-dim hover:text-accent px-2 py-1">
                 Modifier
               </Link>

@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import sanitizeHtml from 'sanitize-html';
-import { getArticleBySlug, getBrands } from '@/lib/queries';
-import { buildArticleJsonLd, buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
+import { getArticleBySlug, getArticleTranslation, getBrands } from '@/lib/queries';
+import { buildArticleJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 
 function fmtPublished(iso, locale) {
   if (!iso) return '';
@@ -18,10 +18,14 @@ export async function generateMetadata({ params }) {
   const { locale, slug } = params;
   try {
     const article = await getArticleBySlug(slug);
+    const translation = await getArticleTranslation(article).catch(() => null);
+    const languages = { [locale]: `/${locale}/blog/${article.id}` };
+    if (translation) languages[translation.locale] = `/${translation.locale}/blog/${translation.id}`;
+
     return {
       title: `${article.title} — EarbudsTimeline`,
       description: article.excerpt,
-      ...canonicalFor(`/${locale}/blog/${article.id}`),
+      alternates: { canonical: `/${locale}/blog/${article.id}`, languages },
       openGraph: {
         title: article.title,
         description: article.excerpt,
@@ -65,21 +69,33 @@ export default async function ArticlePage({ params }) {
     // pas bloquant : la page s'affiche sans le lien "Tous les X" si ça échoue
   }
 
+  const translation = await getArticleTranslation(article).catch(() => null);
+  const langNames = { en: 'English', fr: 'Français' };
+
   const homeLabel = locale === 'en' ? 'Home' : 'Accueil';
 
   return (
     <article>
-      <JsonLd data={buildArticleJsonLd(article)} />
+      <JsonLd data={buildArticleJsonLd(article, locale)} />
       <JsonLd
         data={buildBreadcrumbJsonLd([
           { name: homeLabel, url: '/' },
           { name: 'Blog', url: '/blog' },
           { name: article.title, url: `/blog/${article.id}` },
-        ])}
+        ], locale)}
       />
       <Link href="/blog" className="text-xs text-dim hover:text-accent">
         {t('backToBlog')}
       </Link>
+      {translation && (
+        <Link
+          href={`/blog/${translation.id}`}
+          locale={translation.locale}
+          className="ml-3 text-xs text-accent hover:underline"
+        >
+          {t('availableIn', { lang: langNames[translation.locale] })}
+        </Link>
+      )}
 
       <h1 className="font-display font-bold text-3xl sm:text-4xl mt-4 mb-2">{article.title}</h1>
       <p className="text-dim text-sm mb-6">

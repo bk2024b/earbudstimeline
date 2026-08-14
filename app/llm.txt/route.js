@@ -1,4 +1,4 @@
-import { getAllEarbuds, getBrands, getPublishedArticles } from '@/lib/queries';
+import { getAllEarbuds, getBrands, getAllPublishedArticles } from '@/lib/queries';
 import { SITE_URL } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -7,7 +7,7 @@ export async function GET() {
   const [models, brands, articles] = await Promise.all([
     getAllEarbuds(),
     getBrands(),
-    getPublishedArticles(),
+    getAllPublishedArticles(),
   ]);
 
   const years = models.map((m) => Number(m.release_date.slice(0, 4)));

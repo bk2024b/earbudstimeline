@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { Battery, BatteryFull, Droplet, Bluetooth } from 'lucide-react';
 import { getEarbudBySlug, getGammeModels, getBrands, getAllEarbuds, getPublishedArticles } from '@/lib/queries';
 import { findRelatedArticles } from '@/lib/relatedArticles';
-import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct } from '@/lib/format';
+import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct, displayTagline } from '@/lib/format';
 import { getComparisonSuggestions, buildDiffBullets } from '@/lib/compare';
 import { slugify } from '@/lib/slug';
 import { buildProductJsonLd, buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
@@ -25,6 +25,7 @@ export async function generateMetadata({ params }) {
   const brands = await getBrands();
   const brand = brands.find((b) => b.id === m.brand_id);
   const year = new Date(m.release_date).getFullYear();
+  const tagline = displayTagline(m, locale);
 
   const title =
     locale === 'en'
@@ -32,8 +33,8 @@ export async function generateMetadata({ params }) {
       : `${m.name} — Fiche complète, specs et comparaisons | EarbudsTimeline`;
   const description =
     locale === 'en'
-      ? `${m.name} (${brand?.name || m.brand_id}, ${year}): ${m.tagline} Battery life, ANC, Bluetooth, launch price and comparisons.`
-      : `${m.name} (${brand?.name || m.brand_id}, ${year}) : ${m.tagline} Autonomie, ANC, Bluetooth, prix au lancement et comparaisons.`;
+      ? `${m.name} (${brand?.name || m.brand_id}, ${year}): ${tagline} Battery life, ANC, Bluetooth, launch price and comparisons.`
+      : `${m.name} (${brand?.name || m.brand_id}, ${year}) : ${tagline} Autonomie, ANC, Bluetooth, prix au lancement et comparaisons.`;
 
   return {
     title,
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }) {
     ...canonicalFor(`/${locale}/ecouteurs/${m.id}`),
     openGraph: {
       title: `${m.name} — ${brand?.name || m.brand_id}`,
-      description: m.tagline,
+      description: tagline,
       images: m.image_url ? [m.image_url] : undefined,
     },
   };
@@ -56,7 +57,7 @@ export default async function ModelPage({ params }) {
     getGammeModels(m.brand_id, m.gamme),
     getBrands(),
     getAllEarbuds(),
-    getPublishedArticles(),
+    getPublishedArticles(locale),
     getTranslations({ locale, namespace: 'product' }),
     getTranslations({ locale, namespace: 'common' }),
     getTranslations({ locale, namespace: 'comparisonSuggestions' }),
@@ -106,13 +107,13 @@ export default async function ModelPage({ params }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
-      <JsonLd data={buildProductJsonLd(m, brand)} />
+      <JsonLd data={buildProductJsonLd(m, brand, locale)} />
       <JsonLd
         data={buildBreadcrumbJsonLd([
           { name: homeLabel, url: '/' },
           { name: brand?.name || m.brand_id, url: `/marques/${m.brand_id}` },
           { name: m.name, url: `/ecouteurs/${m.id}` },
-        ])}
+        ], locale)}
       />
       <div>
         <Link
@@ -136,7 +137,7 @@ export default async function ModelPage({ params }) {
               {brand?.name || m.brand_id} · {m.gamme}
             </div>
             <h1 className="font-display font-bold text-[clamp(24px,3.4vw,34px)] mb-2 leading-tight">{m.name}</h1>
-            <p className="text-accent text-[15px] mb-5">{m.tagline}</p>
+            <p className="text-accent text-[15px] mb-5">{displayTagline(m, locale)}</p>
             <div className="flex gap-2 flex-wrap">
               <Badge>{fmtDate(m.release_date, locale)}</Badge>
               {m.marquant && <Badge gold>{t('notableModel')}</Badge>}

@@ -66,7 +66,7 @@ export default async function BrandPage({ params }) {
         data={buildBreadcrumbJsonLd([
           { name: homeLabel, url: '/' },
           { name: brand.name, url: `/marques/${brand.id}` },
-        ])}
+        ], locale)}
       />
       <Link href="/" className="inline-flex items-center gap-1.5 text-dim text-[13px] mb-6 hover:text-accent">
         {t('allBrandsBack')}

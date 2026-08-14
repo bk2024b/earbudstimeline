@@ -24,7 +24,7 @@ export default async function HomePage({ params, searchParams }) {
   const [models, brands, articles, t] = await Promise.all([
     getAllEarbuds(),
     getBrands(),
-    getPublishedArticles(),
+    getPublishedArticles(locale),
     getTranslations({ locale, namespace: 'home' }),
   ]);
 

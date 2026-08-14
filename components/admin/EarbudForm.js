@@ -73,11 +73,18 @@ export default function EarbudForm({ action, brands, defaults = {}, lockId = fal
         </p>
       </div>
       <FormField
-        label="Accroche"
+        label="Accroche (français)"
         name="tagline"
         placeholder="Une phrase courte"
         defaultValue={defaults.tagline}
         required
+      />
+      <FormField
+        label="Accroche (anglais)"
+        name="tagline_en"
+        placeholder="A short tagline"
+        defaultValue={defaults.tagline_en}
+        hint="Optionnel — tant qu'elle est vide, la version anglaise du site affiche l'accroche française."
       />
 
       <div className="grid grid-cols-2 gap-4">

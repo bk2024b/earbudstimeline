@@ -214,7 +214,8 @@
     "exploreByTech": "Explore by technology →",
     "seeComparisons": "See comparisons →",
     "featured": "Featured articles",
-    "seeAllArticles": "See all articles →"
+    "seeAllArticles": "See all articles →",
+    "availableIn": "Available in {lang} →"
   },
   "related": {
     "articles": "Related articles"

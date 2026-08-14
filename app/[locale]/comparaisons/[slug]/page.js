@@ -68,7 +68,7 @@ export default async function ComparisonPage({ params }) {
           { name: homeLabel, url: '/' },
           { name: locale === 'en' ? 'Comparisons' : 'Comparaisons', url: '/comparaisons' },
           { name: `${a.name} vs ${b.name}`, url: `/comparaisons/${slug}` },
-        ])}
+        ], locale)}
       />
       <JsonLd
         data={{
@@ -76,8 +76,8 @@ export default async function ComparisonPage({ params }) {
           '@type': 'ItemList',
           name: `${a.name} vs ${b.name}`,
           itemListElement: [
-            { '@type': 'ListItem', position: 1, url: absoluteUrl(`/ecouteurs/${a.id}`), name: a.name },
-            { '@type': 'ListItem', position: 2, url: absoluteUrl(`/ecouteurs/${b.id}`), name: b.name },
+            { '@type': 'ListItem', position: 1, url: absoluteUrl(`/ecouteurs/${a.id}`, locale), name: a.name },
+            { '@type': 'ListItem', position: 2, url: absoluteUrl(`/ecouteurs/${b.id}`, locale), name: b.name },
           ],
         }}
       />

@@ -38,7 +38,7 @@ export default async function AnneesPage({ params }) {
         data={buildBreadcrumbJsonLd([
           { name: homeLabel, url: '/' },
           { name: t('title'), url: '/annees' },
-        ])}
+        ], locale)}
       />
 
       <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{t('title')}</div>

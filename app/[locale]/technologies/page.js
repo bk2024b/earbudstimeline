@@ -50,7 +50,7 @@ export default async function TechnologiesPage({ params }) {
         data={buildBreadcrumbJsonLd([
           { name: homeLabel, url: '/' },
           { name: t('hubTitle'), url: '/technologies' },
-        ])}
+        ], locale)}
       />
 
       <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{t('hubTitle')}</div>
