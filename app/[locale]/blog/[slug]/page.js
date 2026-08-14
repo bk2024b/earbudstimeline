@@ -5,6 +5,8 @@ import sanitizeHtml from 'sanitize-html';
 import { getArticleBySlug, getArticleTranslation, getBrands } from '@/lib/queries';
 import { buildArticleJsonLd, buildBreadcrumbJsonLd, JsonLd } from '@/lib/seo';
 
+export const dynamic = 'force-dynamic';
+
 function fmtPublished(iso, locale) {
   if (!iso) return '';
   return new Date(iso).toLocaleDateString(locale === 'en' ? 'en-US' : 'fr-FR', {

@@ -58,7 +58,8 @@ export async function createArticle(formData) {
   if (error) redirect(`/admin/articles/new?error=${encodeURIComponent(error.message)}`);
 
   revalidatePath('/admin/articles');
-  revalidatePath('/blog');
+  revalidatePath('/fr/blog');
+  revalidatePath('/en/blog');
   redirect('/admin/articles');
 }
 
@@ -97,8 +98,10 @@ export async function updateArticle(id, formData) {
   if (error) redirect(`/admin/articles/${id}?error=${encodeURIComponent(error.message)}`);
 
   revalidatePath('/admin/articles');
-  revalidatePath('/blog');
-  revalidatePath(`/blog/${id}`);
+  revalidatePath('/fr/blog');
+  revalidatePath('/en/blog');
+  revalidatePath(`/fr/blog/${id}`);
+  revalidatePath(`/en/blog/${id}`);
   redirect('/admin/articles');
 }
 
@@ -108,7 +111,10 @@ export async function deleteArticle(id) {
   if (error) redirect(`/admin/articles?error=${encodeURIComponent(error.message)}`);
 
   revalidatePath('/admin/articles');
-  revalidatePath('/blog');
+  revalidatePath('/fr/blog');
+  revalidatePath('/en/blog');
+  revalidatePath(`/fr/blog/${id}`);
+  revalidatePath(`/en/blog/${id}`);
   redirect('/admin/articles');
 }
 
