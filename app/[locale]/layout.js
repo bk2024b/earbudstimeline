@@ -44,15 +44,11 @@ export default async function LocaleLayout({ children, params }) {
   const messages = (await import(`../../messages/${locale}.json`)).default;
 
   return (
-    <html lang={locale} className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body className="bg-ink text-white font-body antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <div className="max-w-[1080px] mx-auto px-5 pb-20">
-            <Header />
-            {children}
-          </div>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <div className="max-w-[1080px] mx-auto px-5 pb-20">
+        <Header />
+        {children}
+      </div>
+    </NextIntlClientProvider>
   );
 }

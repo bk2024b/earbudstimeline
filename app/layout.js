@@ -1,6 +1,5 @@
 import './globals.css';
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
-import Header from '@/components/Header';
 import { SITE_URL } from '@/lib/seo';
 
 const display = Space_Grotesk({
@@ -35,10 +34,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body className="bg-ink text-white font-body antialiased">
-        <div className="max-w-[1080px] mx-auto px-5 pb-20">
-          <Header />
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   );

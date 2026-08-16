@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { createBrand } from '../actions';
 import FormField from '@/components/admin/FormField';
 
+export const dynamic = 'force-dynamic';
+
 export default function NewBrandPage({ searchParams }) {
   const error = searchParams?.error;
   return (

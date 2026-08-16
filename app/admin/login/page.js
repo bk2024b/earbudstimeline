@@ -1,5 +1,7 @@
 import { login } from '../actions';
 
+export const dynamic = 'force-dynamic';
+
 export default function LoginPage({ searchParams }) {
   return (
     <div className="min-h-[80vh] flex items-center justify-center">
