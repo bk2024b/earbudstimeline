@@ -50,10 +50,18 @@ export default async function ArticlePage({ params }) {
   if (!article) notFound();
 
   const safeHtml = sanitizeHtml(article.content_html || '', {
-    allowedTags: ['h2', 'h3', 'p', 'strong', 'em', 's', 'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'br', 'code', 'pre'],
+    allowedTags: [
+      'h2', 'h3', 'p', 'strong', 'em', 's', 'ul', 'ol', 'li', 'blockquote',
+      'a', 'img', 'br', 'code', 'pre', 'hr',
+      'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'div',
+    ],
     allowedAttributes: {
       a: ['href', 'target', 'rel', 'class'],
       img: ['src', 'alt', 'class'],
+      table: ['class'],
+      th: ['class', 'colspan', 'rowspan', 'style', 'scope'],
+      td: ['class', 'colspan', 'rowspan', 'style'],
+      div: ['class'],
     },
   });
 
