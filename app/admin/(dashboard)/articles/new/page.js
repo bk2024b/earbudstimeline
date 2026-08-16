@@ -1,14 +1,21 @@
 import Link from 'next/link';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getAllEarbuds, getBrands } from '@/lib/queries';
 import ArticleForm from '@/components/admin/ArticleForm';
 import { createArticle } from '../actions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NewArticlePage({ searchParams }) {
+  const supabase = getSupabaseAdmin();
   let sourceArticle = null;
+
+  const [models, brands] = await Promise.all([
+    getAllEarbuds().catch(() => []),
+    getBrands().catch(() => []),
+  ]);
+
   if (searchParams?.translationOf) {
-    const supabase = getSupabaseAdmin();
     const { data } = await supabase
       .from('articles')
       .select('id, title, excerpt')
@@ -28,7 +35,13 @@ export default async function NewArticlePage({ searchParams }) {
         </Link>
       </div>
 
-      <ArticleForm action={createArticle} sourceArticle={sourceArticle} submitLabel="Créer l'article" />
+      <ArticleForm
+        action={createArticle}
+        sourceArticle={sourceArticle}
+        models={models}
+        brands={brands}
+        submitLabel="Créer l'article"
+      />
     </>
   );
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getAllEarbuds, getBrands } from '@/lib/queries';
 import ArticleForm from '@/components/admin/ArticleForm';
 import { updateArticle } from '../actions';
 
@@ -8,7 +9,12 @@ export const dynamic = 'force-dynamic';
 
 export default async function EditArticlePage({ params }) {
   const supabase = getSupabaseAdmin();
-  const { data: article } = await supabase.from('articles').select('*').eq('id', params.id).single();
+  const [{ data: article }, models, brands] = await Promise.all([
+    supabase.from('articles').select('*').eq('id', params.id).single(),
+    getAllEarbuds().catch(() => []),
+    getBrands().catch(() => []),
+  ]);
+
   if (!article) notFound();
 
   const boundUpdate = updateArticle.bind(null, article.id);
@@ -22,7 +28,14 @@ export default async function EditArticlePage({ params }) {
         </Link>
       </div>
 
-      <ArticleForm action={boundUpdate} defaults={article} lockId submitLabel="Enregistrer les modifications" />
+      <ArticleForm
+        action={boundUpdate}
+        defaults={article}
+        models={models}
+        brands={brands}
+        lockId
+        submitLabel="Enregistrer les modifications"
+      />
     </>
   );
 }

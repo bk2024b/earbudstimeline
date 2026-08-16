@@ -24,9 +24,11 @@ function ToolbarButton({ onClick, active, disabled, children, title }) {
   );
 }
 
-export default function RichTextEditor({ name, defaultValue = '' }) {
+export default function RichTextEditor({ name, defaultValue = '', value, onChange }) {
   const fileInputRef = useRef(null);
   const hiddenInputRef = useRef(null);
+
+  const initialContent = value !== undefined ? value : defaultValue;
 
   const editor = useEditor({
     extensions: [
@@ -35,7 +37,7 @@ export default function RichTextEditor({ name, defaultValue = '' }) {
       Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-accent underline' } }),
       Placeholder.configure({ placeholder: "Écris le contenu de l'article ici…" }),
     ],
-    content: defaultValue,
+    content: initialContent,
     immediatelyRender: false,
     editorProps: {
       attributes: {
@@ -43,9 +45,22 @@ export default function RichTextEditor({ name, defaultValue = '' }) {
       },
     },
     onUpdate: ({ editor }) => {
-      if (hiddenInputRef.current) hiddenInputRef.current.value = editor.getHTML();
+      const html = editor.getHTML();
+      if (hiddenInputRef.current) hiddenInputRef.current.value = html;
+      if (onChange) onChange(html);
     },
   });
+
+  // Synchroniser quand la prop value change de l'extérieur (ex: import Markdown)
+  useEffect(() => {
+    if (editor && value !== undefined) {
+      const currentHtml = editor.getHTML();
+      if (value !== currentHtml) {
+        editor.commands.setContent(value, false);
+        if (hiddenInputRef.current) hiddenInputRef.current.value = value;
+      }
+    }
+  }, [editor, value]);
 
   useEffect(() => {
     if (editor && hiddenInputRef.current) {
