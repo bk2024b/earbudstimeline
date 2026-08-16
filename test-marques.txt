@@ -1,0 +1,10 @@
+Bose, #111827
+Sennheiser, #0284C7
+JBL, #EA580C
+Beats, #E11D48
+Soundcore, #06B6D4
+Jabra, #EAB308
+Marshall, #D1D5DB
+Technics, #475569
+Devialet, #1E293B
+Bowers & Wilkins, #94A3B8

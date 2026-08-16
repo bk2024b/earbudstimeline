@@ -48,6 +48,33 @@ function isValid(data) {
   );
 }
 
+function revalidateEarbudCaches(brandId, earbudId) {
+  revalidatePath('/admin');
+  revalidatePath('/admin/earbuds');
+  revalidatePath('/admin/brands');
+  revalidatePath('/');
+  revalidatePath('/fr');
+  revalidatePath('/en');
+  revalidatePath('/fr/comparer');
+  revalidatePath('/en/comparer');
+  revalidatePath('/fr/comparaisons');
+  revalidatePath('/en/comparaisons');
+  revalidatePath('/fr/annees');
+  revalidatePath('/en/annees');
+  revalidatePath('/fr/technologies');
+  revalidatePath('/en/technologies');
+  if (brandId) {
+    revalidatePath(`/fr/marques/${brandId}`);
+    revalidatePath(`/en/marques/${brandId}`);
+    revalidatePath(`/marques/${brandId}`);
+  }
+  if (earbudId) {
+    revalidatePath(`/fr/ecouteurs/${earbudId}`);
+    revalidatePath(`/en/ecouteurs/${earbudId}`);
+    revalidatePath(`/ecouteurs/${earbudId}`);
+  }
+}
+
 export async function createEarbud(formData) {
   const data = parseEarbudForm(formData);
   if (!isValid(data)) redirect('/admin/earbuds/new?error=missing');
@@ -70,9 +97,7 @@ export async function createEarbud(formData) {
   const { error } = await supabase.from('earbuds').insert({ id, ...data, image_url });
   if (error) redirect(`/admin/earbuds/new?error=${encodeURIComponent(error.message)}`);
 
-  revalidatePath('/admin/earbuds');
-  revalidatePath('/');
-  revalidatePath(`/marques/${data.brand_id}`);
+  revalidateEarbudCaches(data.brand_id, id);
   redirect('/admin/earbuds');
 }
 
@@ -93,10 +118,7 @@ export async function updateEarbud(id, formData) {
   const { error } = await supabase.from('earbuds').update(data).eq('id', id);
   if (error) redirect(`/admin/earbuds/${id}?error=${encodeURIComponent(error.message)}`);
 
-  revalidatePath('/admin/earbuds');
-  revalidatePath('/');
-  revalidatePath(`/marques/${data.brand_id}`);
-  revalidatePath(`/ecouteurs/${id}`);
+  revalidateEarbudCaches(data.brand_id, id);
   redirect('/admin/earbuds');
 }
 
@@ -130,9 +152,8 @@ export async function bulkUploadImages(formData) {
     }
   }
 
-  revalidatePath('/admin/earbuds');
-  revalidatePath('/');
-  brandIds.forEach((bId) => revalidatePath(`/marques/${bId}`));
+  brandIds.forEach((bId) => revalidateEarbudCaches(bId));
+  if (brandIds.size === 0) revalidateEarbudCaches();
 
   return results;
 }
@@ -187,9 +208,8 @@ export async function importEarbudsCsv(payload) {
     }
   }
 
-  revalidatePath('/admin/earbuds');
-  revalidatePath('/');
-  brandIds.forEach((bId) => revalidatePath(`/marques/${bId}`));
+  brandIds.forEach((bId) => revalidateEarbudCaches(bId));
+  if (brandIds.size === 0) revalidateEarbudCaches();
 
   return results;
 }
@@ -199,8 +219,6 @@ export async function deleteEarbud(id, brandId) {
   const { error } = await supabase.from('earbuds').delete().eq('id', id);
   if (error) redirect(`/admin/earbuds?error=${encodeURIComponent(error.message)}`);
 
-  revalidatePath('/admin/earbuds');
-  revalidatePath('/');
-  if (brandId) revalidatePath(`/marques/${brandId}`);
+  revalidateEarbudCaches(brandId, id);
   redirect('/admin/earbuds');
 }

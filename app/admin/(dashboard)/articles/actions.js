@@ -24,6 +24,20 @@ function isValid(data) {
   return Boolean(data.title && data.excerpt);
 }
 
+function revalidateArticleCaches(articleId) {
+  revalidatePath('/admin');
+  revalidatePath('/admin/articles');
+  revalidatePath('/');
+  revalidatePath('/fr');
+  revalidatePath('/en');
+  revalidatePath('/fr/blog');
+  revalidatePath('/en/blog');
+  if (articleId) {
+    revalidatePath(`/fr/blog/${articleId}`);
+    revalidatePath(`/en/blog/${articleId}`);
+  }
+}
+
 export async function createArticle(formData) {
   const data = parseArticleForm(formData);
   if (!isValid(data)) redirect('/admin/articles/new?error=missing');
@@ -57,9 +71,7 @@ export async function createArticle(formData) {
   });
   if (error) redirect(`/admin/articles/new?error=${encodeURIComponent(error.message)}`);
 
-  revalidatePath('/admin/articles');
-  revalidatePath('/fr/blog');
-  revalidatePath('/en/blog');
+  revalidateArticleCaches(id);
   redirect('/admin/articles');
 }
 
@@ -97,11 +109,7 @@ export async function updateArticle(id, formData) {
   const { error } = await supabase.from('articles').update(patch).eq('id', id);
   if (error) redirect(`/admin/articles/${id}?error=${encodeURIComponent(error.message)}`);
 
-  revalidatePath('/admin/articles');
-  revalidatePath('/fr/blog');
-  revalidatePath('/en/blog');
-  revalidatePath(`/fr/blog/${id}`);
-  revalidatePath(`/en/blog/${id}`);
+  revalidateArticleCaches(id);
   redirect('/admin/articles');
 }
 
@@ -110,11 +118,7 @@ export async function deleteArticle(id) {
   const { error } = await supabase.from('articles').delete().eq('id', id);
   if (error) redirect(`/admin/articles?error=${encodeURIComponent(error.message)}`);
 
-  revalidatePath('/admin/articles');
-  revalidatePath('/fr/blog');
-  revalidatePath('/en/blog');
-  revalidatePath(`/fr/blog/${id}`);
-  revalidatePath(`/en/blog/${id}`);
+  revalidateArticleCaches(id);
   redirect('/admin/articles');
 }
 

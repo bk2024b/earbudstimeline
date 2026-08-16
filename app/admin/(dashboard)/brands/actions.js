@@ -6,6 +6,19 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { slugify } from '@/lib/slug';
 import { uploadImage } from '@/lib/storage';
 
+function revalidateBrandCaches(brandId) {
+  revalidatePath('/admin');
+  revalidatePath('/admin/brands');
+  revalidatePath('/admin/earbuds');
+  revalidatePath('/fr');
+  revalidatePath('/en');
+  revalidatePath('/');
+  if (brandId) {
+    revalidatePath(`/fr/marques/${brandId}`);
+    revalidatePath(`/en/marques/${brandId}`);
+  }
+}
+
 export async function createBrand(formData) {
   const name = formData.get('name')?.toString().trim();
   const color = formData.get('color')?.toString().trim();
@@ -30,8 +43,7 @@ export async function createBrand(formData) {
   const { error } = await supabase.from('brands').insert({ id, name, color, image_url });
   if (error) redirect(`/admin/brands/new?error=${encodeURIComponent(error.message)}`);
 
-  revalidatePath('/admin/brands');
-  revalidatePath('/');
+  revalidateBrandCaches(id);
   redirect('/admin/brands');
 }
 
@@ -55,21 +67,16 @@ export async function updateBrand(id, formData) {
   const { error } = await supabase.from('brands').update(updates).eq('id', id);
   if (error) redirect(`/admin/brands/${id}?error=${encodeURIComponent(error.message)}`);
 
-  revalidatePath('/admin/brands');
-  revalidatePath(`/marques/${id}`);
-  revalidatePath('/');
+  revalidateBrandCaches(id);
   redirect('/admin/brands');
 }
 
 export async function deleteBrand(id) {
   const supabase = getSupabaseAdmin();
-  // earbuds.brand_id -> brands(id) ON DELETE CASCADE : supprime aussi tous les
-  // écouteurs de cette marque. Le bouton de suppression prévient l'admin avant.
   const { error } = await supabase.from('brands').delete().eq('id', id);
   if (error) redirect(`/admin/brands?error=${encodeURIComponent(error.message)}`);
 
-  revalidatePath('/admin/brands');
-  revalidatePath('/');
+  revalidateBrandCaches(id);
   redirect('/admin/brands');
 }
 
@@ -121,8 +128,6 @@ export async function importBrandsBatch(payload) {
     }
   }
 
-  revalidatePath('/admin/brands');
-  revalidatePath('/');
+  revalidateBrandCaches();
   return results;
 }
-
