@@ -5,6 +5,10 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
 import { useEffect, useRef } from 'react';
 import { uploadEditorImage } from '@/app/admin/(dashboard)/articles/actions';
 
@@ -15,7 +19,7 @@ function ToolbarButton({ onClick, active, disabled, children, title }) {
       title={title}
       disabled={disabled}
       onClick={onClick}
-      className={`px-2.5 py-1.5 rounded-md text-xs font-medium border ${
+      className={`px-2.5 py-1.5 rounded-md text-xs font-medium border transition-colors ${
         active ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-white'
       } disabled:opacity-40`}
     >
@@ -36,6 +40,23 @@ export default function RichTextEditor({ name, defaultValue = '', value, onChang
       Image.configure({ HTMLAttributes: { class: 'rounded-lg' } }),
       Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-accent underline' } }),
       Placeholder.configure({ placeholder: "Écris le contenu de l'article ici…" }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: 'border-collapse border border-line w-full my-4 text-sm',
+        },
+      }),
+      TableRow,
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: 'border border-line bg-panel2 font-semibold p-2.5 text-left text-white',
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class: 'border border-line p-2.5 text-dim',
+        },
+      }),
     ],
     content: initialContent,
     immediatelyRender: false,
@@ -96,6 +117,8 @@ export default function RichTextEditor({ name, defaultValue = '', value, onChang
 
   if (!editor) return null;
 
+  const isTableActive = editor.isActive('table');
+
   return (
     <div className="flex flex-col gap-1.5 text-sm">
       <span className="text-dim text-xs">Contenu</span>
@@ -128,6 +151,51 @@ export default function RichTextEditor({ name, defaultValue = '', value, onChang
           <ToolbarButton title="Image" onClick={() => fileInputRef.current?.click()}>
             Image
           </ToolbarButton>
+
+          {/* Contrôles de tableau */}
+          <ToolbarButton
+            title="Insérer un tableau (3x3)"
+            active={isTableActive}
+            onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+          >
+            📊 Tableau
+          </ToolbarButton>
+
+          {isTableActive && (
+            <>
+              <ToolbarButton
+                title="Ajouter une ligne après"
+                onClick={() => editor.chain().focus().addRowAfter().run()}
+              >
+                + Ligne
+              </ToolbarButton>
+              <ToolbarButton
+                title="Supprimer la ligne"
+                onClick={() => editor.chain().focus().deleteRow().run()}
+              >
+                - Ligne
+              </ToolbarButton>
+              <ToolbarButton
+                title="Ajouter une colonne après"
+                onClick={() => editor.chain().focus().addColumnAfter().run()}
+              >
+                + Col
+              </ToolbarButton>
+              <ToolbarButton
+                title="Supprimer la colonne"
+                onClick={() => editor.chain().focus().deleteColumn().run()}
+              >
+                - Col
+              </ToolbarButton>
+              <ToolbarButton
+                title="Supprimer le tableau entier"
+                onClick={() => editor.chain().focus().deleteTable().run()}
+              >
+                🗑️ Suppr. Tab
+              </ToolbarButton>
+            </>
+          )}
+
           <ToolbarButton title="Annuler" onClick={() => editor.chain().focus().undo().run()}>
             ↺
           </ToolbarButton>
