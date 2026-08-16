@@ -6,6 +6,8 @@ import { getBluetoothVersionList, getCodecList } from '@/lib/tech';
 import { SITE_URL } from '@/lib/seo';
 import { routing } from '@/i18n/routing';
 
+export const dynamic = 'force-dynamic';
+
 // Génère une entrée par langue pour un même chemin (sans préfixe), avec hreflang croisé.
 function localizedEntries(path, meta = {}) {
   return routing.locales.map((locale) => ({
