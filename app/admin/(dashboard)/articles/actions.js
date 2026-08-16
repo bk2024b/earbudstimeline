@@ -130,3 +130,24 @@ export async function uploadEditorImage(formData) {
     return { error: e.message };
   }
 }
+
+// Bascule rapide de statut (Brouillon <-> Publié) depuis la liste des articles
+export async function toggleArticleStatus(id, currentStatus) {
+  const supabase = getSupabaseAdmin();
+  const nextStatus = currentStatus === 'published' ? 'draft' : 'published';
+  const patch = {
+    status: nextStatus,
+    published_at: nextStatus === 'published' ? new Date().toISOString() : null,
+  };
+
+  const { error } = await supabase.from('articles').update(patch).eq('id', id);
+  if (error) redirect(`/admin/articles?error=${encodeURIComponent(error.message)}`);
+
+  revalidatePath('/admin/articles');
+  revalidatePath('/fr/blog');
+  revalidatePath('/en/blog');
+  revalidatePath(`/fr/blog/${id}`);
+  revalidatePath(`/en/blog/${id}`);
+  redirect('/admin/articles');
+}
+

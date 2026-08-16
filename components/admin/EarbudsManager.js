@@ -1,0 +1,244 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
+import ConfirmSubmitButton from './ConfirmSubmitButton';
+import { deleteEarbud } from '@/app/admin/(dashboard)/earbuds/actions';
+
+export default function EarbudsManager({ earbuds = [], brands = [], initialBrand = 'all' }) {
+  const [search, setSearch] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState(initialBrand);
+  const [filterMode, setFilterMode] = useState('all'); // 'all', 'no-image', 'marquant', 'anc'
+
+  const brandMap = useMemo(() => {
+    const map = new Map();
+    brands.forEach((b) => map.set(b.id, b));
+    return map;
+  }, [brands]);
+
+  const filteredEarbuds = useMemo(() => {
+    const q = search.trim().toLowerCase();
+
+    return earbuds.filter((e) => {
+      // 1. Filtre marque
+      if (selectedBrand !== 'all' && e.brand_id !== selectedBrand) {
+        return false;
+      }
+
+      // 2. Filtres rapides
+      if (filterMode === 'no-image' && e.image_url) return false;
+      if (filterMode === 'marquant' && !e.marquant) return false;
+      if (filterMode === 'anc' && !e.anc) return false;
+
+      // 3. Recherche textuelle
+      if (q) {
+        const brandName = brandMap.get(e.brand_id)?.name?.toLowerCase() || '';
+        const matchName = e.name?.toLowerCase().includes(q);
+        const matchGamme = e.gamme?.toLowerCase().includes(q);
+        const matchBrand = brandName.includes(q);
+        const matchId = e.id?.toLowerCase().includes(q);
+        const matchChip = e.chip?.toLowerCase().includes(q);
+        if (!matchName && !matchGamme && !matchBrand && !matchId && !matchChip) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [earbuds, search, selectedBrand, filterMode, brandMap]);
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Barre de recherche et filtres */}
+      <div className="bg-panel border border-line rounded-xl p-4 flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <input
+              type="search"
+              placeholder="Rechercher par nom, gamme, puce, marque..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-panel2 border border-line rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-dim outline-none focus:border-accent"
+            />
+            <span className="absolute left-3 top-2.5 text-xs text-dim">🔍</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedBrand}
+              onChange={(e) => setSelectedBrand(e.target.value)}
+              className="bg-panel2 border border-line rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-accent"
+            >
+              <option value="all">Toutes les marques ({earbuds.length})</option>
+              {brands.map((b) => {
+                const count = earbuds.filter((e) => e.brand_id === b.id).length;
+                return (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({count})
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+
+        {/* Filtres secondaires */}
+        <div className="flex items-center gap-2 flex-wrap text-xs pt-1 border-t border-line/50">
+          <span className="text-dim text-[11px]">Affichage rapide :</span>
+          <button
+            type="button"
+            onClick={() => setFilterMode('all')}
+            className={`px-2.5 py-1 rounded-full border transition-colors ${
+              filterMode === 'all'
+                ? 'bg-accent/15 border-accent text-accent font-medium'
+                : 'border-line text-dim hover:text-white'
+            }`}
+          >
+            Tous ({filteredEarbuds.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterMode('no-image')}
+            className={`px-2.5 py-1 rounded-full border transition-colors ${
+              filterMode === 'no-image'
+                ? 'bg-accent/15 border-accent text-accent font-medium'
+                : 'border-line text-dim hover:text-white'
+            }`}
+          >
+            📷 Sans photo ({earbuds.filter((e) => !e.image_url).length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterMode('marquant')}
+            className={`px-2.5 py-1 rounded-full border transition-colors ${
+              filterMode === 'marquant'
+                ? 'bg-accent/15 border-accent text-accent font-medium'
+                : 'border-line text-dim hover:text-white'
+            }`}
+          >
+            ★ Marquants ({earbuds.filter((e) => e.marquant).length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterMode('anc')}
+            className={`px-2.5 py-1 rounded-full border transition-colors ${
+              filterMode === 'anc'
+                ? 'bg-accent/15 border-accent text-accent font-medium'
+                : 'border-line text-dim hover:text-white'
+            }`}
+          >
+            🎧 Avec ANC ({earbuds.filter((e) => e.anc).length})
+          </button>
+        </div>
+      </div>
+
+      {/* Liste des écouteurs */}
+      <div className="flex flex-col gap-2.5">
+        {filteredEarbuds.map((e) => {
+          const brand = brandMap.get(e.brand_id);
+          const brandColor = brand?.color || '#333';
+
+          return (
+            <div
+              key={e.id}
+              className="flex items-center justify-between bg-panel border border-line rounded-xl p-3 sm:p-4 gap-3.5 flex-wrap hover:border-line/80 transition-colors"
+            >
+              {/* Miniature + Infos */}
+              <div className="flex items-center gap-3.5 min-w-0">
+                {/* Vignette photo */}
+                <div
+                  className="w-12 h-12 rounded-lg border border-line bg-panel2 flex-none flex items-center justify-center overflow-hidden"
+                  style={{ borderLeftColor: brandColor, borderLeftWidth: '3px' }}
+                >
+                  {e.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={e.image_url} alt="" className="w-full h-full object-contain p-1" />
+                  ) : (
+                    <span className="text-lg opacity-40">🎧</span>
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-semibold text-white truncate">{e.name}</span>
+                    {e.marquant && (
+                      <span className="text-[11px] px-1.5 py-0.2 rounded bg-amber/15 text-amber border border-amber/30">
+                        ★ Marquant
+                      </span>
+                    )}
+                    {e.price && (
+                      <span className="text-xs font-mono text-dim">
+                        {e.price} $
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-dim flex items-center gap-1.5 flex-wrap mt-0.5">
+                    <span className="text-white/80">{brand?.name || e.brand_id}</span>
+                    <span>·</span>
+                    <span>{e.gamme}</span>
+                    <span>·</span>
+                    <span>{e.release_date?.slice(0, 4)}</span>
+                    {e.anc && (
+                      <>
+                        <span>·</span>
+                        <span className="text-accent">ANC</span>
+                      </>
+                    )}
+                    {e.battery_case_h && (
+                      <>
+                        <span>·</span>
+                        <span>{e.battery_case_h}h</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions rapides */}
+              <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+                <a
+                  href={`/fr/ecouteurs/${e.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Voir la fiche publique"
+                  className="text-xs text-dim hover:text-white px-2 py-1 rounded bg-panel2 border border-line/60 flex items-center gap-1"
+                >
+                  <span>↗</span>
+                  <span className="hidden sm:inline">Voir</span>
+                </a>
+                <Link
+                  href={`/admin/earbuds/new?cloneFrom=${e.id}`}
+                  title="Dupliquer cet écouteur"
+                  className="text-xs text-dim hover:text-accent px-2 py-1 rounded bg-panel2 border border-line/60 flex items-center gap-1"
+                >
+                  <span>📋</span>
+                  <span className="hidden sm:inline">Dupliquer</span>
+                </Link>
+                <Link
+                  href={`/admin/earbuds/${e.id}`}
+                  className="text-xs text-ink bg-accent font-semibold px-3 py-1 rounded hover:opacity-90"
+                >
+                  Modifier
+                </Link>
+                <form action={deleteEarbud.bind(null, e.id, e.brand_id)}>
+                  <ConfirmSubmitButton
+                    className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1"
+                    message={`Supprimer définitivement ${e.name} ?`}
+                  >
+                    Supprimer
+                  </ConfirmSubmitButton>
+                </form>
+              </div>
+            </div>
+          );
+        })}
+
+        {filteredEarbuds.length === 0 && (
+          <div className="bg-panel border border-line rounded-xl p-8 text-center text-dim text-sm">
+            Aucun écouteur ne correspond aux filtres ou à la recherche.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

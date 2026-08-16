@@ -7,14 +7,39 @@ export const dynamic = 'force-dynamic';
 
 export default async function NewEarbudPage({ searchParams }) {
   const supabase = getSupabaseAdmin();
-  const { data: brands } = await supabase.from('brands').select('*').order('name');
+  const [{ data: brands }, { data: allEarbuds }] = await Promise.all([
+    supabase.from('brands').select('*').order('name'),
+    supabase.from('earbuds').select('id, brand_id, gamme'),
+  ]);
+
+  let cloneDefaults = {};
+  if (searchParams?.cloneFrom) {
+    const { data: source } = await supabase
+      .from('earbuds')
+      .select('*')
+      .eq('id', searchParams.cloneFrom)
+      .single();
+    if (source) {
+      cloneDefaults = {
+        ...source,
+        id: '', // Laisser vide pour forcer la génération d'un nouvel identifiant
+        name: `${source.name} (Copie)`,
+      };
+    }
+  }
 
   return (
     <>
-      <Link href="/admin/earbuds" className="text-dim text-xs hover:text-accent mb-4 inline-block">
-        ← Écouteurs
-      </Link>
-      <h1 className="font-display font-bold text-2xl mb-6">Nouvel écouteur</h1>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <Link href="/admin/earbuds" className="text-dim text-xs hover:text-accent mb-1 inline-block">
+            ← Écouteurs
+          </Link>
+          <h1 className="font-display font-bold text-2xl">
+            {searchParams?.cloneFrom ? 'Dupliquer un écouteur' : 'Nouvel écouteur'}
+          </h1>
+        </div>
+      </div>
 
       {searchParams?.error && (
         <p className="text-rose-400 text-sm mb-4">
@@ -31,7 +56,13 @@ export default async function NewEarbudPage({ searchParams }) {
           .
         </p>
       ) : (
-        <EarbudForm action={createEarbud} brands={brands || []} submitLabel="Créer" />
+        <EarbudForm
+          action={createEarbud}
+          brands={brands || []}
+          existingEarbuds={allEarbuds || []}
+          defaults={cloneDefaults}
+          submitLabel={searchParams?.cloneFrom ? 'Créer la copie' : 'Créer'}
+        />
       )}
     </>
   );
