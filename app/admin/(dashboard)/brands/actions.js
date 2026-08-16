@@ -72,3 +72,57 @@ export async function deleteBrand(id) {
   revalidatePath('/');
   redirect('/admin/brands');
 }
+
+// Appelée depuis le composant client pour l'import par lot de marques
+export async function importBrandsBatch(payload) {
+  const rawRows = Array.isArray(payload?.rawRows) ? payload.rawRows : [];
+  const overwrite = Boolean(payload?.overwrite);
+  if (rawRows.length === 0) return [];
+
+  const supabase = getSupabaseAdmin();
+  const { data: existing } = await supabase.from('brands').select('id');
+  const existingIds = new Set((existing || []).map((b) => b.id));
+
+  const results = [];
+  for (const raw of rawRows) {
+    const name = raw.name?.toString().trim();
+    if (!name) {
+      results.push({ name: '', ok: false, error: 'Nom de marque manquant' });
+      continue;
+    }
+
+    const id = slugify(raw.id?.toString().trim() || name);
+    const color = raw.color?.toString().trim() || '#6C8CFF';
+    const isDuplicate = existingIds.has(id);
+
+    if (isDuplicate && !overwrite) {
+      results.push({
+        id,
+        name,
+        ok: false,
+        error: 'Marque déjà existante (ignorée)',
+      });
+      continue;
+    }
+
+    try {
+      let error;
+      if (isDuplicate) {
+        ({ error } = await supabase.from('brands').update({ name, color }).eq('id', id));
+      } else {
+        ({ error } = await supabase.from('brands').insert({ id, name, color }));
+      }
+
+      if (error) throw error;
+      existingIds.add(id);
+      results.push({ id, name, ok: true, updated: isDuplicate });
+    } catch (e) {
+      results.push({ id, name, ok: false, error: e.message });
+    }
+  }
+
+  revalidatePath('/admin/brands');
+  revalidatePath('/');
+  return results;
+}
+
