@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Sparkles,
   DollarSign,
@@ -17,6 +18,9 @@ import {
   Swords,
   ExternalLink,
   Zap,
+  Share2,
+  Check,
+  ShoppingCart,
 } from 'lucide-react';
 import { analyzeEarbudsForBudget } from '@/lib/timelineIntelligence';
 import { buildComparisonSlug } from '@/lib/compareSlug';
@@ -28,10 +32,40 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
   const locale = useLocale();
   const t = useTranslations('intelligence');
   const common = useTranslations('common');
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const [maxBudget, setMaxBudget] = useState(200);
-  const [priority, setPriority] = useState('balanced');
-  const [selectedBrand, setSelectedBrand] = useState('all');
+  // Initialisation depuis l'URL si des paramètres existent
+  const initialBudgetParam = searchParams.get('budget');
+  const initialPriorityParam = searchParams.get('priority');
+  const initialBrandParam = searchParams.get('brand');
+
+  const [maxBudget, setMaxBudget] = useState(
+    initialBudgetParam ? Number(initialBudgetParam) : 200
+  );
+  const [priority, setPriority] = useState(initialPriorityParam || 'balanced');
+  const [selectedBrand, setSelectedBrand] = useState(initialBrandParam || 'all');
+  const [copied, setCopied] = useState(false);
+
+  // Synchronisation de l'URL avec les filtres
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (maxBudget !== 200) params.set('budget', maxBudget.toString());
+    if (priority !== 'balanced') params.set('priority', priority);
+    if (selectedBrand !== 'all') params.set('brand', selectedBrand);
+
+    const queryString = params.toString();
+    const newPath = queryString ? `/${locale}/trouver-mes-ecouteurs?${queryString}` : `/${locale}/trouver-mes-ecouteurs`;
+    window.history.replaceState(null, '', newPath);
+  }, [maxBudget, priority, selectedBrand, locale]);
+
+  function handleCopyLink() {
+    if (typeof window !== 'undefined') {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  }
 
   const analysis = useMemo(() => {
     return analyzeEarbudsForBudget(initialModels, initialBrands, {
@@ -57,14 +91,35 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
     <div className="flex flex-col gap-10">
       {/* Panneau de contrôle / Filtres intelligents */}
       <div className="bg-panel border border-line rounded-2xl p-6 sm:p-8 shadow-xl">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
-            <Sliders className="w-5 h-5" />
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
+              <Sliders className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-display font-bold text-xl text-white">{t('controlTitle')}</h2>
+              <p className="text-xs text-dim">{t('controlSubtitle')}</p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-display font-bold text-xl text-white">{t('controlTitle')}</h2>
-            <p className="text-xs text-dim">{t('controlSubtitle')}</p>
-          </div>
+
+          {/* Bouton Partager la recherche */}
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="flex items-center gap-1.5 text-xs bg-panel2 hover:bg-panel2/80 border border-line text-dim hover:text-white rounded-xl px-3.5 py-2 transition-all shadow-sm"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-400 font-medium">Lien copié !</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5 text-accent" />
+                <span>Partager ce résultat</span>
+              </>
+            )}
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -283,6 +338,19 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
 
             {/* Barre d'actions Timeline Intelligence */}
             <div className="flex flex-wrap items-center gap-3">
+              {/* Bouton d'achat prioritaire si buy_url renseigné */}
+              {winner.model.buy_url && (
+                <a
+                  href={winner.model.buy_url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="bg-accent text-ink font-bold rounded-xl px-5 py-3 text-xs sm:text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-accent/20"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>Acheter / Voir l&apos;offre</span>
+                </a>
+              )}
+
               <Link
                 href={`/${locale}/ecouteurs/${winner.model.id}`}
                 className="bg-white text-ink font-semibold rounded-xl px-5 py-3 text-xs sm:text-sm flex items-center gap-2 hover:bg-white/90 transition-all shadow-lg"
@@ -356,19 +424,33 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 pt-4 border-t border-line/60">
-                  <Link
-                    href={`/${locale}/ecouteurs/${alt.model.id}`}
-                    className="text-xs text-white hover:text-accent font-medium flex items-center gap-1.5 transition-colors"
-                  >
-                    <span>{t('details')}</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-line/60">
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/${locale}/ecouteurs/${alt.model.id}`}
+                      className="text-xs text-white hover:text-accent font-medium flex items-center gap-1 transition-colors"
+                    >
+                      <span>{t('details')}</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Link>
+
+                    {alt.model.buy_url && (
+                      <a
+                        href={alt.model.buy_url}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="text-xs text-accent hover:underline font-semibold flex items-center gap-1"
+                      >
+                        <ShoppingCart className="w-3 h-3" />
+                        <span>Acheter</span>
+                      </a>
+                    )}
+                  </div>
 
                   {winner && (
                     <Link
                       href={`/${locale}/comparaisons/${buildComparisonSlug(winner.model.id, alt.model.id)}`}
-                      className="text-xs text-dim hover:text-white ml-auto flex items-center gap-1 transition-colors"
+                      className="text-xs text-dim hover:text-white flex items-center gap-1 transition-colors"
                     >
                       <span>{common('compare')}</span>
                       <Swords className="w-3 h-3 text-accent" />

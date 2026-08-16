@@ -22,8 +22,12 @@ create table if not exists earbuds (
   weight_g numeric not null,
   water_rating text not null,
   chip text not null default '—',
-  bluetooth text not null
+  bluetooth text not null,
+  buy_url text
 );
+
+-- Migration si la table existe déjà :
+-- alter table earbuds add column if not exists buy_url text;
 
 create index if not exists earbuds_brand_idx on earbuds (brand_id);
 create index if not exists earbuds_gamme_idx on earbuds (brand_id, gamme);

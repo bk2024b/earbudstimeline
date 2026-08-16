@@ -296,6 +296,14 @@ export default function EarbudForm({
         </div>
       </div>
 
+      <FormField
+        label="Lien d'achat / Affiliation (optionnel)"
+        name="buy_url"
+        placeholder="https://www.amazon.fr/dp/... ou boutique officielle"
+        defaultValue={defaults.buy_url || ''}
+        hint="Si renseigné, un bouton 'Acheter / Voir l'offre' sera affiché sur la fiche écouteur et dans le comparateur."
+      />
+
       <div className="flex gap-6 py-2 flex-wrap border-t border-line/40 mt-1">
         <label className="flex items-center gap-2 text-sm text-dim cursor-pointer hover:text-white select-none">
           <input type="checkbox" name="anc" defaultChecked={defaults.anc} className="accent-accent cursor-pointer" />

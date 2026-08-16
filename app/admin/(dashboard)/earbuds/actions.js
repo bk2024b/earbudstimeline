@@ -31,6 +31,7 @@ function parseEarbudForm(formData) {
     usb_c: formData.get('usb_c') === 'on',
     multipoint: formData.get('multipoint') === 'on',
     codec: formData.get('codec')?.toString().trim() || '—',
+    buy_url: formData.get('buy_url')?.toString().trim() || null,
   };
 }
 
@@ -222,3 +223,44 @@ export async function deleteEarbud(id, brandId) {
   revalidateEarbudCaches(brandId, id);
   redirect('/admin/earbuds');
 }
+
+// Importation par lot de liens d'achats (CSV compact : id, buy_url)
+export async function importBuyLinksCsv(payload) {
+  const rawRows = Array.isArray(payload?.rawRows) ? payload.rawRows : [];
+  if (rawRows.length === 0) return [];
+
+  const supabase = getSupabaseAdmin();
+  const results = [];
+  const brandIds = new Set();
+
+  for (const raw of rawRows) {
+    const id = raw.id?.toString().trim();
+    const buy_url = raw.buy_url?.toString().trim();
+
+    if (!id || !buy_url) {
+      results.push({ id: id || '?', ok: false, error: 'ID ou lien d\'achat manquant' });
+      continue;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('earbuds')
+        .update({ buy_url })
+        .eq('id', id)
+        .select('brand_id, name')
+        .single();
+
+      if (error) throw error;
+      if (data?.brand_id) brandIds.add(data.brand_id);
+      results.push({ id, name: data?.name || id, ok: true, buy_url });
+    } catch (e) {
+      results.push({ id, ok: false, error: e.message });
+    }
+  }
+
+  brandIds.forEach((bId) => revalidateEarbudCaches(bId));
+  if (brandIds.size === 0) revalidateEarbudCaches();
+
+  return results;
+}
+

@@ -37,16 +37,22 @@ export async function generateMetadata({ params }) {
   };
 }
 
+import { getAllEarbuds, getBrands } from '@/lib/queries';
+
 export default async function LocaleLayout({ children, params }) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
 
-  const messages = (await import(`../../messages/${locale}.json`)).default;
+  const [messages, models, brands] = await Promise.all([
+    (await import(`../../messages/${locale}.json`)).default,
+    getAllEarbuds().catch(() => []),
+    getBrands().catch(() => []),
+  ]);
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <div className="max-w-[1080px] mx-auto px-5 pb-20">
-        <Header />
+        <Header models={models} brands={brands} />
         {children}
       </div>
     </NextIntlClientProvider>

@@ -1,12 +1,13 @@
 import { Link } from '@/i18n/navigation';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { Battery, BatteryFull, Droplet, Bluetooth } from 'lucide-react';
+import { Battery, BatteryFull, Droplet, Bluetooth, ShoppingCart, ExternalLink, TrendingUp } from 'lucide-react';
 import { getEarbudBySlug, getGammeModels, getBrands, getAllEarbuds, getPublishedArticles } from '@/lib/queries';
 import { findRelatedArticles } from '@/lib/relatedArticles';
 import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct, displayTagline } from '@/lib/format';
 import { getComparisonSuggestions, buildDiffBullets } from '@/lib/compare';
 import { slugify } from '@/lib/slug';
+import { buildComparisonSlug } from '@/lib/compareSlug';
 import { buildProductJsonLd, buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import QuickCompareSelect from '@/components/QuickCompareSelect';
 import ComparisonSuggestions from '@/components/ComparisonSuggestions';
@@ -145,6 +146,30 @@ export default async function ModelPage({ params }) {
                 {fmtMoney(m.price)} {t('atLaunch')}
               </Badge>
               <Badge>{m.anc ? t('withAnc') : t('withoutAnc')}</Badge>
+            </div>
+
+            <div className="flex gap-3 flex-wrap items-center mt-5">
+              {m.buy_url && (
+                <a
+                  href={m.buy_url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="bg-accent text-ink font-bold rounded-xl px-5 py-2.5 text-sm inline-flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-accent/20"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>{locale === 'en' ? 'Buy / Check Price' : "Acheter / Voir l'offre"}</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                </a>
+              )}
+              {prev && (
+                <Link
+                  href={`/comparaisons/${buildComparisonSlug(prev.id, m.id)}`}
+                  className="border border-line hover:border-accent text-dim hover:text-white rounded-xl px-4 py-2.5 text-xs inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{locale === 'en' ? `Compare vs ${prev.name}` : `Comparer vs ${prev.name}`}</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

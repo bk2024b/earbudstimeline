@@ -1,6 +1,7 @@
 import { Link, redirect } from '@/i18n/navigation';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { ShoppingCart, ExternalLink } from 'lucide-react';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { fmtH, fmtG, fmtMoney, yearOf } from '@/lib/format';
 import { parseComparisonSlug, buildComparisonSlug, isCanonicalSlug } from '@/lib/compareSlug';
@@ -123,23 +124,37 @@ export default async function ComparisonPage({ params }) {
 
 function Head({ m, brand }) {
   return (
-    <div className="bg-panel border border-line rounded-2xl p-4 flex items-center gap-3.5">
-      <div className="bg-panel2 rounded-xl w-14 h-14 flex items-center justify-center shrink-0 overflow-hidden">
-        {m.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={m.image_url} alt="" className="w-full h-full object-contain p-1.5" />
-        ) : (
-          <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-9 h-9" />
-        )}
+    <div className="bg-panel border border-line rounded-2xl p-4 flex flex-col gap-3">
+      <div className="flex items-center gap-3.5">
+        <div className="bg-panel2 rounded-xl w-14 h-14 flex items-center justify-center shrink-0 overflow-hidden">
+          {m.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={m.image_url} alt="" className="w-full h-full object-contain p-1.5" />
+          ) : (
+            <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-9 h-9" />
+          )}
+        </div>
+        <div>
+          <Link href={`/ecouteurs/${m.id}`} className="hover:text-accent">
+            <h2 className="m-0 mb-0.5 text-[15px] leading-tight">{m.name}</h2>
+          </Link>
+          <p className="m-0 text-dim text-xs">
+            {brand?.name || m.brand_id} · {yearOf(m.release_date)}
+          </p>
+        </div>
       </div>
-      <div>
-        <Link href={`/ecouteurs/${m.id}`} className="hover:text-accent">
-          <h2 className="m-0 mb-0.5 text-[15px] leading-tight">{m.name}</h2>
-        </Link>
-        <p className="m-0 text-dim text-xs">
-          {brand?.name || m.brand_id} · {yearOf(m.release_date)}
-        </p>
-      </div>
+      {m.buy_url && (
+        <a
+          href={m.buy_url}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          className="inline-flex items-center gap-1.5 bg-accent text-ink font-semibold rounded-lg px-3.5 py-2 text-xs hover:opacity-90 transition-opacity self-start"
+        >
+          <ShoppingCart className="w-3.5 h-3.5" />
+          <span>Acheter</span>
+          <ExternalLink className="w-3 h-3 opacity-60" />
+        </a>
+      )}
     </div>
   );
 }

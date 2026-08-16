@@ -25,6 +25,12 @@ export default async function EarbudsList({ searchParams }) {
             <span>📄</span> Import CSV
           </Link>
           <Link
+            href="/admin/earbuds/import-links"
+            className="border border-line text-dim hover:text-accent rounded-lg px-4 py-2 text-sm flex items-center gap-1.5"
+          >
+            <span>🔗</span> Liens d&apos;achat
+          </Link>
+          <Link
             href="/admin/earbuds/bulk-images"
             className="border border-line text-dim hover:text-accent rounded-lg px-4 py-2 text-sm flex items-center gap-1.5"
           >
