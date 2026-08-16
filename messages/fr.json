@@ -1,5 +1,6 @@
 {
   "nav": {
+    "finder": "Trouver mes écouteurs",
     "brands": "Marques",
     "years": "Années",
     "technologies": "Technologies",
@@ -17,6 +18,7 @@
     "usbC": "USB-C",
     "multipoint": "Multipoint",
     "tools": "Outils",
+    "finder": "Trouver mes écouteurs (Intelligence)",
     "comparator": "Comparateur",
     "allComparisons": "Toutes les comparaisons",
     "copyright": "© 2026 EarbudsTimeline — dans la continuité de PhoneTimeline"
@@ -316,5 +318,39 @@
     "browseIntro": "Parcourez {count} écouteurs référencés selon leurs caractéristiques techniques.",
     "ancCard": "Réduction de bruit active (ANC)",
     "multipointCard": "Multipoint"
+  },
+  "intelligence": {
+    "badge": "Moteur de Recommandation Historique",
+    "pageTitleLine1": "Trouvez les écouteurs parfaits",
+    "pageTitleAccent": "pour votre budget.",
+    "pageSubtitle": "Indiquez votre budget et vos préférences. Notre intelligence timeline analyse l'historique complet des sorties, l'autonomie, l'ANC et le rapport qualité/prix pour trouver votre meilleur choix.",
+    "controlTitle": "Paramétrez votre recherche",
+    "controlSubtitle": "Ajustez le budget et filtrez selon vos usages prioritaires",
+    "budgetLabel": "Budget Maximum",
+    "unlimitedBudget": "Tous budgets",
+    "all": "Tous",
+    "allBrands": "Toutes les marques",
+    "ecosystemLabel": "Écosystème / Marque",
+    "priorityLabel": "Priorité Principale",
+    "priorities": {
+      "balanced": "Polyvalent",
+      "anc": "Isolation & ANC",
+      "battery": "Grosse Autonomie",
+      "sport": "Sport & Pluie",
+      "commute": "Télétravail & Multipoint",
+      "value": "Rapport Q/P"
+    },
+    "verdictBadge": "Verdict Timeline Intelligence",
+    "modelsAnalyzed": "modèles éligibles analysés",
+    "topRecommendation": "Le Choix Recommandé",
+    "ancActive": "Active",
+    "ancNone": "Passive",
+    "whyTitle": "Pourquoi ce modèle est le meilleur choix ?",
+    "viewFullSpecs": "Voir la fiche complète",
+    "seeEvolution": "Voir l'évolution de la gamme",
+    "noResults": "Aucun modèle ne correspond exactement à ces critères. Essayez d'augmenter légèrement le budget ou de réinitialiser la marque.",
+    "alternativesTitle": "Alternatives Intelligentes",
+    "alternativesSubtitle": "D'autres options pertinentes selon différents angles d'achat",
+    "details": "Fiche technique"
   }
 }

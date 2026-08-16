@@ -69,8 +69,15 @@ export default async function HomePage({ params, searchParams }) {
 
           <div className="flex gap-3 flex-wrap">
             <Link
+              href="/trouver-mes-ecouteurs"
+              className="bg-accent text-ink font-semibold rounded-lg px-5 py-2.5 text-sm hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md shadow-accent/20"
+            >
+              <span>✨</span>
+              <span>{locale === 'en' ? 'Find for My Budget' : 'Trouver selon mon budget'}</span>
+            </Link>
+            <Link
               href="#timeline"
-              className="bg-accent text-ink font-semibold rounded-lg px-5 py-2.5 text-sm hover:opacity-90 transition-opacity"
+              className="border border-line rounded-lg px-5 py-2.5 text-sm text-dim hover:text-white hover:border-accent transition-colors"
             >
               {t('exploreTimeline')}
             </Link>
@@ -93,6 +100,38 @@ export default async function HomePage({ params, searchParams }) {
         <Stat value={yearsCovered} label={t('statYears')} />
         <Stat value={comparisonCount} label={t('statComparisons')} />
         <Stat value={articles.length} label={t('statArticles')} />
+      </div>
+
+      {/* Timeline Intelligence Magnet Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-panel2 via-panel to-ink border border-accent/30 rounded-2xl p-6 sm:p-8 mb-12 shadow-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-1.5 font-mono text-xs text-accent uppercase tracking-wider bg-accent/10 border border-accent/30 rounded-full px-3 py-0.5 mb-3">
+              <span>✨</span>
+              <span>Timeline Intelligence</span>
+            </div>
+            <h2 className="font-display font-bold text-2xl text-white mb-2">
+              {locale === 'en'
+                ? 'Looking for the best earbuds for your budget?'
+                : 'Quel écouteur sans fil acheter selon votre budget ?'}
+            </h2>
+            <p className="text-xs sm:text-sm text-dim leading-relaxed">
+              {locale === 'en'
+                ? 'Our historical engine analyzes battery, active noise cancellation, weight and generational evolution to recommend the exact #1 model for your price range.'
+                : 'Notre moteur analyse l’autonomie, la réduction de bruit, le confort et l’évolution historique pour vous recommander le meilleur modèle à votre prix.'}
+            </p>
+          </div>
+
+          <div className="shrink-0">
+            <Link
+              href="/trouver-mes-ecouteurs"
+              className="bg-white text-ink font-bold rounded-xl px-6 py-3 text-sm inline-flex items-center gap-2 hover:bg-white/90 transition-all shadow-lg hover:translate-x-0.5"
+            >
+              <span>{locale === 'en' ? 'Launch Intelligence Engine' : 'Trouver mes écouteurs'}</span>
+              <span>→</span>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Parcourir par marque */}

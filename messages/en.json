@@ -1,5 +1,6 @@
 {
   "nav": {
+    "finder": "Find Earbuds",
     "brands": "Brands",
     "years": "Years",
     "technologies": "Technologies",
@@ -17,6 +18,7 @@
     "usbC": "USB-C",
     "multipoint": "Multipoint",
     "tools": "Tools",
+    "finder": "Find Earbuds (Timeline Intelligence)",
     "comparator": "Comparator",
     "allComparisons": "All comparisons",
     "copyright": "© 2026 EarbudsTimeline — a continuation of PhoneTimeline"
@@ -316,5 +318,39 @@
     "browseIntro": "Browse {count} tracked earbuds by technical feature.",
     "ancCard": "Active noise cancellation (ANC)",
     "multipointCard": "Multipoint"
+  },
+  "intelligence": {
+    "badge": "Timeline Intelligence Engine",
+    "pageTitleLine1": "Find the perfect earbuds",
+    "pageTitleAccent": "for your budget.",
+    "pageSubtitle": "Set your budget and priorities. Our historical timeline intelligence analyzes specs, battery life, ANC, and market value to recommend your #1 best wireless earbuds.",
+    "controlTitle": "Customize your search",
+    "controlSubtitle": "Adjust your budget and filter according to your primary needs",
+    "budgetLabel": "Maximum Budget",
+    "unlimitedBudget": "Any budget",
+    "all": "All",
+    "allBrands": "All brands",
+    "ecosystemLabel": "Ecosystem / Brand",
+    "priorityLabel": "Main Priority",
+    "priorities": {
+      "balanced": "Balanced",
+      "anc": "Isolation & ANC",
+      "battery": "Max Battery Life",
+      "sport": "Sport & Water",
+      "commute": "Work & Multipoint",
+      "value": "Best Value"
+    },
+    "verdictBadge": "Timeline Intelligence Verdict",
+    "modelsAnalyzed": "eligible models analyzed",
+    "topRecommendation": "Top Recommended Choice",
+    "ancActive": "Active",
+    "ancNone": "Passive",
+    "whyTitle": "Why is this model the best choice?",
+    "viewFullSpecs": "View full specs",
+    "seeEvolution": "See line evolution",
+    "noResults": "No model precisely matches these criteria. Try increasing your budget slightly or resetting the brand filter.",
+    "alternativesTitle": "Smart Alternatives",
+    "alternativesSubtitle": "Other high-ranking options tailored to different angles",
+    "details": "Specs"
   }
 }

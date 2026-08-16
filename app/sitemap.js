@@ -28,6 +28,7 @@ export default async function sitemap() {
 
   const staticPaths = [
     { path: '', priority: 1 },
+    { path: '/trouver-mes-ecouteurs', priority: 0.95 },
     { path: '/comparaisons', priority: 0.7 },
     { path: '/comparer', priority: 0.7 },
     { path: '/blog', priority: 0.7 },

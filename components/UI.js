@@ -48,6 +48,7 @@ export async function Footer({ locale }) {
         </FooterCol>
 
         <FooterCol title={t('tools')}>
+          <FooterLink href="/trouver-mes-ecouteurs">✨ {t('finder') || 'Trouver mes écouteurs'}</FooterLink>
           <FooterLink href="/comparer">{t('comparator')}</FooterLink>
           <FooterLink href="/comparaisons">{t('allComparisons')}</FooterLink>
         </FooterCol>
