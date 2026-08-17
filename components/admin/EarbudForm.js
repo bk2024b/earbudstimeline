@@ -323,6 +323,108 @@ export default function EarbudForm({
         </label>
       </div>
 
+      {/* ── Standard DATA V1 ── tout ce bloc est optionnel : le formulaire reste
+          utilisable sans y toucher, mais le remplir fait monter le quality_score. */}
+      <div className="border-t border-line/40 pt-4 mt-1 flex flex-col gap-4">
+        <span className="text-xs font-semibold text-accent uppercase tracking-wide">Standard DATA V1 (optionnel)</span>
+
+        <div className="grid grid-cols-3 gap-4">
+          <FormField label="Famille" name="family" placeholder="ex. Pro" defaultValue={defaults.family} />
+          <FormField label="Génération" name="generation" placeholder="ex. 2" defaultValue={defaults.generation} />
+          <FormField label="Variante" name="variant" placeholder="ex. USB-C" defaultValue={defaults.variant} />
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <FormField
+            label="Date d'annonce"
+            name="announcement_date"
+            type="date"
+            defaultValue={defaults.announcement_date}
+          />
+          <div className="flex flex-col gap-1.5 text-sm">
+            <span className="text-dim text-xs">Statut</span>
+            <select
+              name="status"
+              defaultValue={defaults.status || 'released'}
+              className="bg-panel2 border border-line rounded-lg px-3 py-2.5 outline-none focus:border-accent text-white"
+            >
+              <option value="released">released</option>
+              <option value="announced">announced</option>
+              <option value="discontinued">discontinued</option>
+            </select>
+          </div>
+          <FormField label="Type / format" name="type" placeholder="ex. intra-auriculaire" defaultValue={defaults.type} />
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <FormField
+            label="Temps de recharge (h)"
+            name="charging_time_h"
+            type="number"
+            step="0.1"
+            defaultValue={defaults.charging_time_h}
+          />
+          <FormField label="Microphones" name="microphones" placeholder="ex. 3 par écouteur, beamforming" defaultValue={defaults.microphones} />
+          <FormField label="Écosystème" name="ecosystem" placeholder="ex. Apple, Android Fast Pair" defaultValue={defaults.ecosystem} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Codecs (DATA V1, séparés par virgule)" name="codecs" placeholder="ex. AAC, LDAC" defaultValue={Array.isArray(defaults.codecs) ? defaults.codecs.join(', ') : defaults.codecs} />
+          <FormField label="Application compagnon" name="app" placeholder="ex. AirPods (iOS)" defaultValue={defaults.app} />
+        </div>
+
+        <div className="flex gap-6 flex-wrap">
+          <label className="flex items-center gap-2 text-sm text-dim cursor-pointer hover:text-white select-none">
+            <input type="checkbox" name="transparency" defaultChecked={defaults.transparency} className="accent-accent cursor-pointer" />
+            Mode transparence
+          </label>
+          <label className="flex items-center gap-2 text-sm text-dim cursor-pointer hover:text-white select-none">
+            <input type="checkbox" name="wireless_charging" defaultChecked={defaults.wireless_charging} className="accent-accent cursor-pointer" />
+            Recharge sans fil
+          </label>
+          <label className="flex items-center gap-2 text-sm text-dim cursor-pointer hover:text-white select-none">
+            <input type="checkbox" name="spatial_audio" defaultChecked={defaults.spatial_audio} className="accent-accent cursor-pointer" />
+            Audio spatial
+          </label>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Source principale" name="source_primary" placeholder="URL ou nom de la source" defaultValue={defaults.source_primary} />
+          <FormField label="Source secondaire" name="source_secondary" placeholder="URL ou nom (optionnel)" defaultValue={defaults.source_secondary} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            label="Date de vérification de la source"
+            name="source_checked_at"
+            type="date"
+            defaultValue={defaults.source_checked_at}
+          />
+          <div className="flex flex-col gap-1.5 text-sm">
+            <span className="text-dim text-xs">Niveau de confiance</span>
+            <select
+              name="data_confidence"
+              defaultValue={defaults.data_confidence || ''}
+              className="bg-panel2 border border-line rounded-lg px-3 py-2.5 outline-none focus:border-accent text-white"
+            >
+              <option value="">—</option>
+              <option value="high">high</option>
+              <option value="medium">medium</option>
+              <option value="low">low</option>
+            </select>
+          </div>
+        </div>
+
+        <FormField label="Notes / anomalies" name="notes" placeholder="Remarques internes sur cette fiche" defaultValue={defaults.notes} />
+
+        {(defaults.quality_score !== undefined && defaults.quality_score !== null) && (
+          <p className="text-xs text-dim">
+            Score qualité actuel : <b className="text-accent">{defaults.quality_score}/100</b>
+            {defaults.qa_status ? ` — ${defaults.qa_status}` : ''} (recalculé automatiquement à l&apos;enregistrement)
+          </p>
+        )}
+      </div>
+
       <button type="submit" className="bg-accent text-ink font-semibold rounded-lg px-5 py-2.5 text-sm mt-2 self-start hover:opacity-90">
         {submitLabel}
       </button>

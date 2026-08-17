@@ -6,12 +6,19 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { slugify } from '@/lib/slug';
 import { uploadImage } from '@/lib/storage';
 import { validateCsvRow } from '@/lib/earbudsCsv';
+import { computeQualityScore } from '@/lib/qualityScore';
 
 function parseEarbudForm(formData) {
   const num = (key) => {
     const v = formData.get(key);
     return v === null || v === '' ? null : Number(v);
   };
+  const str = (key) => formData.get(key)?.toString().trim() || null;
+  const codecsList = (key) => {
+    const raw = str(key);
+    return raw ? raw.split(',').map((c) => c.trim()).filter(Boolean) : null;
+  };
+
   return {
     brand_id: formData.get('brand_id')?.toString() || '',
     gamme: formData.get('gamme')?.toString().trim() || '',
@@ -32,6 +39,27 @@ function parseEarbudForm(formData) {
     multipoint: formData.get('multipoint') === 'on',
     codec: formData.get('codec')?.toString().trim() || '—',
     buy_url: formData.get('buy_url')?.toString().trim() || null,
+
+    // DATA V1
+    family: str('family'),
+    generation: str('generation'),
+    variant: str('variant'),
+    announcement_date: str('announcement_date'),
+    status: str('status') || 'released',
+    type: str('type'),
+    transparency: formData.get('transparency') === 'on',
+    codecs: codecsList('codecs'),
+    charging_time_h: num('charging_time_h'),
+    wireless_charging: formData.get('wireless_charging') === 'on',
+    microphones: str('microphones'),
+    spatial_audio: formData.get('spatial_audio') === 'on',
+    ecosystem: str('ecosystem'),
+    app: str('app'),
+    source_primary: str('source_primary'),
+    source_secondary: str('source_secondary'),
+    source_checked_at: str('source_checked_at'),
+    data_confidence: str('data_confidence'),
+    notes: str('notes'),
   };
 }
 
@@ -94,8 +122,12 @@ export async function createEarbud(formData) {
     }
   }
 
+  data.image_url = image_url;
+  data.image_count = image_url ? 1 : 0;
+  Object.assign(data, computeQualityScore(data));
+
   const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from('earbuds').insert({ id, ...data, image_url });
+  const { error } = await supabase.from('earbuds').insert({ id, ...data });
   if (error) redirect(`/admin/earbuds/new?error=${encodeURIComponent(error.message)}`);
 
   revalidateEarbudCaches(data.brand_id, id);
@@ -106,16 +138,26 @@ export async function updateEarbud(id, formData) {
   const data = parseEarbudForm(formData);
   if (!isValid(data)) redirect(`/admin/earbuds/${id}?error=missing`);
 
+  const supabase = getSupabaseAdmin();
+
   const file = formData.get('image');
   if (file && file.size > 0) {
     try {
       data.image_url = await uploadImage(file, 'earbuds');
+      data.image_count = 1;
     } catch (e) {
       redirect(`/admin/earbuds/${id}?error=${encodeURIComponent(e.message)}`);
     }
+  } else {
+    // Pas de nouvelle image envoyée : on récupère l'image_url déjà en base pour
+    // que le score qualité reste correct (sinon "pas de nouveau fichier" serait
+    // à tort compté comme "aucune image").
+    const { data: existing } = await supabase.from('earbuds').select('image_url').eq('id', id).single();
+    data.image_url = existing?.image_url ?? null;
+    data.image_count = data.image_url ? 1 : 0;
   }
+  Object.assign(data, computeQualityScore(data));
 
-  const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('earbuds').update(data).eq('id', id);
   if (error) redirect(`/admin/earbuds/${id}?error=${encodeURIComponent(error.message)}`);
 
@@ -139,9 +181,15 @@ export async function bulkUploadImages(formData) {
 
     try {
       const image_url = await uploadImage(file, 'earbuds');
+      const { data: current } = await supabase.from('earbuds').select('*').eq('id', earbudId).single();
+      const patch = {
+        image_url,
+        image_count: 1,
+        ...computeQualityScore({ ...current, image_url }),
+      };
       const { data, error } = await supabase
         .from('earbuds')
-        .update({ image_url })
+        .update(patch)
         .eq('id', earbudId)
         .select('brand_id')
         .single();
@@ -197,6 +245,13 @@ export async function importEarbudsCsv(payload) {
     try {
       let error;
       if (isDuplicate) {
+        // Le CSV ne transporte pas d'image (gérée séparément via l'import d'images
+        // en masse) : on préserve image_url existant pour ne pas fausser le score
+        // qualité à chaque écrasement par CSV.
+        const { data: current } = await supabase.from('earbuds').select('image_url').eq('id', id).single();
+        data.image_url = current?.image_url ?? null;
+        data.image_count = data.image_url ? 1 : 0;
+        Object.assign(data, computeQualityScore(data));
         ({ error } = await supabase.from('earbuds').update(data).eq('id', id));
       } else {
         ({ error } = await supabase.from('earbuds').insert({ id, ...data }));
