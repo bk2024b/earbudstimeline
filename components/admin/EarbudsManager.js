@@ -8,7 +8,14 @@ import { deleteEarbud } from '@/app/admin/(dashboard)/earbuds/actions';
 export default function EarbudsManager({ earbuds = [], brands = [], initialBrand = 'all' }) {
   const [search, setSearch] = useState('');
   const [selectedBrand, setSelectedBrand] = useState(initialBrand);
-  const [filterMode, setFilterMode] = useState('all'); // 'all', 'no-image', 'marquant', 'anc'
+  const [filterMode, setFilterMode] = useState('all'); // 'all', 'no-image', 'marquant', 'anc', ou un qa_status
+
+  const QA_STATUS_STYLES = {
+    VERIFIED: 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400',
+    GOOD: 'bg-accent/15 border-accent/40 text-accent',
+    INCOMPLETE: 'bg-amber/15 border-amber/40 text-amber',
+    NEEDS_RESEARCH: 'bg-rose-500/15 border-rose-500/40 text-rose-400',
+  };
 
   const brandMap = useMemo(() => {
     const map = new Map();
@@ -29,6 +36,12 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
       if (filterMode === 'no-image' && e.image_url) return false;
       if (filterMode === 'marquant' && !e.marquant) return false;
       if (filterMode === 'anc' && !e.anc) return false;
+      if (
+        ['VERIFIED', 'GOOD', 'INCOMPLETE', 'NEEDS_RESEARCH'].includes(filterMode) &&
+        e.qa_status !== filterMode
+      ) {
+        return false;
+      }
 
       // 3. Recherche textuelle
       if (q) {
@@ -129,6 +142,30 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
           >
             🎧 Avec ANC ({earbuds.filter((e) => e.anc).length})
           </button>
+
+          <span className="text-dim text-[11px] ml-1">· Qualité DATA V1 :</span>
+          {['VERIFIED', 'GOOD', 'INCOMPLETE', 'NEEDS_RESEARCH'].map((status) => {
+            const count = earbuds.filter((e) => e.qa_status === status).length;
+            return (
+              <button
+                key={status}
+                type="button"
+                onClick={() => setFilterMode(status)}
+                className={`px-2.5 py-1 rounded-full border transition-colors font-mono ${
+                  filterMode === status
+                    ? QA_STATUS_STYLES[status]
+                    : 'border-line text-dim hover:text-white'
+                }`}
+              >
+                {status} ({count})
+              </button>
+            );
+          })}
+          {earbuds.some((e) => !e.qa_status) && (
+            <span className="text-[11px] text-dim">
+              ⚠ {earbuds.filter((e) => !e.qa_status).length} sans score (pré-migration DATA V1)
+            </span>
+          )}
         </div>
       </div>
 
@@ -169,6 +206,16 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
                     {e.price && (
                       <span className="text-xs font-mono text-dim">
                         {e.price} $
+                      </span>
+                    )}
+                    {e.qa_status && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded border font-mono ${
+                          QA_STATUS_STYLES[e.qa_status] || 'border-line text-dim'
+                        }`}
+                        title="Score qualité DATA V1"
+                      >
+                        {e.quality_score}/100 · {e.qa_status}
                       </span>
                     )}
                   </div>
