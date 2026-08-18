@@ -5,6 +5,9 @@ import { buildComparisonSlug } from '@/lib/compareSlug';
 import { getBluetoothVersionList, getCodecList } from '@/lib/tech';
 import { SITE_URL } from '@/lib/seo';
 import { routing } from '@/i18n/routing';
+import { GUIDE_PAGES } from '@/lib/guidePages';
+
+export const revalidate = 3600;
 
 function localizedEntries(path, meta = {}) {
   return routing.locales.map((locale) => ({
@@ -36,6 +39,9 @@ export default async function sitemap() {
     { path: '/technologies/multipoint', priority: 0.7 },
   ];
   const staticRoutes = staticPaths.flatMap(({ path, priority }) => localizedEntries(path, { changeFrequency: 'weekly', priority }));
+  const guideRoutes = GUIDE_PAGES.flatMap((guide) =>
+    localizedEntries(`/guides/${guide.slug}`, { changeFrequency: 'weekly', priority: guide.priority || 0.7 })
+  );
 
   const brandRoutes = brands.flatMap((b) => localizedEntries(`/marques/${b.id}`, { changeFrequency: 'weekly', priority: 0.8 }));
   const gammeKeys = new Set(models.map((m) => `${m.brand_id}::${slugify(m.gamme)}`));
@@ -67,5 +73,5 @@ export default async function sitemap() {
     };
   });
 
-  return [...staticRoutes, ...brandRoutes, ...gammeRoutes, ...yearRoutes, ...comparisonRoutes, ...btRoutes, ...codecRoutes, ...modelRoutes, ...articleRoutes];
+  return [...staticRoutes, ...guideRoutes, ...brandRoutes, ...gammeRoutes, ...yearRoutes, ...comparisonRoutes, ...btRoutes, ...codecRoutes, ...modelRoutes, ...articleRoutes];
 }
