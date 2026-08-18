@@ -1,5 +1,10 @@
 -- EarbudsTimeline — données de départ
 -- À exécuter après schema.sql
+--
+-- NOTE: les scores de performance (ANC, confort, appels, etc.) ne sont PAS
+-- inventés dans ce seed. Ils seront ajoutés progressivement dans
+-- earbuds_performance uniquement lorsqu'ils sont soutenus par des sources,
+-- puis détaillés dans earbuds_evidence.
 
 insert into brands (id, name, color) values
   ('apple',   'Apple',   '#F0F2F5'),
@@ -69,3 +74,7 @@ values
   -- Nothing — Ear (stick)
   ('nestick', 'nothing', 'Ear (stick)', 'Ear (stick)', 'Un rouge à lèvres pour boîtier', '2023-04-27', 99, true, false, 7, 29, 4.4, 'Non résistant', '—', '5.3')
 on conflict (id) do nothing;
+
+-- Performance / evidence
+-- Intentionally empty: no subjective performance score is seeded without evidence.
+-- Add verified records to earbuds_performance and earbuds_evidence after sourcing.
