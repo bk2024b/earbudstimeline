@@ -78,3 +78,584 @@ on conflict (id) do nothing;
 -- Performance / evidence
 -- Intentionally empty: no subjective performance score is seeded without evidence.
 -- Add verified records to earbuds_performance and earbuds_evidence after sourcing.
+
+
+/* ========================================================================
+   ANC INTELLIGENCE ENGINE
+   ========================================================================
+
+   Cette section est volontairement composée de fonctions et de vues
+   calculées : aucune note ANC n'est copiée dans earbuds.
+
+   Pipeline :
+
+     earbuds_evidence
+           ↓
+     anc_environment_mapping
+           ↓
+     anc_environment_scores
+           ↓
+     anc_scores
+
+   Le moteur distingue :
+     - les preuves DIRECTES : airplane, train, traffic, office, voices ;
+     - les preuves SUPPORTING : low_frequency, utiles comme signal secondaire ;
+     - les données ambiguës : elles restent hors des sous-scores.
+
+   Objectif : séparer la PERFORMANCE observée de la QUALITÉ/Couverture
+   documentaire. Un produit peut avoir un ANC Score élevé tout en ayant
+   une couverture faible ; cela signifie alors "très bon sur les preuves
+   disponibles", et non "prouvé dans tous les environnements".
+*/
+
+/* ------------------------------------------------------------------------
+   1. Normalisation des appréciations qualitatives
+
+   Convertit les valeurs textuelles utilisées par les sources en une échelle
+   commune 0–100. Les valeurs quantitatives numériques restent numériques.
+------------------------------------------------------------------------ */
+
+create or replace function public.anc_qualitative_to_score(
+  p_value text
+)
+returns numeric
+language sql
+immutable
+as $$
+  select case lower(trim(p_value))
+    when 'exceptional' then 95
+    when 'outstanding' then 95
+    when 'excellent' then 90
+    when 'amazing' then 90
+    when 'very strong' then 85
+    when 'strong' then 80
+    when 'good' then 70
+    when 'moderate' then 60
+    when 'weak' then 40
+    when 'poor' then 25
+    else null
+  end;
+$$;
+
+/* ------------------------------------------------------------------------
+   2. Poids documentaire de la source
+
+   Ce coefficient mesure la force de l'EVIDENCE, pas la performance du
+   produit. Une source éditoriale n'est donc pas considérée comme disant
+   qu'un produit est moins performant ; elle fournit simplement une preuve
+   moins reproductible qu'une mesure laboratoire.
+------------------------------------------------------------------------ */
+
+create or replace function public.anc_source_weight(
+  p_source_type text
+)
+returns numeric
+language sql
+immutable
+as $$
+  select case lower(trim(p_source_type))
+    when 'laboratory' then 1.00
+    when 'editorial_test' then 0.85
+    when 'community' then 0.70
+    else 0.75
+  end;
+$$;
+
+/* ------------------------------------------------------------------------
+   3. Normalisation des preuves ANC
+
+   La vue conserve les données originales et ajoute :
+     - normalized_score
+     - evidence_weight
+     - confidence_weight
+
+   Important : une preuve sans noise_category exploitable n'est PAS forcée
+   dans un environnement. Cela évite de transformer arbitrairement
+   "static noise", "shopping mall", "snoring", etc. en faux tests Office,
+   Voices ou Traffic.
+------------------------------------------------------------------------ */
+
+drop view if exists public.earbuds_anc_environment_normalized;
+
+create view public.earbuds_anc_environment_normalized
+as
+select
+  ev.id,
+  ev.earbud_id,
+
+  ev.source_name,
+  ev.source_type,
+  ev.confidence,
+
+  ev.noise_category,
+  ev.measurement_context,
+  ev.measurement_type,
+
+  ev.value,
+  ev.source_url,
+  ev.notes,
+
+  case
+    when ev.value ~ '^[0-9]+(\.[0-9]+)?$'
+      then greatest(0, least(100, ev.value::numeric))
+
+    when lower(trim(ev.value)) in ('exceptional', 'outstanding')
+      then 95
+
+    when lower(trim(ev.value)) in ('excellent', 'amazing')
+      then 90
+
+    when lower(trim(ev.value)) = 'very strong'
+      then 85
+
+    when lower(trim(ev.value)) = 'strong'
+      then 80
+
+    when lower(trim(ev.value)) = 'good'
+      then 70
+
+    when lower(trim(ev.value)) = 'moderate'
+      then 60
+
+    when lower(trim(ev.value)) = 'weak'
+      then 40
+
+    when lower(trim(ev.value)) = 'poor'
+      then 25
+
+    else null
+  end as normalized_score,
+
+  public.anc_source_weight(ev.source_type)
+    as evidence_weight,
+
+  case
+    when lower(trim(ev.confidence)) = 'high' then 1.00
+    when lower(trim(ev.confidence)) = 'medium' then 0.75
+    when lower(trim(ev.confidence)) = 'low' then 0.50
+    else 0.75
+  end as confidence_weight
+
+from public.earbuds_evidence ev
+where ev.metric = 'anc';
+
+/* ------------------------------------------------------------------------
+   4. Classification des preuves par environnement
+
+   Taxonomie actuelle :
+
+     Travel  → airplane, train
+     Office  → office
+     Traffic → traffic
+     Voices  → voices
+
+   low_frequency est uniquement un signal SUPPORTING.
+
+   Les autres catégories restent NULL tant qu'une règle de classification
+   explicite n'a pas été définie.
+------------------------------------------------------------------------ */
+
+drop view if exists public.earbuds_anc_environment_mapping;
+
+create view public.earbuds_anc_environment_mapping
+as
+select
+  ev.id,
+  ev.earbud_id,
+
+  ev.value,
+  ev.measurement_type,
+  ev.measurement_context,
+  ev.noise_category,
+
+  ev.source_name,
+  ev.source_type,
+  ev.confidence,
+  ev.source_url,
+  ev.notes,
+
+  case
+    when ev.noise_category in ('airplane', 'train')
+      then 'travel'
+
+    when ev.noise_category = 'traffic'
+      then 'traffic'
+
+    when ev.noise_category = 'office'
+      then 'office'
+
+    when ev.noise_category = 'voices'
+      then 'voices'
+
+    when ev.noise_category = 'low_frequency'
+      then 'supporting_low_frequency'
+
+    else null
+  end as environment,
+
+  case
+    when ev.noise_category in (
+      'airplane',
+      'train',
+      'traffic',
+      'office',
+      'voices'
+    )
+      then 'direct'
+
+    when ev.noise_category = 'low_frequency'
+      then 'supporting'
+
+    else null
+  end as evidence_role
+
+from public.earbuds_evidence ev
+where ev.metric = 'anc';
+
+/* ------------------------------------------------------------------------
+   5. Sous-scores ANC par environnement
+
+   Les preuves DIRECTES ont un poids de 1.00.
+   Les preuves SUPPORTING ont un poids de 0.35.
+
+   Les coefficients de source et de confiance sont ensuite appliqués.
+
+   Résultat :
+     - anc_travel_score
+     - anc_office_score
+     - anc_traffic_score
+     - anc_voices_score
+     - couverture documentaire
+     - nombre de preuves/sources
+------------------------------------------------------------------------ */
+
+drop view if exists public.earbuds_anc_environment_scores;
+
+create view public.earbuds_anc_environment_scores
+as
+with evidence as (
+  select
+    m.earbud_id,
+    m.environment,
+    m.evidence_role,
+    m.source_name,
+    m.source_type,
+    m.confidence,
+    m.value,
+
+    case
+      when m.value ~ '^[0-9]+(\.[0-9]+)?$'
+        then greatest(0, least(100, m.value::numeric))
+
+      when lower(trim(m.value)) in ('exceptional', 'outstanding')
+        then 95
+
+      when lower(trim(m.value)) in ('excellent', 'amazing')
+        then 90
+
+      when lower(trim(m.value)) = 'very strong'
+        then 85
+
+      when lower(trim(m.value)) = 'strong'
+        then 80
+
+      when lower(trim(m.value)) = 'good'
+        then 70
+
+      when lower(trim(m.value)) = 'moderate'
+        then 60
+
+      when lower(trim(m.value)) = 'weak'
+        then 40
+
+      when lower(trim(m.value)) = 'poor'
+        then 25
+
+      else null
+    end as normalized_score,
+
+    case
+      when m.evidence_role = 'direct' then 1.00
+      when m.evidence_role = 'supporting' then 0.35
+      else 0
+    end as role_weight,
+
+    public.anc_source_weight(m.source_type)
+      as source_weight,
+
+    case
+      when lower(trim(m.confidence)) = 'high' then 1.00
+      when lower(trim(m.confidence)) = 'medium' then 0.75
+      when lower(trim(m.confidence)) = 'low' then 0.50
+      else 0.75
+    end as confidence_weight
+
+  from public.earbuds_anc_environment_mapping m
+  where m.environment in (
+    'travel',
+    'office',
+    'traffic',
+    'voices',
+    'supporting_low_frequency'
+  )
+),
+
+evidence_weighted as (
+  select
+    *,
+
+    normalized_score
+      * role_weight
+      * source_weight
+      * confidence_weight
+      as weighted_score,
+
+    role_weight
+      * source_weight
+      * confidence_weight
+      as total_weight
+
+  from evidence
+  where normalized_score is not null
+),
+
+aggregated as (
+  select
+    earbud_id,
+
+    round(
+      sum(weighted_score) filter (
+        where environment in ('travel', 'supporting_low_frequency')
+      )
+      /
+      nullif(
+        sum(total_weight) filter (
+          where environment in ('travel', 'supporting_low_frequency')
+        ),
+        0
+      ),
+      2
+    ) as anc_travel_score,
+
+    round(
+      sum(weighted_score) filter (
+        where environment = 'office'
+      )
+      /
+      nullif(
+        sum(total_weight) filter (
+          where environment = 'office'
+        ),
+        0
+      ),
+      2
+    ) as anc_office_score,
+
+    round(
+      sum(weighted_score) filter (
+        where environment in ('traffic', 'supporting_low_frequency')
+      )
+      /
+      nullif(
+        sum(total_weight) filter (
+          where environment in ('traffic', 'supporting_low_frequency')
+        ),
+        0
+      ),
+      2
+    ) as anc_traffic_score,
+
+    round(
+      sum(weighted_score) filter (
+        where environment = 'voices'
+      )
+      /
+      nullif(
+        sum(total_weight) filter (
+          where environment = 'voices'
+        ),
+        0
+      ),
+      2
+    ) as anc_voices_score,
+
+    count(*) filter (
+      where evidence_role = 'direct'
+    ) as direct_evidence_count,
+
+    count(*) filter (
+      where evidence_role = 'supporting'
+    ) as supporting_evidence_count,
+
+    count(distinct source_name)
+      as source_count,
+
+    count(distinct environment) filter (
+      where evidence_role = 'direct'
+    ) as environment_count
+
+  from evidence_weighted
+  group by earbud_id
+)
+
+select
+  a.*,
+
+  round(
+    (a.environment_count / 4.0) * 100,
+    2
+  ) as coverage_score,
+
+  round(
+    least(
+      100,
+      (least(a.source_count, 3) / 3.0 * 30)
+      +
+      (least(a.direct_evidence_count, 6) / 6.0 * 40)
+      +
+      (a.environment_count / 4.0 * 30)
+    ),
+    2
+  ) as confidence_score
+
+from aggregated a;
+
+/* ------------------------------------------------------------------------
+   6. ANC Score /100
+
+   Poids métier :
+     Travel  = 30 %
+     Office  = 25 %
+     Traffic = 25 %
+     Voices  = 20 %
+
+   IMPORTANT : un sous-score NULL n'est PAS traité comme zéro.
+   Le score est normalisé uniquement sur les dimensions documentées.
+
+   Ainsi :
+     Traffic = 100 seul → ANC Score 100, mais couverture 25 %.
+
+   Cela sépare correctement :
+     - "performance sur les preuves disponibles"
+     - "niveau de couverture des preuves"
+------------------------------------------------------------------------ */
+
+drop view if exists public.earbuds_anc_scores;
+
+create view public.earbuds_anc_scores
+as
+with base as (
+  select
+    s.*,
+
+    0.30::numeric as travel_weight,
+    0.25::numeric as office_weight,
+    0.25::numeric as traffic_weight,
+    0.20::numeric as voices_weight
+
+  from public.earbuds_anc_environment_scores s
+),
+
+weighted as (
+  select
+    *,
+
+    (
+      case when anc_travel_score is not null then travel_weight else 0 end
+      +
+      case when anc_office_score is not null then office_weight else 0 end
+      +
+      case when anc_traffic_score is not null then traffic_weight else 0 end
+      +
+      case when anc_voices_score is not null then voices_weight else 0 end
+    ) as available_weight,
+
+    coalesce(anc_travel_score * travel_weight, 0)
+      + coalesce(anc_office_score * office_weight, 0)
+      + coalesce(anc_traffic_score * traffic_weight, 0)
+      + coalesce(anc_voices_score * voices_weight, 0)
+      as weighted_total
+
+  from base
+),
+
+final as (
+  select
+    *,
+    round(
+      weighted_total / nullif(available_weight, 0),
+      2
+    ) as anc_score
+  from weighted
+)
+
+select
+  earbud_id,
+
+  anc_travel_score,
+  anc_office_score,
+  anc_traffic_score,
+  anc_voices_score,
+
+  anc_score,
+
+  direct_evidence_count,
+  supporting_evidence_count,
+  environment_count,
+  source_count,
+
+  coverage_score,
+  confidence_score,
+
+  (
+    case when anc_travel_score is not null then 1 else 0 end
+    + case when anc_office_score is not null then 1 else 0 end
+    + case when anc_traffic_score is not null then 1 else 0 end
+    + case when anc_voices_score is not null then 1 else 0 end
+  ) as scored_dimensions,
+
+  round(
+    (
+      (
+        case when anc_travel_score is not null then 1 else 0 end
+        + case when anc_office_score is not null then 1 else 0 end
+        + case when anc_traffic_score is not null then 1 else 0 end
+        + case when anc_voices_score is not null then 1 else 0 end
+      ) / 4.0
+    ) * 100,
+    2
+  ) as score_coverage
+
+from final;
+
+/* ------------------------------------------------------------------------
+   7. Correction de classification connue
+
+   L'AirPods Pro 3 possède une preuve explicite "traffic" qui doit être
+   classée comme telle. La donnée source reste inchangée ; on ne fait ici
+   qu'une correction de catégorisation.
+
+   Cette instruction est volontairement conditionnelle et idempotente.
+------------------------------------------------------------------------ */
+
+update public.earbuds_evidence
+set noise_category = 'traffic'
+where id = 8
+  and metric = 'anc'
+  and measurement_context = 'traffic'
+  and noise_category is null;
+
+/* ------------------------------------------------------------------------
+   8. Contrôle rapide après seed
+------------------------------------------------------------------------ */
+
+-- select *
+-- from public.earbuds_anc_scores
+-- order by anc_score desc nulls last;
+
+-- Contrôle de couverture :
+-- select
+--   count(*) as scored_earbuds,
+--   count(*) filter (where score_coverage = 100) as fully_covered,
+--   count(*) filter (where score_coverage < 100) as partially_covered
+-- from public.earbuds_anc_scores;
