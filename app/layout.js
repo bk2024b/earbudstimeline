@@ -23,6 +23,9 @@ export const metadata = {
   title: "EarbudsTimeline — l'historique complet des écouteurs sans fil",
   description: "L'historique complet des écouteurs sans fil, marque par marque.",
   alternates: { canonical: '/' },
+  verification: {
+    google: 'ZilcoLVCMEUHQtUAAU3aOgfPqvd9MSjazLClBqS-CVA',
+  },
   openGraph: {
     title: 'EarbudsTimeline',
     description: "L'historique complet des écouteurs sans fil, marque par marque.",
