@@ -216,8 +216,21 @@
     "exploreByTech": "Explorer par technologie →",
     "seeComparisons": "Voir des comparaisons →",
     "featured": "Articles à la une",
+    "featuredBadge": "À la une",
+    "latestArticles": "Derniers articles",
     "seeAllArticles": "Voir tous les articles →",
     "availableIn": "Disponible en {lang} →"
+  },
+  "share": {
+    "label": "Partager",
+    "facebook": "Facebook",
+    "twitter": "X",
+    "reddit": "Reddit",
+    "linkedin": "LinkedIn"
+  },
+  "donate": {
+    "cta": "Offrir un café",
+    "subtitle": "EarbudsTimeline est un projet indépendant. Si cet article t'a aidé, un don libre fait toujours plaisir."
   },
   "related": {
     "articles": "Articles liés"
