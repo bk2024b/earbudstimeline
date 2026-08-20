@@ -4,11 +4,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Toujours sombre, quel que soit le thème — sert exclusivement de couleur
+        // de texte sur les surfaces claires/accent (ex. "bg-accent text-ink").
         ink: '#0A0A0B',
-        panel: '#141416',
-        panel2: '#1C1C1F',
-        line: '#27272A',
-        dim: '#9A9AA3',
+        // Theme-aware : leur valeur réelle vient des variables CSS définies dans
+        // globals.css (:root = sombre par défaut, .light = clair). L'admin est
+        // protégé du mode clair via .force-dark, qui réaffirme les valeurs sombres.
+        page: 'var(--color-page)',
+        panel: 'var(--color-panel)',
+        panel2: 'var(--color-panel2)',
+        line: 'var(--color-line)',
+        dim: 'var(--color-dim)',
+        fg: 'var(--color-fg)',
         accent: '#22D07A',
         amber: '#FFB454',
       },
@@ -18,15 +25,18 @@ module.exports = {
         mono: ['var(--font-mono)', 'monospace'],
       },
       typography: {
-        invert: {
+        // Configuré directement sur le variant par défaut (pas prose-invert) avec des
+        // variables CSS, pour que la même classe "prose" s'adapte automatiquement au
+        // thème clair/sombre — au lieu de forcer un rendu sombre partout.
+        DEFAULT: {
           css: {
-            '--tw-prose-body': '#E4E4E7',
-            '--tw-prose-headings': '#FFFFFF',
+            '--tw-prose-body': 'var(--color-fg-muted)',
+            '--tw-prose-headings': 'var(--color-fg)',
             '--tw-prose-links': '#22D07A',
-            '--tw-prose-bold': '#FFFFFF',
-            '--tw-prose-quotes': '#9A9AA3',
-            '--tw-prose-quote-borders': '#27272A',
-            '--tw-prose-bullets': '#9A9AA3',
+            '--tw-prose-bold': 'var(--color-fg)',
+            '--tw-prose-quotes': 'var(--color-dim)',
+            '--tw-prose-quote-borders': 'var(--color-line)',
+            '--tw-prose-bullets': 'var(--color-dim)',
           },
         },
       },

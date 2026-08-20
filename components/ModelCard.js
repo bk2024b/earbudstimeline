@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { yearOf, fmtH, fmtG } from '@/lib/format';
 import EarbudsIcon from './EarbudsIcon';
@@ -11,10 +12,15 @@ export default async function ModelCard({ m, color, locale }) {
       href={`/ecouteurs/${m.id}`}
       className="block bg-panel border border-line rounded-xl p-4 hover:border-accent hover:-translate-y-0.5 transition-all"
     >
-      <div className="w-full aspect-[4/3] rounded-lg bg-panel2 flex items-center justify-center mb-3 overflow-hidden">
+      <div className="relative w-full aspect-[4/3] rounded-lg bg-panel2 flex items-center justify-center mb-3 overflow-hidden">
         {m.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={m.image_url} alt={m.name} className="w-full h-full object-contain" />
+          <Image
+            src={m.image_url}
+            alt={m.name}
+            fill
+            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 200px"
+            className="object-contain"
+          />
         ) : (
           <EarbudsIcon color={color || '#9A9AA3'} className="w-14 h-14" />
         )}
@@ -34,10 +40,10 @@ export default async function ModelCard({ m, color, locale }) {
       </div>
       <div className="flex gap-3 font-mono text-[11px] text-dim flex-wrap">
         <span>
-          {t('case')} <b className="text-white font-semibold">{fmtH(m.battery_case_h)}</b>
+          {t('case')} <b className="text-fg font-semibold">{fmtH(m.battery_case_h)}</b>
         </span>
         <span>
-          {t('weight')} <b className="text-white font-semibold">{fmtG(m.weight_g)}</b>
+          {t('weight')} <b className="text-fg font-semibold">{fmtG(m.weight_g)}</b>
         </span>
       </div>
     </Link>

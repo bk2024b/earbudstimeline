@@ -78,7 +78,7 @@ export default function GlobalSearchModal({ models = [], brands = [] }) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 bg-panel2/80 hover:bg-panel2 border border-line hover:border-accent/40 rounded-full px-3 py-1.5 text-xs text-dim hover:text-white transition-all group"
+        className="flex items-center gap-2 bg-panel2/80 hover:bg-panel2 border border-line hover:border-accent/40 rounded-full px-3 py-1.5 text-xs text-dim hover:text-fg transition-all group"
         aria-label={t('ariaLabel')}
       >
         <Search className="w-3.5 h-3.5 group-hover:text-accent transition-colors" />
@@ -110,13 +110,13 @@ export default function GlobalSearchModal({ models = [], brands = [] }) {
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder={t('placeholder')}
-                className="flex-1 bg-transparent text-sm sm:text-base text-white placeholder:text-dim outline-none"
+                className="flex-1 bg-transparent text-sm sm:text-base text-fg placeholder:text-dim outline-none"
               />
               {q && (
                 <button
                   type="button"
                   onClick={() => setQ('')}
-                  className="text-dim hover:text-white p-1"
+                  className="text-dim hover:text-fg p-1"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -149,7 +149,7 @@ export default function GlobalSearchModal({ models = [], brands = [] }) {
                     onClick={() => handleSelect(m)}
                     onMouseEnter={() => setSelectedIndex(idx)}
                     className={`flex items-center justify-between p-3.5 sm:px-4 cursor-pointer transition-colors ${
-                      isSelected ? 'bg-accent/15 text-white' : 'hover:bg-panel2 text-dim'
+                      isSelected ? 'bg-accent/15 text-fg' : 'hover:bg-panel2 text-dim'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -157,7 +157,7 @@ export default function GlobalSearchModal({ models = [], brands = [] }) {
                         <BrandBadge brand={brand || { id: m.brand_id, name: m.brand_id, color: '#6C8CFF' }} size={24} />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-semibold text-white truncate flex items-center gap-2">
+                        <div className="text-sm font-semibold text-fg truncate flex items-center gap-2">
                           <span>{m.name}</span>
                           {m.anc && (
                             <span className="text-[10px] bg-panel border border-line text-emerald-400 px-1.5 py-0.2 rounded font-normal shrink-0">
@@ -173,7 +173,7 @@ export default function GlobalSearchModal({ models = [], brands = [] }) {
 
                     <div className="flex items-center gap-3 shrink-0 ml-3">
                       {m.price && (
-                        <span className="font-display text-sm font-bold text-white">
+                        <span className="font-display text-sm font-bold text-fg">
                           {m.price} €
                         </span>
                       )}

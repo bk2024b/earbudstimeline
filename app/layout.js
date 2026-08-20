@@ -36,7 +36,18 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="fr" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body className="bg-ink text-white font-body antialiased">
+      <head>
+        {/* Anti-flash : applique le thème sauvegardé sur <html> avant le premier
+            rendu, pour éviter un clignotement sombre→clair au chargement.
+            Reste sans effet sur l'admin, qui neutralise .light via .force-dark
+            (voir app/admin/layout.js et globals.css). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem('theme')==='light'){document.documentElement.classList.add('light')}}catch(e){}`,
+          }}
+        />
+      </head>
+      <body className="bg-page text-fg font-body antialiased">
         {children}
       </body>
     </html>

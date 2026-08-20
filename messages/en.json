@@ -232,6 +232,13 @@
     "cta": "Buy me a coffee",
     "subtitle": "EarbudsTimeline is an independent project. If this article helped you, a free-amount donation always makes my day."
   },
+  "newsletter": {
+    "title": "Stay in the loop",
+    "subtitle": "New articles and database updates, no spam.",
+    "placeholder": "you@email.com",
+    "cta": "Subscribe",
+    "success": "You're in — see you in your inbox!"
+  },
   "related": {
     "articles": "Related articles"
   },

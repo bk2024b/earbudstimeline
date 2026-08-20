@@ -62,7 +62,7 @@ export default function RichTextEditor({ name, defaultValue = '', value, onChang
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class: 'prose prose-invert max-w-none min-h-[320px] px-4 py-3 outline-none',
+        class: 'prose max-w-none min-h-[320px] px-4 py-3 outline-none',
       },
     },
     onUpdate: ({ editor }) => {

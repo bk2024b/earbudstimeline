@@ -8,7 +8,7 @@ export default function NotFound() {
       <div className="font-mono text-accent text-sm bg-accent/10 border border-accent/30 rounded-full px-3 py-1 mb-4">
         404
       </div>
-      <h1 className="font-display font-bold text-3xl sm:text-4xl text-white mb-2">
+      <h1 className="font-display font-bold text-3xl sm:text-4xl text-fg mb-2">
         Page introuvable
       </h1>
       <p className="text-dim text-sm max-w-md mb-6">

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import ThemeToggle from '@/components/ThemeToggle';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
 import { Sparkles } from 'lucide-react';
 
@@ -17,7 +18,7 @@ export default function Header({ models = [], brands = [] }) {
   };
 
   return (
-    <header className="flex items-center justify-between py-4 sm:py-5 mb-8 sticky top-0 bg-ink/90 backdrop-blur z-20 gap-3 sm:gap-6 border-b border-line/40">
+    <header className="flex items-center justify-between py-4 sm:py-5 mb-8 sticky top-0 bg-page/90 backdrop-blur z-20 gap-3 sm:gap-6 border-b border-line/40">
       <Link href="/" className="flex items-center gap-2.5 shrink-0">
         <Image src="/logo-icon.png" alt="" width={28} height={28} priority />
         <span className="font-display font-bold text-lg hidden xs:inline">EarbudsTimeline</span>
@@ -29,7 +30,7 @@ export default function Header({ models = [], brands = [] }) {
           className={`transition-all font-medium flex items-center gap-1.5 rounded-full px-3 py-1 shrink-0 ${
             isNavActive('/trouver-mes-ecouteurs')
               ? 'bg-accent text-ink font-semibold shadow-sm'
-              : 'text-accent hover:text-white bg-accent/10 border border-accent/30'
+              : 'text-accent hover:text-fg bg-accent/10 border border-accent/30'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />
@@ -38,7 +39,7 @@ export default function Header({ models = [], brands = [] }) {
         <Link
           href="/#marques"
           className={`transition-colors shrink-0 ${
-            pathname === '/' ? 'text-white' : 'hover:text-white'
+            pathname === '/' ? 'text-fg' : 'hover:text-fg'
           }`}
         >
           {t('brands')}
@@ -46,7 +47,7 @@ export default function Header({ models = [], brands = [] }) {
         <Link
           href="/annees"
           className={`transition-colors shrink-0 ${
-            isNavActive('/annees') ? 'text-white font-semibold' : 'hover:text-white'
+            isNavActive('/annees') ? 'text-fg font-semibold' : 'hover:text-fg'
           }`}
         >
           {t('years')}
@@ -54,7 +55,7 @@ export default function Header({ models = [], brands = [] }) {
         <Link
           href="/technologies"
           className={`transition-colors shrink-0 ${
-            isNavActive('/technologies') ? 'text-white font-semibold' : 'hover:text-white'
+            isNavActive('/technologies') ? 'text-fg font-semibold' : 'hover:text-fg'
           }`}
         >
           {t('technologies')}
@@ -62,7 +63,7 @@ export default function Header({ models = [], brands = [] }) {
         <Link
           href="/comparaisons"
           className={`transition-colors shrink-0 ${
-            isNavActive('/comparaisons') || isNavActive('/comparer') ? 'text-white font-semibold' : 'hover:text-white'
+            isNavActive('/comparaisons') || isNavActive('/comparer') ? 'text-fg font-semibold' : 'hover:text-fg'
           }`}
         >
           {t('comparisons')}
@@ -70,7 +71,7 @@ export default function Header({ models = [], brands = [] }) {
         <Link
           href="/blog"
           className={`transition-colors shrink-0 ${
-            isNavActive('/blog') ? 'text-white font-semibold' : 'hover:text-white'
+            isNavActive('/blog') ? 'text-fg font-semibold' : 'hover:text-fg'
           }`}
         >
           {t('blog')}
@@ -79,6 +80,7 @@ export default function Header({ models = [], brands = [] }) {
 
       <div className="flex items-center gap-2 shrink-0">
         <GlobalSearchModal models={models} brands={brands} />
+        <ThemeToggle />
         <LanguageSwitcher />
       </div>
     </header>

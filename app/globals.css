@@ -2,8 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Thème sombre par défaut (valeurs historiques du site, inchangées) */
+:root {
+  --color-page: #0A0A0B;
+  --color-panel: #141416;
+  --color-panel2: #1C1C1F;
+  --color-line: #27272A;
+  --color-dim: #9A9AA3;
+  --color-fg: #FFFFFF;
+  --color-fg-muted: #E4E4E7;
+  --color-table-border: #1F2430;
+  --color-table-head-bg: #141822;
+  --color-table-hover: rgba(255, 255, 255, 0.02);
+}
+
+/* Thème clair — appliqué sur <html> par ThemeToggle.js. N'affecte jamais
+   l'admin, protégé par .force-dark (voir plus bas) qui réaffirme les
+   valeurs sombres avec une spécificité plus forte. */
+html.light {
+  --color-page: #FFFFFF;
+  --color-panel: #F7F7F8;
+  --color-panel2: #EFEFF1;
+  --color-line: #E4E4E7;
+  --color-dim: #6B6B76;
+  --color-fg: #111113;
+  --color-fg-muted: #3F3F46;
+  --color-table-border: #E4E4E7;
+  --color-table-head-bg: #F4F4F5;
+  --color-table-hover: rgba(0, 0, 0, 0.02);
+}
+
+/* Bouclier admin : quel que soit le thème choisi sur le site public,
+   tout ce qui est enveloppé dans .force-dark (app/admin/layout.js)
+   reste figé sur les valeurs sombres historiques. */
+.force-dark {
+  --color-page: #0A0A0B;
+  --color-panel: #141416;
+  --color-panel2: #1C1C1F;
+  --color-line: #27272A;
+  --color-dim: #9A9AA3;
+  --color-fg: #FFFFFF;
+  --color-fg-muted: #E4E4E7;
+  --color-table-border: #1F2430;
+  --color-table-head-bg: #141822;
+  --color-table-hover: rgba(255, 255, 255, 0.02);
+}
+
 html {
-  background: #0b0d12;
+  background: var(--color-page);
 }
 
 body {
@@ -25,7 +71,7 @@ body {
 .ProseMirror td,
 .ProseMirror th {
   min-width: 1em;
-  border: 1px solid #1f2430;
+  border: 1px solid var(--color-table-border);
   padding: 8px 12px;
   vertical-align: top;
   box-sizing: border-box;
@@ -35,8 +81,8 @@ body {
 .ProseMirror th {
   font-weight: 600;
   text-align: left;
-  background-color: #141822;
-  color: #fff;
+  background-color: var(--color-table-head-bg);
+  color: var(--color-fg);
 }
 
 .ProseMirror .selectedCell:after {
@@ -60,26 +106,26 @@ body {
 }
 
 .prose thead {
-  border-bottom: 2px solid #282f3f;
+  border-bottom: 2px solid var(--color-table-border);
 }
 
 .prose th {
-  background-color: #141822;
-  color: #ffffff;
+  background-color: var(--color-table-head-bg);
+  color: var(--color-fg);
   font-weight: 600;
   text-align: left;
   padding: 0.65rem 0.9rem;
-  border: 1px solid #1f2430;
+  border: 1px solid var(--color-table-border);
 }
 
 .prose td {
   padding: 0.65rem 0.9rem;
-  border: 1px solid #1f2430;
-  color: #a0aec0;
+  border: 1px solid var(--color-table-border);
+  color: var(--color-dim);
 }
 
 .prose tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--color-table-hover);
 }
 
 /* Fade-in for modals / overlays */
@@ -94,3 +140,4 @@ body {
 /* Hide scrollbar but keep scroll functionality */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+

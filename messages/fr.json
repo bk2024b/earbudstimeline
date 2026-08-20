@@ -232,6 +232,13 @@
     "cta": "Offrir un café",
     "subtitle": "EarbudsTimeline est un projet indépendant. Si cet article t'a aidé, un don libre fait toujours plaisir."
   },
+  "newsletter": {
+    "title": "Reste dans la boucle",
+    "subtitle": "Les nouveaux articles et mises à jour de la base, sans spam.",
+    "placeholder": "ton@email.com",
+    "cta": "S'inscrire",
+    "success": "C'est fait — à bientôt dans ta boîte mail !"
+  },
   "related": {
     "articles": "Articles liés"
   },

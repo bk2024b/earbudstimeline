@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/navigation';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import { Battery, BatteryFull, Droplet, Bluetooth, ShoppingCart, ExternalLink, TrendingUp } from 'lucide-react';
 import { getEarbudBySlug, getGammeModels, getBrands, getAllEarbuds, getPublishedArticles } from '@/lib/queries';
 import { findRelatedArticles } from '@/lib/relatedArticles';
@@ -125,10 +126,16 @@ export default async function ModelPage({ params }) {
         </Link>
 
         <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-6 mb-8">
-          <div className="bg-panel2 border border-line rounded-2xl aspect-square flex items-center justify-center overflow-hidden">
+          <div className="relative bg-panel2 border border-line rounded-2xl aspect-square flex items-center justify-center overflow-hidden">
             {m.image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={m.image_url} alt={m.name} className="w-full h-full object-contain" />
+              <Image
+                src={m.image_url}
+                alt={m.name}
+                fill
+                priority
+                sizes="(max-width: 640px) 100vw, 180px"
+                className="object-contain"
+              />
             ) : (
               <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-20 h-20" />
             )}
@@ -164,7 +171,7 @@ export default async function ModelPage({ params }) {
               {prev && (
                 <Link
                   href={`/comparaisons/${buildComparisonSlug(prev.id, m.id)}`}
-                  className="border border-line hover:border-accent text-dim hover:text-white rounded-xl px-4 py-2.5 text-xs inline-flex items-center gap-1.5 transition-colors"
+                  className="border border-line hover:border-accent text-dim hover:text-fg rounded-xl px-4 py-2.5 text-xs inline-flex items-center gap-1.5 transition-colors"
                 >
                   <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
                   <span>{locale === 'en' ? `Compare vs ${prev.name}` : `Comparer vs ${prev.name}`}</span>

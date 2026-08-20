@@ -64,7 +64,7 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
           type="button"
           onClick={() => setBrandFilter('all')}
           className={`px-3 py-1.5 rounded-md text-xs font-medium border ${
-            brandFilter === 'all' ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-white'
+            brandFilter === 'all' ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-fg'
           }`}
         >
           {t('all')}
@@ -77,7 +77,7 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
             className={`px-3 py-1.5 rounded-md text-xs font-medium border ${
               brandFilter === b.id
                 ? 'bg-accent text-ink border-accent'
-                : 'bg-panel2 text-dim border-line hover:text-white'
+                : 'bg-panel2 text-dim border-line hover:text-fg'
             }`}
           >
             {b.name}
@@ -126,7 +126,7 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
 
           <label className="flex flex-col gap-1.5 text-xs">
             <span className="text-dim">
-              {t('maxPrice')} : <span className="font-mono text-white">{maxPrice} $</span>
+              {t('maxPrice')} : <span className="font-mono text-fg">{maxPrice} $</span>
             </span>
             <input
               type="range"

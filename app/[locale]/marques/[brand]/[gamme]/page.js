@@ -1,6 +1,7 @@
 import { Link } from '@/i18n/navigation';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import { ArrowRight, BatteryCharging, Cpu, DollarSign } from 'lucide-react';
 import { getBrandById, getEarbudsByBrand, getPublishedArticles } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
@@ -130,7 +131,7 @@ export default async function GammePage({ params }) {
         {isSingle ? (
           <>
             {t('singleIntroPrefix', { gamme: gammeName, brand: brand.name })}
-            <b className="text-white">{first.name}</b>
+            <b className="text-fg">{first.name}</b>
             {t('singleIntroSuffix', { year: yearOf(first.release_date) })}
             {first.price && t('singlePriceClause', { price: fmtMoney(first.price) })}.
           </>
@@ -173,10 +174,9 @@ export default async function GammePage({ params }) {
               href={`/ecouteurs/${m.id}`}
               className="flex-1 flex items-center gap-4 bg-panel border border-line rounded-xl p-4 mb-3 hover:border-accent transition-colors"
             >
-              <div className="w-14 h-14 rounded-lg bg-panel2 flex items-center justify-center overflow-hidden shrink-0">
+              <div className="relative w-14 h-14 rounded-lg bg-panel2 flex items-center justify-center overflow-hidden shrink-0">
                 {m.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={m.image_url} alt="" className="w-full h-full object-contain p-1.5" />
+                  <Image src={m.image_url} alt="" fill sizes="56px" className="object-contain p-1.5" />
                 ) : (
                   <EarbudsIcon color={brand.color} className="w-8 h-8" />
                 )}

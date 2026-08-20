@@ -34,7 +34,7 @@ export default function Timeline({ models, brands }) {
                 <span className={`h-px flex-1 ${i === 0 ? 'opacity-0' : 'bg-line'}`} />
                 <span
                   className={`w-3.5 h-3.5 rounded-full border-2 shrink-0 transition-transform group-hover:scale-125 ${
-                    isLast ? 'bg-accent border-accent shadow-[0_0_10px_#22D07A]' : 'bg-ink'
+                    isLast ? 'bg-accent border-accent shadow-[0_0_10px_#22D07A]' : 'bg-page'
                   }`}
                   style={!isLast ? { borderColor: colorById[m.brand_id] } : undefined}
                 />

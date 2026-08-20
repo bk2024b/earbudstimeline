@@ -1,6 +1,7 @@
 import { Link, redirect } from '@/i18n/navigation';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import { ShoppingCart, ExternalLink } from 'lucide-react';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { fmtH, fmtG, fmtMoney, yearOf } from '@/lib/format';
@@ -95,7 +96,7 @@ export default async function ComparisonPage({ params }) {
       <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <Head m={a} brand={brandOf(a.brand_id)} />
         <Head m={b} brand={brandOf(b.brand_id)} />
-        <span className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center w-9 h-9 rounded-full bg-ink border border-line text-dim text-[11px] font-mono">
+        <span className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center justify-center w-9 h-9 rounded-full bg-page border border-line text-dim text-[11px] font-mono">
           VS
         </span>
       </div>
@@ -126,10 +127,9 @@ function Head({ m, brand }) {
   return (
     <div className="bg-panel border border-line rounded-2xl p-4 flex flex-col gap-3">
       <div className="flex items-center gap-3.5">
-        <div className="bg-panel2 rounded-xl w-14 h-14 flex items-center justify-center shrink-0 overflow-hidden">
+        <div className="relative bg-panel2 rounded-xl w-14 h-14 flex items-center justify-center shrink-0 overflow-hidden">
           {m.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={m.image_url} alt="" className="w-full h-full object-contain p-1.5" />
+            <Image src={m.image_url} alt="" fill sizes="56px" className="object-contain p-1.5" />
           ) : (
             <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-9 h-9" />
           )}

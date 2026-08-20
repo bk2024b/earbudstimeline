@@ -35,7 +35,7 @@ export default async function TimelinePosition({ prev, current, next, gammeName,
                   {item.state === 'prev' && ` · ${t('prev')}`}
                   {item.state === 'next' && ` · ${t('next')}`}
                 </div>
-                <div className={`text-sm leading-snug ${isCurrent ? 'font-semibold text-white' : 'text-dim'}`}>
+                <div className={`text-sm leading-snug ${isCurrent ? 'font-semibold text-fg' : 'text-dim'}`}>
                   {item.m.name}
                 </div>
               </div>

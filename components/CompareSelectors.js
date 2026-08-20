@@ -45,7 +45,7 @@ export default function CompareSelectors({ brands = [], models = [], a, b }) {
           onClick={handleSwap}
           disabled={!a && !b}
           title="Inverser les deux modèles"
-          className="w-10 h-10 rounded-full bg-panel2 border border-line hover:border-accent text-dim hover:text-white flex items-center justify-center transition-all disabled:opacity-40"
+          className="w-10 h-10 rounded-full bg-panel2 border border-line hover:border-accent text-dim hover:text-fg flex items-center justify-center transition-all disabled:opacity-40"
         >
           <ArrowLeftRight className="w-4 h-4" />
         </button>
@@ -104,7 +104,7 @@ function ModelAutocompleteInput({ placeholder, selectedModel, brandMap, models, 
               size={22}
             />
             <div className="min-w-0">
-              <span className="font-semibold text-sm text-white block truncate">{selectedModel.name}</span>
+              <span className="font-semibold text-sm text-fg block truncate">{selectedModel.name}</span>
               <span className="text-xs text-dim block">
                 {brandMap[selectedModel.brand_id]?.name} • {selectedModel.release_date?.slice(0, 4)}
               </span>
@@ -113,7 +113,7 @@ function ModelAutocompleteInput({ placeholder, selectedModel, brandMap, models, 
           <button
             type="button"
             onClick={() => onSelect(null)}
-            className="p-1 text-dim hover:text-white rounded-lg hover:bg-panel"
+            className="p-1 text-dim hover:text-fg rounded-lg hover:bg-panel"
           >
             <X className="w-4 h-4" />
           </button>
@@ -131,7 +131,7 @@ function ModelAutocompleteInput({ placeholder, selectedModel, brandMap, models, 
               }}
               onFocus={() => setIsOpen(true)}
               placeholder={placeholder}
-              className="w-full bg-transparent text-sm text-white placeholder:text-dim outline-none"
+              className="w-full bg-transparent text-sm text-fg placeholder:text-dim outline-none"
             />
           </div>
 
@@ -156,7 +156,7 @@ function ModelAutocompleteInput({ placeholder, selectedModel, brandMap, models, 
                       <div className="flex items-center gap-2.5 min-w-0">
                         <BrandBadge brand={b || { id: m.brand_id, name: m.brand_id, color: '#6C8CFF' }} size={20} />
                         <div className="min-w-0">
-                          <span className="font-semibold text-white block truncate text-sm">{m.name}</span>
+                          <span className="font-semibold text-fg block truncate text-sm">{m.name}</span>
                           <span className="text-dim text-[11px] block">{b?.name} • {m.gamme}</span>
                         </div>
                       </div>

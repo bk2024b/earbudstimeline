@@ -97,7 +97,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-display font-bold text-xl text-white">{t('controlTitle')}</h2>
+              <h2 className="font-display font-bold text-xl text-fg">{t('controlTitle')}</h2>
               <p className="text-xs text-dim">{t('controlSubtitle')}</p>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
           <button
             type="button"
             onClick={handleCopyLink}
-            className="flex items-center gap-1.5 text-xs bg-panel2 hover:bg-panel2/80 border border-line text-dim hover:text-white rounded-xl px-3.5 py-2 transition-all shadow-sm"
+            className="flex items-center gap-1.5 text-xs bg-panel2 hover:bg-panel2/80 border border-line text-dim hover:text-fg rounded-xl px-3.5 py-2 transition-all shadow-sm"
           >
             {copied ? (
               <>
@@ -154,7 +154,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                   className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                     maxBudget === preset
                       ? 'bg-accent text-ink border-accent font-semibold'
-                      : 'bg-panel2 border-line text-dim hover:text-white hover:border-dim/50'
+                      : 'bg-panel2 border-line text-dim hover:text-fg hover:border-dim/50'
                   }`}
                 >
                   {preset >= 500 ? t('all') : `≤ ${preset} €`}
@@ -175,7 +175,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                 className={`text-xs px-3.5 py-2 rounded-lg border transition-colors ${
                   selectedBrand === 'all'
                     ? 'bg-white text-ink font-semibold border-white'
-                    : 'bg-panel2 border-line text-dim hover:text-white'
+                    : 'bg-panel2 border-line text-dim hover:text-fg'
                 }`}
               >
                 {t('allBrands')}
@@ -193,7 +193,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                   className={`text-xs px-3.5 py-2 rounded-lg border transition-colors ${
                     selectedBrand === b.id
                       ? 'font-semibold border-current shadow-sm'
-                      : 'bg-panel2 border-line text-dim hover:text-white'
+                      : 'bg-panel2 border-line text-dim hover:text-fg'
                   }`}
                 >
                   {b.name}
@@ -219,8 +219,8 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                   onClick={() => setPriority(item.id)}
                   className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
                     isSelected
-                      ? 'bg-accent/15 border-accent text-white shadow-md shadow-accent/10'
-                      : 'bg-panel2 border-line text-dim hover:text-white hover:border-line2'
+                      ? 'bg-accent/15 border-accent text-fg shadow-md shadow-accent/10'
+                      : 'bg-panel2 border-line text-dim hover:text-fg hover:border-line2'
                   }`}
                 >
                   <Icon className={`w-4 h-4 mb-1.5 ${isSelected ? 'text-accent' : 'text-dim'}`} />
@@ -263,7 +263,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                 <span>#1 — {t('topRecommendation')}</span>
               </div>
               <span className="text-xs text-dim">
-                Score Timeline : <b className="text-white">{winner.score}/100</b>
+                Score Timeline : <b className="text-fg">{winner.score}/100</b>
               </span>
             </div>
 
@@ -273,14 +273,14 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                 <div className="text-xs uppercase tracking-widest font-semibold text-dim mb-1">
                   {winner.brand.name} • {winner.model.gamme}
                 </div>
-                <h3 className="font-display font-bold text-2xl sm:text-3xl text-white">
+                <h3 className="font-display font-bold text-2xl sm:text-3xl text-fg">
                   {winner.model.name}
                 </h3>
                 <p className="text-sm text-dim italic mt-1">&laquo; {winner.model.tagline} &raquo;</p>
               </div>
 
               <div className="flex sm:flex-col items-baseline sm:items-end justify-between border-t sm:border-t-0 border-line pt-3 sm:pt-0">
-                <div className="font-display text-3xl sm:text-4xl font-bold text-white">
+                <div className="font-display text-3xl sm:text-4xl font-bold text-fg">
                   {winner.model.price ? `${winner.model.price} €` : '—'}
                 </div>
                 <div className="text-xs text-dim">
@@ -293,28 +293,28 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
               <div className="bg-panel/70 border border-line rounded-xl p-3.5">
                 <span className="text-[11px] uppercase tracking-wider text-dim block mb-1">ANC</span>
-                <span className="font-semibold text-sm text-white">
+                <span className="font-semibold text-sm text-fg">
                   {winner.model.anc ? `✅ ${t('ancActive')}` : `❌ ${t('ancNone')}`}
                 </span>
               </div>
 
               <div className="bg-panel/70 border border-line rounded-xl p-3.5">
                 <span className="text-[11px] uppercase tracking-wider text-dim block mb-1">Autonomie</span>
-                <span className="font-semibold text-sm text-white">
+                <span className="font-semibold text-sm text-fg">
                   {winner.model.battery_bud_h}h <span className="text-dim text-xs">/ {winner.metrics.totalBattery}h total</span>
                 </span>
               </div>
 
               <div className="bg-panel/70 border border-line rounded-xl p-3.5">
                 <span className="text-[11px] uppercase tracking-wider text-dim block mb-1">Poids & Étanchéité</span>
-                <span className="font-semibold text-sm text-white">
+                <span className="font-semibold text-sm text-fg">
                   {winner.model.weight_g}g • {winner.model.water_rating || 'IPX4'}
                 </span>
               </div>
 
               <div className="bg-panel/70 border border-line rounded-xl p-3.5">
                 <span className="text-[11px] uppercase tracking-wider text-dim block mb-1">Puce / BT</span>
-                <span className="font-semibold text-sm text-white truncate block">
+                <span className="font-semibold text-sm text-fg truncate block">
                   BT {winner.model.bluetooth || '5.3'} {winner.model.chip !== '—' ? `• ${winner.model.chip}` : ''}
                 </span>
               </div>
@@ -322,7 +322,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
 
             {/* Pourquoi ce choix ? Analyse Timeline Intelligence */}
             <div className="bg-panel/90 border border-line rounded-xl p-5 mb-8">
-              <h4 className="font-display font-semibold text-sm text-white mb-3 flex items-center gap-2">
+              <h4 className="font-display font-semibold text-sm text-fg mb-3 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 {t('whyTitle')}
               </h4>
@@ -362,7 +362,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
               {winner.predecessor && (
                 <Link
                   href={`/${locale}/marques/${winner.model.brand_id}/${slugify(winner.model.gamme)}`}
-                  className="bg-panel border border-line text-white hover:border-accent/60 rounded-xl px-4 py-3 text-xs sm:text-sm flex items-center gap-2 transition-colors"
+                  className="bg-panel border border-line text-fg hover:border-accent/60 rounded-xl px-4 py-3 text-xs sm:text-sm flex items-center gap-2 transition-colors"
                 >
                   <TrendingUp className="w-4 h-4 text-emerald-400" />
                   <span>{t('seeEvolution')} ({winner.predecessor.name})</span>
@@ -372,7 +372,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
               {winner.rival && (
                 <Link
                   href={`/${locale}/comparaisons/${buildComparisonSlug(winner.model.id, winner.rival.model.id)}`}
-                  className="bg-panel border border-line text-white hover:border-accent/60 rounded-xl px-4 py-3 text-xs sm:text-sm flex items-center gap-2 transition-colors"
+                  className="bg-panel border border-line text-fg hover:border-accent/60 rounded-xl px-4 py-3 text-xs sm:text-sm flex items-center gap-2 transition-colors"
                 >
                   <Swords className="w-4 h-4 text-amber" />
                   <span>{common('vs')} {winner.rival.model.name}</span>
@@ -391,7 +391,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
       {alternatives.length > 0 && (
         <div className="flex flex-col gap-5">
           <div className="border-t border-line pt-8">
-            <h3 className="font-display font-bold text-xl text-white mb-1">
+            <h3 className="font-display font-bold text-xl text-fg mb-1">
               {t('alternativesTitle')}
             </h3>
             <p className="text-xs text-dim">{t('alternativesSubtitle')}</p>
@@ -408,7 +408,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                     <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border ${alt.tagColor}`}>
                       {alt.tag}
                     </span>
-                    <span className="font-display font-bold text-sm text-white">
+                    <span className="font-display font-bold text-sm text-fg">
                       {alt.model.price ? `${alt.model.price} €` : '—'}
                     </span>
                   </div>
@@ -416,7 +416,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                   <div className="text-[11px] text-dim uppercase tracking-wider mb-1">
                     {alt.brand.name}
                   </div>
-                  <h4 className="font-display font-bold text-base text-white mb-2">
+                  <h4 className="font-display font-bold text-base text-fg mb-2">
                     {alt.model.name}
                   </h4>
                   <p className="text-xs text-dim leading-relaxed mb-4">
@@ -428,7 +428,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                   <div className="flex items-center gap-3">
                     <Link
                       href={`/${locale}/ecouteurs/${alt.model.id}`}
-                      className="text-xs text-white hover:text-accent font-medium flex items-center gap-1 transition-colors"
+                      className="text-xs text-fg hover:text-accent font-medium flex items-center gap-1 transition-colors"
                     >
                       <span>{t('details')}</span>
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -450,7 +450,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                   {winner && (
                     <Link
                       href={`/${locale}/comparaisons/${buildComparisonSlug(winner.model.id, alt.model.id)}`}
-                      className="text-xs text-dim hover:text-white flex items-center gap-1 transition-colors"
+                      className="text-xs text-dim hover:text-fg flex items-center gap-1 transition-colors"
                     >
                       <span>{common('compare')}</span>
                       <Swords className="w-3 h-3 text-accent" />
