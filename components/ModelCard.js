@@ -26,7 +26,7 @@ export default async function ModelCard({ m, color, locale }) {
         )}
       </div>
       <div className="flex justify-between items-start gap-2 mb-1.5">
-        <h4 className="m-0 text-[14px] font-semibold leading-tight">{m.name}</h4>
+        <h3 className="m-0 text-[14px] font-semibold leading-tight">{m.name}</h3>
         <span className="font-mono text-[11px] text-dim whitespace-nowrap">{yearOf(m.release_date)}</span>
       </div>
       <div className="text-[11.5px] text-dim mb-2.5">

@@ -34,6 +34,19 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  // Preconnect vers l'origine Supabase Storage (images produits/articles) —
+  // accélère le premier chargement d'image externe (Lighthouse "preconnect
+  // candidates"). Dérivé de la variable d'env plutôt que codé en dur, pour ne
+  // pas casser si le projet Supabase change.
+  let supabaseOrigin = null;
+  try {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      supabaseOrigin = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin;
+    }
+  } catch {
+    // URL invalide/absente : on se passe simplement du preconnect, pas bloquant.
+  }
+
   return (
     <html
       lang="fr"
@@ -41,6 +54,7 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <head>
+        {supabaseOrigin && <link rel="preconnect" href={supabaseOrigin} />}
         {/* Anti-flash : applique le thème sauvegardé sur <html> avant le premier
             rendu, pour éviter un clignotement sombre→clair au chargement.
             Reste sans effet sur l'admin, qui neutralise .light via .force-dark
