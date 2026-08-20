@@ -5,7 +5,9 @@
     "years": "Years",
     "technologies": "Technologies",
     "comparisons": "Comparisons",
-    "blog": "Blog"
+    "blog": "Blog",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "footer": {
     "explore": "Explore",

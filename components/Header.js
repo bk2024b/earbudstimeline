@@ -6,6 +6,7 @@ import { Link, usePathname } from '@/i18n/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeToggle from '@/components/ThemeToggle';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
+import MobileNav from '@/components/MobileNav';
 import { Sparkles } from 'lucide-react';
 
 export default function Header({ models = [], brands = [] }) {
@@ -21,13 +22,17 @@ export default function Header({ models = [], brands = [] }) {
     <header className="flex items-center justify-between py-4 sm:py-5 mb-8 sticky top-0 bg-page/90 backdrop-blur z-20 gap-3 sm:gap-6 border-b border-line/40">
       <Link href="/" className="flex items-center gap-2.5 shrink-0">
         <Image src="/logo-icon.png" alt="" width={28} height={28} priority />
+        {/* Toujours présent pour les lecteurs d'écran, même quand masqué
+            visuellement sur très petit écran pour gagner de la place. */}
         <span className="font-display font-bold text-lg hidden xs:inline">EarbudsTimeline</span>
+        <span className="sr-only xs:hidden">EarbudsTimeline</span>
       </Link>
 
-      <nav className="flex items-center gap-3 sm:gap-6 text-sm text-dim overflow-x-auto py-1 no-scrollbar">
+      {/* Navigation desktop — masquée en dessous de md, remplacée par MobileNav */}
+      <nav className="hidden md:flex items-center gap-3 lg:gap-6 text-sm text-dim min-w-0 flex-1 justify-center overflow-x-auto py-1 no-scrollbar">
         <Link
           href="/trouver-mes-ecouteurs"
-          className={`transition-all font-medium flex items-center gap-1.5 rounded-full px-3 py-1 shrink-0 ${
+          className={`transition-all font-medium flex items-center gap-1.5 rounded-full px-3 py-1.5 shrink-0 ${
             isNavActive('/trouver-mes-ecouteurs')
               ? 'bg-accent text-ink font-semibold shadow-sm'
               : 'text-accent hover:text-fg bg-accent/10 border border-accent/30'
@@ -80,8 +85,13 @@ export default function Header({ models = [], brands = [] }) {
 
       <div className="flex items-center gap-2 shrink-0">
         <GlobalSearchModal models={models} brands={brands} />
-        <ThemeToggle />
-        <LanguageSwitcher />
+        {/* Sur mobile, thème/langue vivent dans le panneau MobileNav — évite
+            de surcharger la ligne du header en dessous de md. */}
+        <div className="hidden md:flex items-center gap-2">
+          <ThemeToggle />
+          <LanguageSwitcher />
+        </div>
+        <MobileNav />
       </div>
     </header>
   );

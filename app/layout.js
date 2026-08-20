@@ -35,7 +35,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="fr" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    <html
+      lang="fr"
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* Anti-flash : applique le thème sauvegardé sur <html> avant le premier
             rendu, pour éviter un clignotement sombre→clair au chargement.
