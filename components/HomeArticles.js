@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 
 function fmtPublished(iso, locale) {
@@ -31,10 +32,9 @@ export default async function HomeArticles({ articles, locale }) {
             href={`/blog/${a.id}`}
             className="flex items-center gap-3.5 bg-panel border border-line rounded-xl p-3 hover:border-accent transition-colors"
           >
-            <div className="w-16 h-16 rounded-lg bg-panel2 shrink-0 overflow-hidden">
+            <div className="relative w-16 h-16 rounded-lg bg-panel2 shrink-0 overflow-hidden">
               {a.cover_image_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={a.cover_image_url} alt="" className="w-full h-full object-cover" />
+                <Image src={a.cover_image_url} alt="" fill sizes="64px" className="object-cover" />
               )}
             </div>
             <div className="min-w-0">

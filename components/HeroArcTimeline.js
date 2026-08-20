@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import EarbudsIcon from './EarbudsIcon';
 
 const W = 460;
@@ -59,10 +60,9 @@ export default function HeroArcTimeline({ models, brands }) {
             <span aria-hidden="true" className="font-mono text-[10px] text-dim group-hover:text-accent transition-colors">
               {new Date(m.release_date).getFullYear()}
             </span>
-            <span aria-hidden="true" className="w-14 h-14 rounded-xl bg-panel2 border border-line flex items-center justify-center overflow-hidden group-hover:border-accent transition-colors">
+            <span aria-hidden="true" className="relative w-14 h-14 rounded-xl bg-panel2 border border-line flex items-center justify-center overflow-hidden group-hover:border-accent transition-colors">
               {m.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={m.image_url} alt="" className="w-full h-full object-contain p-1.5" />
+                <Image src={m.image_url} alt="" fill sizes="56px" className="object-contain p-1.5" />
               ) : (
                 <EarbudsIcon color={colorOf(m.brand_id)} className="w-8 h-8" />
               )}

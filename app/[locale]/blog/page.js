@@ -1,5 +1,6 @@
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import { getPublishedArticles } from '@/lib/queries';
 import { canonicalFor } from '@/lib/seo';
 import FeaturedArticle from '@/components/FeaturedArticle';
@@ -53,10 +54,15 @@ export default async function BlogPage({ params }) {
                   href={`/blog/${a.id}`}
                   className="bg-panel border border-line rounded-2xl overflow-hidden hover:border-accent transition-colors flex flex-col"
                 >
-                  <div className="aspect-video bg-panel2">
+                  <div className="relative aspect-video bg-panel2">
                     {a.cover_image_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={a.cover_image_url} alt="" className="w-full h-full object-cover" />
+                      <Image
+                        src={a.cover_image_url}
+                        alt=""
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover"
+                      />
                     )}
                   </div>
                   <div className="p-4 flex flex-col gap-2 flex-1">

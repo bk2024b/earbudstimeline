@@ -48,7 +48,7 @@ export default function ShareButtons({ url, title, label }) {
           rel="noopener noreferrer"
           aria-label={n.label}
           title={n.label}
-          className="w-8 h-8 flex items-center justify-center rounded-full border border-line text-dim hover:text-accent hover:border-accent transition-colors"
+          className="w-11 h-11 flex items-center justify-center rounded-full border border-line text-dim hover:text-accent hover:border-accent transition-colors"
         >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
             {ICONS[n.id]}

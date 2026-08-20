@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 
 function fmtPublished(iso, locale) {
@@ -19,10 +20,15 @@ export default async function FeaturedArticle({ article, locale }) {
       href={`/blog/${article.id}`}
       className="group grid sm:grid-cols-2 gap-0 bg-panel border border-line rounded-2xl overflow-hidden hover:border-accent transition-colors mb-8"
     >
-      <div className="aspect-video sm:aspect-auto bg-panel2">
+      <div className="relative aspect-video sm:aspect-auto bg-panel2">
         {article.cover_image_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={article.cover_image_url} alt="" className="w-full h-full object-cover" />
+          <Image
+            src={article.cover_image_url}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 100vw, 50vw"
+            className="object-cover"
+          />
         )}
       </div>
       <div className="p-6 flex flex-col justify-center gap-3">

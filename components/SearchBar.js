@@ -37,7 +37,7 @@ export default function SearchBar({ models, brands }) {
         <button
           type="submit"
           aria-label={t('ariaLabel')}
-          className="bg-accent text-ink rounded-full w-8 h-8 flex items-center justify-center shrink-0 hover:opacity-90 transition-opacity"
+          className="bg-accent text-ink rounded-full w-11 h-11 flex items-center justify-center shrink-0 hover:opacity-90 transition-opacity"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
             <circle cx="11" cy="11" r="7" />

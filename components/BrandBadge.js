@@ -1,11 +1,13 @@
+import Image from 'next/image';
+
 export default function BrandBadge({ brand, size = 28 }) {
   if (brand.image_url) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <Image
         src={brand.image_url}
         alt={brand.name}
-        style={{ width: size, height: size }}
+        width={size}
+        height={size}
         className="rounded-lg object-contain bg-panel2 border border-line shrink-0"
       />
     );
