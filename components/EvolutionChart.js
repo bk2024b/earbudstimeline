@@ -62,7 +62,7 @@ export default function EvolutionChart({ models }) {
             key={tab_.id}
             type="button"
             onClick={() => setTab(tab_.id)}
-            className={`px-2.5 py-1.5 rounded-md text-xs font-medium border ${
+            className={`px-2.5 py-3.5 rounded-md text-xs font-medium border ${
               tab === tab_.id ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-fg'
             }`}
           >

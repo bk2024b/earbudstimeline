@@ -189,9 +189,7 @@ function RowCells({ brand, items, years }) {
               aria-label={m.name}
               className="w-2.5 h-2.5 rounded-full shrink-0 transition-transform hover:scale-150"
               style={{ background: brand.color }}
-            >
-              <span className="sr-only">{m.name}</span>
-            </Link>
+            />
           ))}
         </div>
       ))}

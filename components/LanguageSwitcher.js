@@ -21,7 +21,7 @@ export default function LanguageSwitcher() {
     <button
       type="button"
       onClick={() => router.replace(target, { locale: other })}
-      className="text-xs text-dim hover:text-accent border border-line rounded-full px-2.5 py-1 transition-colors"
+      className="text-xs text-dim hover:text-accent border border-line rounded-full px-3.5 py-3.5 transition-colors"
       aria-label={t('switchTo')}
     >
       {other.toUpperCase()}
