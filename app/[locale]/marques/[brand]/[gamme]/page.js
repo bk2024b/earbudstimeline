@@ -15,6 +15,7 @@ import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, JsonLd, canonicalFor 
 import BrandBadge from '@/components/BrandBadge';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import StatTile from '@/components/StatTile';
+import LineageTechGraph from '@/components/LineageTechGraph';
 import { Stat, Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
@@ -156,6 +157,15 @@ export default async function GammePage({ params }) {
           {stats.avgPrice && <StatTile icon={DollarSign} value={`${stats.avgPrice} $`} label={t('avgPrice')} />}
         </aside>
       )}
+
+      <LineageTechGraph
+        brand={brand}
+        brandId={brand.id}
+        gammeName={gammeName}
+        gammeSlug={gammeSlug}
+        models={models}
+        locale={locale}
+      />
 
       <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">{t('chronology')}</h2>
       <div className="flex flex-col gap-0 mb-12">

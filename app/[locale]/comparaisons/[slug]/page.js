@@ -8,18 +8,30 @@ import { fmtH, fmtG, fmtMoney, yearOf } from '@/lib/format';
 import { parseComparisonSlug, buildComparisonSlug, isCanonicalSlug } from '@/lib/compareSlug';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import EarbudsIcon from '@/components/EarbudsIcon';
+import EntityGraph from '@/components/EntityGraph';
 import { Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
 
 async function loadPair(slug) {
   const parsed = parseComparisonSlug(slug);
-  if (!parsed) return { a: null, b: null, brands: [] };
+  if (!parsed) return { a: null, b: null, brands: [], models: [] };
 
   const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]);
   const a = models.find((m) => m.id === parsed[0]);
   const b = models.find((m) => m.id === parsed[1]);
-  return { a, b, brands };
+  return { a, b, brands, models };
+}
+
+// Position d'un modèle dans sa propre lignée (même brand_id + gamme),
+// pour réutiliser EntityGraph dans le comparateur sans requête supplémentaire :
+// `models` est déjà chargé une fois pour toute la page via loadPair.
+function lineagePosition(model, models) {
+  const lineup = models
+    .filter((x) => x.brand_id === model.brand_id && x.gamme === model.gamme)
+    .sort((x, y) => x.release_date.localeCompare(y.release_date));
+  const idx = lineup.findIndex((x) => x.id === model.id);
+  return { prev: idx > 0 ? lineup[idx - 1] : null, next: idx < lineup.length - 1 ? lineup[idx + 1] : null };
 }
 
 export async function generateMetadata({ params }) {
@@ -48,7 +60,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ComparisonPage({ params }) {
   const { locale, slug } = params;
-  const { a, b, brands } = await loadPair(slug);
+  const { a, b, brands, models } = await loadPair(slug);
   if (!a || !b) notFound();
 
   if (!isCanonicalSlug(slug)) {
@@ -62,6 +74,8 @@ export default async function ComparisonPage({ params }) {
   const brandOf = (id) => brands.find((br) => br.id === id);
   const homeLabel = locale === 'en' ? 'Home' : 'Accueil';
   const yn = (v) => (v ? tc('yes') : tc('no'));
+  const posA = lineagePosition(a, models);
+  const posB = lineagePosition(b, models);
 
   return (
     <>
@@ -117,6 +131,14 @@ export default async function ComparisonPage({ params }) {
       <Link href={`/comparer?a=${a.id}&b=${b.id}`} className="inline-block text-accent text-xs hover:underline mb-8">
         {t('editThis')}
       </Link>
+
+      <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">
+        {locale === 'en' ? 'Where each model sits' : 'Position de chaque modèle'}
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <EntityGraph model={a} brand={brandOf(a.brand_id)} prev={posA.prev} next={posA.next} locale={locale} />
+        <EntityGraph model={b} brand={brandOf(b.brand_id)} prev={posB.prev} next={posB.next} locale={locale} />
+      </div>
 
       <Footer locale={locale} />
     </>
