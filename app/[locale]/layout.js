@@ -6,6 +6,7 @@ import { routing } from '@/i18n/routing';
 import { display, body, mono } from '@/lib/fonts';
 import Header from '@/components/Header';
 import MicrosoftClarity from '@/components/MicrosoftClarity';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { SITE_URL } from '@/lib/seo';
 
 export function generateStaticParams() {
@@ -63,9 +64,11 @@ export default async function LocaleLayout({ children, params }) {
         <main id="main-content">{children}</main>
       </div>
       {/* Chargé ici (routes publiques [locale] uniquement) et pas dans le
-          layout racine : Clarity fait de l'enregistrement de session, on
-          évite d'enregistrer les actions dans /admin. */}
+          layout racine : Clarity fait de l'enregistrement de session, GA
+          mesure du trafic réel — dans les deux cas on évite de compter
+          l'usage de /admin comme du trafic visiteur. */}
       <MicrosoftClarity />
+      <GoogleAnalytics />
     </NextIntlClientProvider>
   );
 }
