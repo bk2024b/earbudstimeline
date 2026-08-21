@@ -15,6 +15,7 @@ import ComparisonSuggestions from '@/components/ComparisonSuggestions';
 import RelatedArticles from '@/components/RelatedArticles';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import TimelinePosition from '@/components/TimelinePosition';
+import EntityGraph from '@/components/EntityGraph';
 import { Badge, Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
@@ -206,6 +207,8 @@ export default async function ModelPage({ params }) {
             </>
           )}
         </div>
+
+        <EntityGraph model={m} brand={brand} prev={prev} next={next} locale={locale} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
           <SpecGroup title={t('audioGroup')}>
