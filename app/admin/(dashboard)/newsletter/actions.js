@@ -52,7 +52,10 @@ export async function sendNewsletter(formData) {
     .is('unsubscribed_at', null);
 
   if (subError || !subscribers || subscribers.length === 0) {
-    await supabase.from('newsletters').update({ status: 'failed' }).eq('id', newsletter.id);
+    await supabase
+      .from('newsletters')
+      .update({ status: 'failed', error_message: 'Aucun abonné actif au moment de l\'envoi.' })
+      .eq('id', newsletter.id);
     redirect('/admin/newsletter/new?error=no_subscribers');
   }
 
@@ -61,7 +64,7 @@ export async function sendNewsletter(formData) {
     result = await sendNewsletterBatches({ subject, html: content_html, subscribers });
   } catch (e) {
     // Le plus souvent : clé Resend absente (compte pas encore configuré).
-    await supabase.from('newsletters').update({ status: 'failed' }).eq('id', newsletter.id);
+    await supabase.from('newsletters').update({ status: 'failed', error_message: e.message }).eq('id', newsletter.id);
     redirect(`/admin/newsletter/new?error=${encodeURIComponent(e.message)}`);
   }
 
@@ -71,6 +74,7 @@ export async function sendNewsletter(formData) {
       status: result.failed === 0 ? 'sent' : result.sent > 0 ? 'sent' : 'failed',
       recipient_count: result.sent,
       failed_count: result.failed,
+      error_message: result.lastError || null,
       sent_at: new Date().toISOString(),
     })
     .eq('id', newsletter.id);

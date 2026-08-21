@@ -51,6 +51,11 @@ export default async function NewsletterPage() {
                     {n.status === 'sent' && ` · ${n.recipient_count} envoyé(s)`}
                     {n.failed_count > 0 && ` · ${n.failed_count} échec(s)`}
                   </p>
+                  {n.status === 'failed' && n.error_message && (
+                    <p className="text-rose-400 text-xs mt-1 m-0 truncate" title={n.error_message}>
+                      {n.error_message}
+                    </p>
+                  )}
                 </div>
                 <span className={`text-xs px-2.5 py-1 rounded-full border shrink-0 ${s.cls}`}>{s.label}</span>
               </div>
