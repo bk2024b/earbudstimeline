@@ -6,7 +6,7 @@ import { ShoppingCart, ExternalLink } from 'lucide-react';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { fmtH, fmtG, fmtMoney, yearOf } from '@/lib/format';
 import { parseComparisonSlug, buildComparisonSlug, isCanonicalSlug } from '@/lib/compareSlug';
-import { buildBreadcrumbJsonLd, absoluteUrl, canonicalFor, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import { Footer } from '@/components/UI';
 
@@ -73,15 +73,15 @@ export default async function ComparisonPage({ params }) {
         ], locale)}
       />
       <JsonLd
-        data={{
-          '@context': 'https://schema.org',
-          '@type': 'ItemList',
+        data={buildCollectionPageJsonLd({
           name: `${a.name} vs ${b.name}`,
-          itemListElement: [
-            { '@type': 'ListItem', position: 1, url: absoluteUrl(`/ecouteurs/${a.id}`, locale), name: a.name },
-            { '@type': 'ListItem', position: 2, url: absoluteUrl(`/ecouteurs/${b.id}`, locale), name: b.name },
+          url: `/comparaisons/${slug}`,
+          locale,
+          items: [
+            { url: `/ecouteurs/${a.id}`, name: a.name },
+            { url: `/ecouteurs/${b.id}`, name: b.name },
           ],
-        }}
+        })}
       />
 
       <Link href="/comparaisons" className="inline-flex items-center gap-1.5 text-dim text-[13px] mb-6 hover:text-accent">

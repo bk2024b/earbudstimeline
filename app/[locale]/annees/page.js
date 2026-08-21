@@ -1,7 +1,7 @@
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getAllEarbuds } from '@/lib/queries';
-import { buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +39,14 @@ export default async function AnneesPage({ params }) {
           { name: homeLabel, url: '/' },
           { name: t('title'), url: '/annees' },
         ], locale)}
+      />
+      <JsonLd
+        data={buildCollectionPageJsonLd({
+          name: t('title'),
+          url: '/annees',
+          locale,
+          items: years.map((y) => ({ url: `/annees/${y}`, name: String(y) })),
+        })}
       />
 
       <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{t('title')}</div>

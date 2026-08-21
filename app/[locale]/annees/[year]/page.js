@@ -5,7 +5,7 @@ import { BatteryCharging, Cpu, Trophy, DollarSign } from 'lucide-react';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { pct } from '@/lib/format';
-import { buildBreadcrumbJsonLd, absoluteUrl, canonicalFor, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import ModelCard from '@/components/ModelCard';
 import StatTile from '@/components/StatTile';
 import { Stat, Footer } from '@/components/UI';
@@ -88,17 +88,12 @@ export default async function AnneePage({ params }) {
         ], locale)}
       />
       <JsonLd
-        data={{
-          '@context': 'https://schema.org',
-          '@type': 'ItemList',
+        data={buildCollectionPageJsonLd({
           name: t('title', { year }),
-          itemListElement: models.map((m, i) => ({
-            '@type': 'ListItem',
-            position: i + 1,
-            url: absoluteUrl(`/ecouteurs/${m.id}`, locale),
-            name: m.name,
-          })),
-        }}
+          url: `/annees/${year}`,
+          locale,
+          items: models.map((m) => ({ url: `/ecouteurs/${m.id}`, name: m.name })),
+        })}
       />
 
       <Link href="/annees" className="inline-flex items-center gap-1.5 text-dim text-[13px] mb-6 hover:text-accent">

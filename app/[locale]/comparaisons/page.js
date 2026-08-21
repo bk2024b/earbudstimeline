@@ -4,7 +4,7 @@ import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
 import { buildComparisonSlug } from '@/lib/compareSlug';
 import { yearOf } from '@/lib/format';
-import { canonicalFor } from '@/lib/seo';
+import { buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import CompareSelectors from '@/components/CompareSelectors';
 import { Footer } from '@/components/UI';
@@ -37,8 +37,23 @@ export default async function ComparaisonsPage({ params }) {
   const generational = getGenerationalPairs(models).slice(0, 16);
   const rivals = getRivalPairs(models, 12);
 
+  const collectionItems = [...generational, ...rivals].map(({ a, b }) => ({
+    url: `/comparaisons/${buildComparisonSlug(a.id, b.id)}`,
+    name: `${a.name} vs ${b.name}`,
+  }));
+
   return (
     <>
+      <JsonLd
+        data={buildCollectionPageJsonLd({
+          name: t('title'),
+          description: t('intro'),
+          url: '/comparaisons',
+          locale,
+          items: collectionItems,
+        })}
+      />
+
       <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{t('title')}</div>
       <h1 className="font-display font-bold text-[32px] mb-2">{t('title')}</h1>
       <p className="text-dim text-[13.5px] mb-8">{t('intro')}</p>

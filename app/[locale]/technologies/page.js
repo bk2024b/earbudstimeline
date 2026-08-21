@@ -2,7 +2,7 @@ import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getAllEarbuds } from '@/lib/queries';
 import { getBluetoothVersionList, getCodecList } from '@/lib/tech';
-import { buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
@@ -51,6 +51,21 @@ export default async function TechnologiesPage({ params }) {
           { name: homeLabel, url: '/' },
           { name: t('hubTitle'), url: '/technologies' },
         ], locale)}
+      />
+      <JsonLd
+        data={buildCollectionPageJsonLd({
+          name: t('hubTitle'),
+          description: ti('browseIntro', { count: models.length }),
+          url: '/technologies',
+          locale,
+          items: [
+            { url: '/technologies/anc', name: ti('ancCard') },
+            { url: '/technologies/usb-c', name: 'USB-C' },
+            { url: '/technologies/multipoint', name: ti('multipointCard') },
+            ...btVersions.map((v) => ({ url: `/technologies/bluetooth/${v.version}`, name: `Bluetooth ${v.version}` })),
+            ...codecs.map((c) => ({ url: `/technologies/codecs/${c.slug}`, name: c.name })),
+          ],
+        })}
       />
 
       <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{t('hubTitle')}</div>

@@ -5,7 +5,7 @@ import { BatteryCharging, Cpu, DollarSign } from 'lucide-react';
 import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { slugify } from '@/lib/slug';
-import { buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import ModelCard from '@/components/ModelCard';
 import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
@@ -67,6 +67,16 @@ export default async function BrandPage({ params }) {
           { name: homeLabel, url: '/' },
           { name: brand.name, url: `/marques/${brand.id}` },
         ], locale)}
+      />
+      <JsonLd
+        data={buildCollectionPageJsonLd({
+          name: brand.name,
+          url: `/marques/${brand.id}`,
+          locale,
+          items: [...models]
+            .sort((a, b) => b.release_date.localeCompare(a.release_date))
+            .map((m) => ({ url: `/ecouteurs/${m.id}`, name: m.name })),
+        })}
       />
       <Link href="/" className="inline-flex items-center gap-1.5 text-dim text-[13px] mb-6 hover:text-accent">
         {t('allBrandsBack')}

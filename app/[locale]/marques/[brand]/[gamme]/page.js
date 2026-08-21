@@ -11,7 +11,7 @@ import { findRelatedArticles } from '@/lib/relatedArticles';
 import RelatedArticles from '@/components/RelatedArticles';
 import { fmtDate, fmtMoney, yearOf, pct } from '@/lib/format';
 import { slugify } from '@/lib/slug';
-import { buildBreadcrumbJsonLd, JsonLd, absoluteUrl, canonicalFor } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, JsonLd, canonicalFor } from '@/lib/seo';
 import BrandBadge from '@/components/BrandBadge';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import StatTile from '@/components/StatTile';
@@ -93,17 +93,12 @@ export default async function GammePage({ params }) {
         ], locale)}
       />
       <JsonLd
-        data={{
-          '@context': 'https://schema.org',
-          '@type': 'ItemList',
+        data={buildCollectionPageJsonLd({
           name: `${brand.name} ${gammeName}`,
-          itemListElement: models.map((m, i) => ({
-            '@type': 'ListItem',
-            position: i + 1,
-            url: absoluteUrl(`/ecouteurs/${m.id}`, locale),
-            name: m.name,
-          })),
-        }}
+          url: `/marques/${brand.id}/${gammeSlug}`,
+          locale,
+          items: models.map((m) => ({ url: `/ecouteurs/${m.id}`, name: m.name })),
+        })}
       />
 
       <Link href={`/marques/${brand.id}`} className="inline-flex items-center gap-1.5 text-dim text-[13px] mb-6 hover:text-accent">

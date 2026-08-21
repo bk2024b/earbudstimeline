@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { computeStats } from '@/lib/stats';
-import { buildBreadcrumbJsonLd, absoluteUrl, JsonLd } from '@/lib/seo';
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, JsonLd } from '@/lib/seo';
 import ModelCard from './ModelCard';
 import { Stat, Footer } from './UI';
 
@@ -11,22 +11,19 @@ export default async function TechHubPage({ eyebrow, title, intro, models, brand
   const brandCount = new Set(models.map((m) => m.brand_id)).size;
 
   const sorted = [...models].sort((a, b) => b.release_date.localeCompare(a.release_date));
+  const pagePath = breadcrumbItems[breadcrumbItems.length - 1].url;
 
   return (
     <>
       <JsonLd data={buildBreadcrumbJsonLd(breadcrumbItems, locale)} />
       <JsonLd
-        data={{
-          '@context': 'https://schema.org',
-          '@type': 'ItemList',
+        data={buildCollectionPageJsonLd({
           name: title,
-          itemListElement: sorted.map((m, i) => ({
-            '@type': 'ListItem',
-            position: i + 1,
-            url: absoluteUrl(`/ecouteurs/${m.id}`, locale),
-            name: m.name,
-          })),
-        }}
+          description: intro,
+          url: pagePath,
+          locale,
+          items: sorted.map((m) => ({ url: `/ecouteurs/${m.id}`, name: m.name })),
+        })}
       />
 
       <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{eyebrow}</div>
