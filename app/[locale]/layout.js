@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { routing } from '@/i18n/routing';
 import { display, body, mono } from '@/lib/fonts';
 import Header from '@/components/Header';
+import MicrosoftClarity from '@/components/MicrosoftClarity';
 import { SITE_URL } from '@/lib/seo';
 
 export function generateStaticParams() {
@@ -51,10 +52,20 @@ export default async function LocaleLayout({ children, params }) {
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
+      {/* Lien d'évitement : invisible tant qu'il n'a pas le focus clavier,
+          permet de sauter la nav (recherche, langues, thème) pour atteindre
+          directement le contenu. Voir la classe .skip-link dans globals.css. */}
+      <a href="#main-content" className="skip-link">
+        {locale === 'en' ? 'Skip to content' : 'Aller au contenu'}
+      </a>
       <div className="max-w-[1080px] mx-auto px-5 pb-20">
         <Header models={models} brands={brands} />
-        <main>{children}</main>
+        <main id="main-content">{children}</main>
       </div>
+      {/* Chargé ici (routes publiques [locale] uniquement) et pas dans le
+          layout racine : Clarity fait de l'enregistrement de session, on
+          évite d'enregistrer les actions dans /admin. */}
+      <MicrosoftClarity />
     </NextIntlClientProvider>
   );
 }

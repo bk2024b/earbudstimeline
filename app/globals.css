@@ -60,6 +60,27 @@ body {
   background: rgba(70, 224, 200, 0.25);
 }
 
+/* Lien d'évitement (skip-link) : hors écran par défaut, réapparaît au focus
+   clavier (Tab depuis le haut de page) pour sauter directement au contenu
+   sans traverser toute la nav du Header. */
+.skip-link {
+  position: absolute;
+  top: -3rem;
+  left: 1rem;
+  z-index: 50;
+  background: #22D07A;
+  color: #0A0A0B;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
 .ProseMirror table {
   border-collapse: collapse;
   table-layout: fixed;

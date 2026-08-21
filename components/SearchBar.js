@@ -32,7 +32,7 @@ export default function SearchBar({ models, brands }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t('placeholder')}
-          className="flex-1 bg-transparent outline-none text-sm placeholder:text-dim"
+          className="flex-1 bg-transparent outline-none text-sm placeholder:text-dim focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
         />
         <button
           type="submit"

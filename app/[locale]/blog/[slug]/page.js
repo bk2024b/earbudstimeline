@@ -141,7 +141,7 @@ export default async function ArticlePage({ params }) {
             <div className="relative aspect-video rounded-2xl overflow-hidden bg-panel2 mb-8">
               <Image
                 src={article.cover_image_url}
-                alt=""
+                alt={article.title}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 700px"

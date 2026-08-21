@@ -110,7 +110,7 @@ export default function GlobalSearchModal({ models = [], brands = [] }) {
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder={t('placeholder')}
-                className="flex-1 bg-transparent text-sm sm:text-base text-fg placeholder:text-dim outline-none"
+                className="flex-1 bg-transparent text-sm sm:text-base text-fg placeholder:text-dim outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
               />
               {q && (
                 <button

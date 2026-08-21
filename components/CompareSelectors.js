@@ -131,7 +131,7 @@ function ModelAutocompleteInput({ placeholder, selectedModel, brandMap, models, 
               }}
               onFocus={() => setIsOpen(true)}
               placeholder={placeholder}
-              className="w-full bg-transparent text-sm text-fg placeholder:text-dim outline-none"
+              className="w-full bg-transparent text-sm text-fg placeholder:text-dim outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
             />
           </div>
 

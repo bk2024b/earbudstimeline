@@ -1,5 +1,8 @@
 import './globals.css';
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
+import { getLocale } from 'next-intl/server';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { SITE_URL } from '@/lib/seo';
 
 const display = Space_Grotesk({
@@ -33,7 +36,7 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
   // Preconnect vers l'origine Supabase Storage (images produits/articles) —
   // accélère le premier chargement d'image externe (Lighthouse "preconnect
   // candidates"). Dérivé de la variable d'env plutôt que codé en dur, pour ne
@@ -47,9 +50,15 @@ export default function RootLayout({ children }) {
     // URL invalide/absente : on se passe simplement du preconnect, pas bloquant.
   }
 
+  // Résolu via le contexte de requête next-intl (middleware + plugin), pas via
+  // `params` : ce layout racine est au-dessus du segment [locale] et ne reçoit
+  // donc jamais la locale par les params. Sans ça, <html lang> restait figé sur
+  // "fr" même sur les routes /en/*.
+  const locale = await getLocale();
+
   return (
     <html
-      lang="fr"
+      lang={locale}
       className={`${display.variable} ${body.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
@@ -67,6 +76,8 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-page text-fg font-body antialiased">
         {children}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
