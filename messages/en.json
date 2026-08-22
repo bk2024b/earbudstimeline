@@ -267,7 +267,15 @@
     "weight": "Weight",
     "bluetooth": "Bluetooth",
     "price": "Price",
-    "trendSuffix": "Evolution of {metric} for earbuds over time."
+    "ancAdoption": "ANC adoption",
+    "multipointAdoption": "Multipoint adoption",
+    "usbCAdoption": "USB-C adoption",
+    "wirelessChargingAdoption": "Wireless charging",
+    "trendSuffix": "Evolution of {metric} for earbuds over time.",
+    "allBrands": "All brands",
+    "allGammes": "All lines",
+    "megaChartTitle": "Brand comparison",
+    "megaChartIntro": "The same metric, overlaid by brand, to see who's leading and since when."
   },
   "trust": {
     "reliableTitle": "Reliable data",

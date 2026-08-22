@@ -267,7 +267,15 @@
     "weight": "Poids",
     "bluetooth": "Bluetooth",
     "price": "Prix",
-    "trendSuffix": "Évolution {metric} des écouteurs au fil du temps."
+    "ancAdoption": "Adoption ANC",
+    "multipointAdoption": "Adoption multipoint",
+    "usbCAdoption": "Adoption USB-C",
+    "wirelessChargingAdoption": "Recharge sans fil",
+    "trendSuffix": "Évolution {metric} des écouteurs au fil du temps.",
+    "allBrands": "Toutes les marques",
+    "allGammes": "Toutes les gammes",
+    "megaChartTitle": "Comparaison entre marques",
+    "megaChartIntro": "La même métrique, superposée par marque, pour voir qui mène et depuis quand."
   },
   "trust": {
     "reliableTitle": "Données fiables",

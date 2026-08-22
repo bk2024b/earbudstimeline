@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { EVOLUTION_METRICS, computeYearlySeries } from '@/lib/evolution';
+import { EVOLUTION_METRICS, computeYearlySeries, computeYearlyAdoptionRate } from '@/lib/evolution';
 
 const W = 460;
 const H = 200;
@@ -21,11 +21,18 @@ export default function EvolutionChart({ models }) {
     { id: 'poids', label: t('weight') },
     { id: 'bluetooth', label: t('bluetooth') },
     { id: 'prix', label: t('price') },
+    { id: 'anc', label: t('ancAdoption') },
+    { id: 'multipoint', label: t('multipointAdoption') },
+    { id: 'usbC', label: t('usbCAdoption') },
+    { id: 'wirelessCharging', label: t('wirelessChargingAdoption') },
   ];
   const metricLabel = TABS.find((x) => x.id === tab)?.label || '';
 
   const series = useMemo(
-    () => computeYearlySeries(models, metric.key, { onlyPresent: metric.onlyPresent, parse: metric.parse }),
+    () =>
+      metric.isRate
+        ? computeYearlyAdoptionRate(models, metric.boolKey)
+        : computeYearlySeries(models, metric.key, { onlyPresent: metric.onlyPresent, parse: metric.parse }),
     [models, metric]
   );
 
@@ -62,7 +69,7 @@ export default function EvolutionChart({ models }) {
             key={tab_.id}
             type="button"
             onClick={() => setTab(tab_.id)}
-            className={`px-2.5 py-3.5 rounded-md text-xs font-medium border ${
+            className={`px-2.5 py-1.5 rounded-md text-xs font-medium border ${
               tab === tab_.id ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-fg'
             }`}
           >
