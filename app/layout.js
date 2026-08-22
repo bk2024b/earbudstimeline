@@ -25,6 +25,10 @@ export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: "EarbudsTimeline — l'historique complet des écouteurs sans fil",
   description: "L'historique complet des écouteurs sans fil, marque par marque.",
+  icons: {
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
+  },
   alternates: { canonical: '/' },
   verification: {
     google: 'ZilcoLVCMEUHQtUAAU3aOgfPqvd9MSjazLClBqS-CVA',
