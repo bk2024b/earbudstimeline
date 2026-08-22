@@ -7,7 +7,7 @@ import { updateArticle } from '../actions';
 
 export const dynamic = 'force-dynamic';
 
-export default async function EditArticlePage({ params }) {
+export default async function EditArticlePage({ params, searchParams }) {
   const supabase = getSupabaseAdmin();
   const [{ data: article }, models, brands] = await Promise.all([
     supabase.from('articles').select('*').eq('id', params.id).single(),
@@ -27,6 +27,12 @@ export default async function EditArticlePage({ params }) {
           ← Retour aux articles
         </Link>
       </div>
+
+      {searchParams?.error && (
+        <p className="text-rose-400 text-sm mb-4">
+          Erreur : {searchParams.error === 'missing' ? 'Titre et extrait sont requis.' : searchParams.error}
+        </p>
+      )}
 
       <ArticleForm
         action={boundUpdate}

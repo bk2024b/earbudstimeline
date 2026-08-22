@@ -35,6 +35,12 @@ export default async function NewArticlePage({ searchParams }) {
         </Link>
       </div>
 
+      {searchParams?.error && (
+        <p className="text-rose-400 text-sm mb-4">
+          Erreur : {searchParams.error === 'missing' ? 'Titre et extrait sont requis.' : searchParams.error}
+        </p>
+      )}
+
       <ArticleForm
         action={createArticle}
         sourceArticle={sourceArticle}
