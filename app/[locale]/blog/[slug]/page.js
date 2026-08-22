@@ -12,6 +12,7 @@ import DonateButton from '@/components/DonateButton';
 import RelatedArticles from '@/components/RelatedArticles';
 import TableOfContents from '@/components/TableOfContents';
 import ArticleSummary from '@/components/ArticleSummary';
+import NewsletterSignup from '@/components/NewsletterSignup';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,11 +75,12 @@ export default async function ArticlePage({ params }) {
     },
   });
 
-  const [t, tc, td, ts, allArticles] = await Promise.all([
+  const [t, tc, td, ts, tn, allArticles] = await Promise.all([
     getTranslations({ locale, namespace: 'blog' }),
     getTranslations({ locale, namespace: 'common' }),
     getTranslations({ locale, namespace: 'donate' }),
     getTranslations({ locale, namespace: 'share' }),
+    getTranslations({ locale, namespace: 'newsletter' }),
     getPublishedArticles(locale).catch(() => []),
   ]);
 
@@ -158,6 +160,19 @@ export default async function ArticlePage({ params }) {
               <ShareButtons url={shareUrl} title={article.title} label={ts('label')} />
               <DonateButton label={td('cta')} />
             </div>
+          </div>
+
+          {/* Newsletter : placée après la lecture complète, avant les recommandations.
+              Elle ne perturbe donc ni le header, ni le corps de l'article, ni la TOC. */}
+          <div className="mt-8 mb-2">
+            <NewsletterSignup
+              locale={locale}
+              title={tn('title')}
+              subtitle={tn('subtitle')}
+              placeholder={tn('placeholder')}
+              cta={tn('cta')}
+              successMessage={tn('success')}
+            />
           </div>
 
           <RelatedArticles articles={relatedArticles} locale={locale} />
