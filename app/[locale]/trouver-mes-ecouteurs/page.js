@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { getAllEarbuds, getBrands, getAncScores } from '@/lib/queries';
 import { canonicalFor, JsonLd } from '@/lib/seo';
-import AncIntelligenceFinder from '@/components/AncIntelligenceFinder';
+import TimelineIntelligenceFinder from '@/components/TimelineIntelligenceFinder';
 import { Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
@@ -46,7 +46,7 @@ export default async function FinderPage({ params }) {
         </h1>
         <p className="text-sm sm:text-base text-dim leading-relaxed">{locale === 'en' ? 'A recommendation engine powered by catalog data and our evidence-based ANC intelligence layer.' : 'Un moteur de recommandation alimenté par le catalogue et notre couche d’intelligence ANC fondée sur les preuves.'}</p>
       </div>
-      <AncIntelligenceFinder initialModels={models} initialBrands={brands} initialAncScores={ancScores} />
+      <TimelineIntelligenceFinder initialModels={models} initialBrands={brands} initialAncScores={ancScores} />
       <Footer />
     </>
   );
