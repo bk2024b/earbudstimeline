@@ -65,11 +65,7 @@ export default async function ArticlePage({ params }) {
       'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'div',
     ],
     allowedAttributes: {
-      // id : requis pour que les ancres de la table des matières (#slug-du-titre)
-      // pointent vers un heading existant dans le HTML rendu.
-      h2: ['id'],
-      h3: ['id'],
-      h4: ['id'],
+      h2: ['id'], h3: ['id'], h4: ['id'],
       a: ['href', 'target', 'rel', 'class'],
       img: ['src', 'alt', 'class'],
       table: ['class'],
@@ -93,29 +89,25 @@ export default async function ArticlePage({ params }) {
     const haystack = `${article.title} ${article.excerpt}`.toLowerCase();
     mentionedBrand = brands.find((b) => haystack.includes(b.name.toLowerCase())) || null;
   } catch {
-    // pas bloquant : la page s'affiche sans le lien "Tous les X" si ça échoue
+    // pas bloquant
   }
 
-  // "Lecture liée" : même logique de rattachement que sur les pages produit —
-  // matching par marque mentionnée, pas de tagging manuel requis.
   const otherArticles = allArticles.filter((a) => a.id !== article.id);
   const relatedArticles = mentionedBrand
     ? findRelatedArticles(otherArticles, [mentionedBrand.name], 3)
     : otherArticles.slice(0, 3);
 
   const shareUrl = absoluteUrl(`/blog/${article.id}`, locale);
-
   const translation = await getArticleTranslation(article).catch(() => null);
   const langNames = { en: 'English', fr: 'Français' };
-
   const homeLabel = locale === 'en' ? 'Home' : 'Accueil';
   const toc = Array.isArray(article.table_of_contents) ? article.table_of_contents : [];
 
   return (
     <>
       <ReadingProgressBar />
-      <div className="grid lg:grid-cols-[1fr_300px] gap-8 items-start">
-        <article className="min-w-0">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_300px] gap-10 items-start">
+        <article className="min-w-0 w-full">
           <div>
             <JsonLd data={buildArticleJsonLd(article, locale)} />
             <JsonLd
@@ -125,74 +117,36 @@ export default async function ArticlePage({ params }) {
                 { name: article.title, url: `/blog/${article.id}` },
               ], locale)}
             />
-            <Link href="/blog" className="text-xs text-dim hover:text-accent">
-              {t('backToBlog')}
-            </Link>
+            <Link href="/blog" className="text-xs text-dim hover:text-accent">{t('backToBlog')}</Link>
             {translation && (
-              <Link
-                href={`/blog/${translation.id}`}
-                locale={translation.locale}
-                className="ml-3 text-xs text-accent hover:underline"
-              >
+              <Link href={`/blog/${translation.id}`} locale={translation.locale} className="ml-3 text-xs text-accent hover:underline">
                 {t('availableIn', { lang: langNames[translation.locale] })}
               </Link>
             )}
-
             <h1 className="font-display font-bold text-3xl sm:text-4xl mt-4 mb-2">{article.title}</h1>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-              <p className="text-dim text-sm m-0">
-                {fmtPublished(article.published_at, locale)} · {article.reading_minutes} {tc('minutesRead')}
-              </p>
+              <p className="text-dim text-sm m-0">{fmtPublished(article.published_at, locale)} · {article.reading_minutes} {tc('minutesRead')}</p>
               <ShareButtons url={shareUrl} title={article.title} />
             </div>
-
             {article.cover_image_url && (
               <div className="relative aspect-video rounded-2xl overflow-hidden bg-panel2 mb-8">
-                <Image
-                  src={article.cover_image_url}
-                  alt={article.title}
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 700px"
-                  className="object-cover"
-                />
+                <Image src={article.cover_image_url} alt={article.title} fill priority sizes="(max-width: 1024px) 100vw, 900px" className="object-cover" />
               </div>
             )}
           </div>
 
-          {/* TOC (colonne sticky en xl+, bloc repliable en dessous) + corps de l'article.
-              Un seul <TableOfContents> gère les deux rendus, voir le composant. */}
           <div className="xl:grid xl:grid-cols-[200px_minmax(0,1fr)] xl:gap-10 items-start">
             <TableOfContents items={toc} title={t('tableOfContents')} mobileTitle={t('tableOfContents')} />
-
-            <div className="min-w-0">
+            <div className="min-w-0 w-full">
               <ArticleSummary text={article.excerpt} label={t('inBrief')} />
-
-              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: safeHtml }} />
-
+              <div className="prose max-w-none w-full" dangerouslySetInnerHTML={{ __html: safeHtml }} />
               <div className="flex flex-wrap gap-2 mt-10 pt-6 border-t border-line">
                 {mentionedBrand && (
-                  <Link
-                    href={`/marques/${mentionedBrand.id}`}
-                    className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors"
-                  >
-                    {t('allX', { brand: mentionedBrand.name })}
-                  </Link>
+                  <Link href={`/marques/${mentionedBrand.id}`} className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors">{t('allX', { brand: mentionedBrand.name })}</Link>
                 )}
-                <Link
-                  href="/technologies"
-                  className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors"
-                >
-                  {t('exploreByTech')}
-                </Link>
-                <Link
-                  href="/comparaisons"
-                  className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors"
-                >
-                  {t('seeComparisons')}
-                </Link>
+                <Link href="/technologies" className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors">{t('exploreByTech')}</Link>
+                <Link href="/comparaisons" className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors">{t('seeComparisons')}</Link>
               </div>
-
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8 p-5 rounded-2xl bg-panel border border-line">
                 <p className="text-sm text-dim m-0">{td('subtitle')}</p>
                 <div className="flex items-center gap-4 shrink-0">
@@ -200,12 +154,10 @@ export default async function ArticlePage({ params }) {
                   <DonateButton label={td('cta')} />
                 </div>
               </div>
-
               <RelatedArticles articles={relatedArticles} locale={locale} />
             </div>
           </div>
         </article>
-
         <BlogSidebar articles={allArticles} locale={locale} excludeId={article.id} />
       </div>
     </>
