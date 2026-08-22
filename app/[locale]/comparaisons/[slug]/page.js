@@ -169,7 +169,7 @@ function Head({ m, brand }) {
         <a
           href={m.buy_url}
           target="_blank"
-          rel="noopener noreferrer nofollow"
+          rel="noopener noreferrer sponsored"
           className="inline-flex items-center gap-1.5 bg-accent text-ink font-semibold rounded-lg px-3.5 py-2 text-xs hover:opacity-90 transition-opacity self-start"
         >
           <ShoppingCart className="w-3.5 h-3.5" />

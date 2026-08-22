@@ -161,7 +161,7 @@ export default async function ModelPage({ params }) {
                 <a
                   href={m.buy_url}
                   target="_blank"
-                  rel="noopener noreferrer nofollow"
+                  rel="noopener noreferrer sponsored"
                   className="bg-accent text-ink font-bold rounded-xl px-5 py-2.5 text-sm inline-flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-accent/20"
                 >
                   <ShoppingCart className="w-4 h-4" />

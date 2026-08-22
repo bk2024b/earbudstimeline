@@ -28,7 +28,7 @@ import { slugify } from '@/lib/slug';
 
 const BUDGET_PRESETS = [99, 149, 199, 249, 299, 500];
 
-export default function TimelineIntelligenceFinder({ initialModels = [], initialBrands = [] }) {
+export default function TimelineIntelligenceFinder({ initialModels = [], initialBrands = [], initialAncScores = [] }) {
   const locale = useLocale();
   const t = useTranslations('intelligence');
   const common = useTranslations('common');
@@ -73,8 +73,9 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
       priority,
       brandId: selectedBrand,
       locale,
+      ancScores: initialAncScores,
     });
-  }, [initialModels, initialBrands, maxBudget, priority, selectedBrand, locale]);
+  }, [initialModels, initialBrands, initialAncScores, maxBudget, priority, selectedBrand, locale]);
 
   const { winner, alternatives, totalUnderBudget } = analysis;
 
@@ -293,9 +294,18 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
               <div className="bg-panel/70 border border-line rounded-xl p-3.5">
                 <span className="text-[11px] uppercase tracking-wider text-dim block mb-1">ANC</span>
-                <span className="font-semibold text-sm text-fg">
-                  {winner.model.anc ? `✅ ${t('ancActive')}` : `❌ ${t('ancNone')}`}
-                </span>
+                {winner.metrics.ancHasEvidence ? (
+                  <>
+                    <span className="font-semibold text-sm text-fg">{winner.metrics.ancScore}/100</span>
+                    <span className="block text-[10px] text-dim mt-0.5">
+                      {locale === 'en' ? 'evidence-based' : 'fondé sur preuves'} · {winner.metrics.ancCoverage}%
+                    </span>
+                  </>
+                ) : (
+                  <span className="font-semibold text-sm text-fg">
+                    {winner.model.anc ? `✅ ${t('ancActive')}` : `❌ ${t('ancNone')}`}
+                  </span>
+                )}
               </div>
 
               <div className="bg-panel/70 border border-line rounded-xl p-3.5">
@@ -343,7 +353,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                 <a
                   href={winner.model.buy_url}
                   target="_blank"
-                  rel="noopener noreferrer nofollow"
+                  rel="noopener noreferrer sponsored"
                   className="bg-accent text-ink font-bold rounded-xl px-5 py-3 text-xs sm:text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-accent/20"
                 >
                   <ShoppingCart className="w-4 h-4" />
@@ -438,7 +448,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                       <a
                         href={alt.model.buy_url}
                         target="_blank"
-                        rel="noopener noreferrer nofollow"
+                        rel="noopener noreferrer sponsored"
                         className="text-xs text-accent hover:underline font-semibold flex items-center gap-1"
                       >
                         <ShoppingCart className="w-3 h-3" />

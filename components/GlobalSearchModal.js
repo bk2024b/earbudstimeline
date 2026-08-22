@@ -74,18 +74,15 @@ export default function GlobalSearchModal({ models = [], brands = [] }) {
 
   return (
     <>
-      {/* Bouton déclencheur dans le Header */}
+      {/* Bouton déclencheur dans le Header — icône seule (desktop + mobile),
+          le champ complet n'apparaît que dans la modale au clic/raccourci. */}
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 bg-panel2/80 hover:bg-panel2 border border-line hover:border-accent/40 rounded-full px-3 py-1.5 text-xs text-dim hover:text-fg transition-all group"
+        className="flex items-center justify-center w-9 h-9 bg-panel2/80 hover:bg-panel2 border border-line hover:border-accent/40 rounded-full text-dim hover:text-accent transition-all"
         aria-label={t('ariaLabel')}
       >
-        <Search className="w-3.5 h-3.5 group-hover:text-accent transition-colors" />
-        <span className="hidden md:inline">{t('placeholder')}</span>
-        <kbd className="hidden sm:inline-block font-mono text-[10px] bg-panel border border-line px-1.5 py-0.5 rounded text-dim/70">
-          ⌘K
-        </kbd>
+        <Search className="w-4 h-4" />
       </button>
 
       {/* Modale plein écran */}
