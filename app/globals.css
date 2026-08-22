@@ -16,9 +16,6 @@
   --color-table-hover: rgba(255, 255, 255, 0.02);
 }
 
-/* Thème clair — appliqué sur <html> par ThemeToggle.js. N'affecte jamais
-   l'admin, protégé par .force-dark (voir plus bas) qui réaffirme les
-   valeurs sombres avec une spécificité plus forte. */
 html.light {
   --color-page: #FFFFFF;
   --color-panel: #F7F7F8;
@@ -32,9 +29,6 @@ html.light {
   --color-table-hover: rgba(0, 0, 0, 0.02);
 }
 
-/* Bouclier admin : quel que soit le thème choisi sur le site public,
-   tout ce qui est enveloppé dans .force-dark (app/admin/layout.js)
-   reste figé sur les valeurs sombres historiques. */
 .force-dark {
   --color-page: #0A0A0B;
   --color-panel: #141416;
@@ -48,21 +42,12 @@ html.light {
   --color-table-hover: rgba(255, 255, 255, 0.02);
 }
 
-html {
-  background: var(--color-page);
-}
+html { background: var(--color-page); }
 
-body {
-  font-family: var(--font-body), system-ui, sans-serif;
-}
+body { font-family: var(--font-body), system-ui, sans-serif; }
 
-::selection {
-  background: rgba(70, 224, 200, 0.25);
-}
+::selection { background: rgba(70, 224, 200, 0.25); }
 
-/* Lien d'évitement (skip-link) : hors écran par défaut, réapparaît au focus
-   clavier (Tab depuis le haut de page) pour sauter directement au contenu
-   sans traverser toute la nav du Header. */
 .skip-link {
   position: absolute;
   top: -3rem;
@@ -77,8 +62,63 @@ body {
   transition: top 0.15s ease;
 }
 
-.skip-link:focus {
-  top: 1rem;
+.skip-link:focus { top: 1rem; }
+
+/*
+ * Blog article layout
+ *
+ * Desktop = article fluide + TOC à droite.
+ * Il n'y a plus de colonne "Derniers articles" qui vole de la largeur au texte.
+ * Le corps de l'article garde au minimum 0px pour permettre au grid de calculer
+ * correctement sa largeur, tandis que la TOC conserve une largeur stable.
+ */
+.blog-article-layout {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.blog-article-main {
+  width: 100%;
+  min-width: 0;
+}
+
+.blog-article-toc-desktop {
+  display: none;
+}
+
+.blog-article-toc-mobile {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .blog-article-layout {
+    grid-template-columns: minmax(0, 1fr) 230px;
+    gap: 3rem;
+  }
+
+  .blog-article-toc-desktop {
+    display: block;
+    min-width: 0;
+    position: sticky;
+    top: 6rem;
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+  }
+
+  .blog-article-toc-desktop .xl\:block {
+    display: block;
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .blog-article-toc-mobile {
+    display: none;
+  }
 }
 
 .ProseMirror table {
@@ -115,7 +155,6 @@ body {
   pointer-events: none;
 }
 
-/* Styles des tableaux sur la page publique du blog */
 .prose table {
   width: 100%;
   border-collapse: collapse;
@@ -126,9 +165,7 @@ body {
   overflow-x: auto;
 }
 
-.prose thead {
-  border-bottom: 2px solid var(--color-table-border);
-}
+.prose thead { border-bottom: 2px solid var(--color-table-border); }
 
 .prose th {
   background-color: var(--color-table-head-bg);
@@ -145,20 +182,14 @@ body {
   color: var(--color-dim);
 }
 
-.prose tbody tr:hover {
-  background-color: var(--color-table-hover);
-}
+.prose tbody tr:hover { background-color: var(--color-table-hover); }
 
-/* Fade-in for modals / overlays */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-.animate-fadeIn {
-  animation: fadeIn 0.15s ease-out;
-}
 
-/* Hide scrollbar but keep scroll functionality */
+.animate-fadeIn { animation: fadeIn 0.15s ease-out; }
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
