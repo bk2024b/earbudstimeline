@@ -13,6 +13,7 @@ import StatTile from '@/components/StatTile';
 import HomeComparisons from '@/components/HomeComparisons';
 import HomeArticles from '@/components/HomeArticles';
 import TrustBar from '@/components/TrustBar';
+import AdSlot from '@/components/AdSlot';
 import { Stat, Footer } from '@/components/UI';
 
 export const dynamic = 'force-dynamic';
@@ -217,6 +218,14 @@ export default async function HomePage({ params, searchParams }) {
       </div>
 
       <TrustBar locale={locale} />
+
+      <AdSlot
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_HOME_BANNER_KEY}
+        width={728}
+        height={90}
+        invokeDomain="www.highrevenueformat.com"
+        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
+      />
 
       <Footer locale={locale} />
     </>
