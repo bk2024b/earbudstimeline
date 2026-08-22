@@ -59,7 +59,7 @@ export default async function LocaleLayout({ children, params }) {
       <a href="#main-content" className="skip-link">
         {locale === 'en' ? 'Skip to content' : 'Aller au contenu'}
       </a>
-      <div className="max-w-[1080px] mx-auto px-5 pb-20">
+      <div className="max-w-[1280px] mx-auto px-5 pb-20">
         <Header models={models} brands={brands} />
         <main id="main-content">{children}</main>
       </div>
