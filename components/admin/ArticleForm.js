@@ -15,11 +15,11 @@ export default function ArticleForm({
   brands = [],
 }) {
   const [status, setStatus] = useState(defaults.status || 'draft');
+  const [locale, setLocale] = useState(defaults.locale || (sourceArticle ? 'en' : 'fr'));
   const [title, setTitle] = useState(defaults.title || '');
   const [excerpt, setExcerpt] = useState(defaults.excerpt || '');
   const [slugId, setSlugId] = useState(defaults.id || '');
   const [contentHtml, setContentHtml] = useState(defaults.content_html || '');
-  const locale = defaults.locale || (sourceArticle ? 'en' : 'fr');
 
   function handleMarkdownImport(result) {
     if (!result) return;
@@ -28,6 +28,7 @@ export default function ArticleForm({
     if (!lockId && result.id) setSlugId(result.id);
     if (result.status) setStatus(result.status);
     if (result.content_html) setContentHtml(result.content_html);
+    if (result.locale === 'fr' || result.locale === 'en') setLocale(result.locale);
   }
 
   return (
@@ -55,7 +56,25 @@ export default function ArticleForm({
           </div>
         )}
 
-        <input type="hidden" name="locale" value={locale} />
+        <div>
+          <label htmlFor="article-locale" className="block text-xs text-dim mb-1.5">
+            Langue de l&apos;article
+          </label>
+          <select
+            id="article-locale"
+            name="locale"
+            value={locale}
+            onChange={(e) => setLocale(e.target.value)}
+            className="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 outline-none focus:border-accent text-white"
+          >
+            <option value="fr">Français (FR)</option>
+            <option value="en">English (EN)</option>
+          </select>
+          <p className="text-xs text-dim mt-1.5">
+            Choisissez la langue principale du contenu. Elle détermine notamment la version du site sur laquelle l&apos;article sera publié.
+          </p>
+        </div>
+
         {sourceArticle && <input type="hidden" name="translation_of" value={sourceArticle.id} />}
 
         {!lockId && (
@@ -101,7 +120,7 @@ export default function ArticleForm({
             type="file"
             name="cover_image"
             accept="image/*"
-            className="w-full text-sm text-dim file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-panel2 file:text-white file:text-xs file:cursor-pointer"
+            className="w-full text-sm text-dim file:mr-3 file:py-2 file:px-3 file:rounded-lg file:bg-panel2 file:text-white file:text-xs file:cursor-pointer"
           />
           {defaults.cover_image_url && (
             <p className="text-xs text-dim mt-1.5">Laisser vide pour conserver l&apos;image actuelle.</p>
