@@ -4,14 +4,12 @@ import { BatteryCharging, Cpu, Trophy, DollarSign } from 'lucide-react';
 import { getAllEarbuds, getBrands, getPublishedArticles } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
-import InteractiveTimeline from '@/components/InteractiveTimeline';
 import ModelCard from '@/components/ModelCard';
 import SearchBar from '@/components/SearchBar';
 import PopularTags from '@/components/PopularTags';
 import HeroArcTimeline from '@/components/HeroArcTimeline';
 import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
-import EvolutionChart from '@/components/EvolutionChart';
 import HomeComparisons from '@/components/HomeComparisons';
 import HomeArticles from '@/components/HomeArticles';
 import TrustBar from '@/components/TrustBar';
@@ -43,6 +41,7 @@ export default async function HomePage({ params, searchParams }) {
   const sortedBrands = [...brands]
     .map((b) => ({ ...b, count: models.filter((m) => m.brand_id === b.id).length }))
     .sort((a, b) => b.count - a.count);
+  const topBrands = sortedBrands.slice(0, 10);
 
   const topRecentMarquant = [...models]
     .filter((m) => m.marquant)
@@ -134,15 +133,19 @@ export default async function HomePage({ params, searchParams }) {
         </div>
       </div>
 
-      {/* Parcourir par marque */}
+      {/* Parcourir par marque — seulement les plus représentées ici, la liste
+          complète vit sur /marques pour ne pas alourdir la homepage. */}
       <div className="mb-12">
         <div className="flex items-center justify-between mb-4">
           <h2 id="marques" className="text-xs uppercase tracking-[0.1em] text-dim m-0">
             {t('browseByBrand')}
           </h2>
+          <Link href="/marques" className="text-xs text-accent hover:underline shrink-0">
+            {locale === 'en' ? 'See all brands →' : 'Voir toutes les marques →'}
+          </Link>
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3.5">
-          {sortedBrands.map((b) => {
+          {topBrands.map((b) => {
             const bModels = models.filter((m) => m.brand_id === b.id);
             const years = bModels.map((m) => Number(m.release_date.slice(0, 4)));
             return (
@@ -164,14 +167,26 @@ export default async function HomePage({ params, searchParams }) {
         </div>
       </div>
 
-      <div id="timeline">
-        <InteractiveTimeline
-          models={models}
-          brands={brands}
-          locale={locale}
-          initialAnc={searchParams?.anc === 'yes' ? 'yes' : 'all'}
-          initialBt={searchParams?.bt || 'all'}
-        />
+      {/* Teaser Timeline — la timeline interactive complète (filtres marque/ANC/BT)
+          vit désormais sur sa propre page /timeline, avec les graphes d'évolution. */}
+      <div id="timeline" className="bg-panel border border-line rounded-2xl p-6 sm:p-8 mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="max-w-xl">
+          <h2 className="font-display font-bold text-2xl text-fg mb-2">
+            {locale === 'en' ? 'Explore the full timeline' : 'Explorez la timeline complète'}
+          </h2>
+          <p className="text-xs sm:text-sm text-dim leading-relaxed">
+            {locale === 'en'
+              ? `Every model, filterable by brand, ANC and Bluetooth version — plus how battery life, weight and price evolved across ${yearsCovered} years.`
+              : `Tous les modèles, filtrables par marque, ANC et version Bluetooth — et l'évolution de l'autonomie, du poids et du prix sur ${yearsCovered} ans.`}
+          </p>
+        </div>
+        <Link
+          href="/timeline"
+          className="shrink-0 bg-accent text-ink font-bold rounded-xl px-6 py-3 text-sm inline-flex items-center gap-2 hover:opacity-90 transition-all shadow-lg"
+        >
+          <span>{locale === 'en' ? 'Open the timeline' : 'Ouvrir la timeline'}</span>
+          <span>→</span>
+        </Link>
       </div>
 
       {/* Comparaisons populaires + Articles à la une */}
@@ -198,10 +213,6 @@ export default async function HomePage({ params, searchParams }) {
           {stats.avgPrice && (
             <StatTile icon={DollarSign} value={`${stats.avgPrice} $`} label={t('avgLaunchPrice')} />
           )}
-
-          <div className="mt-2">
-            <EvolutionChart models={models} locale={locale} />
-          </div>
         </aside>
       </div>
 

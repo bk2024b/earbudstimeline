@@ -42,12 +42,20 @@ export default function Header({ models = [], brands = [] }) {
           <span>{t('finder')}</span>
         </Link>
         <Link
-          href="/#marques"
+          href="/marques"
           className={`transition-colors shrink-0 ${
-            pathname === '/' ? 'text-fg' : 'hover:text-fg'
+            isNavActive('/marques') ? 'text-fg font-semibold' : 'hover:text-fg'
           }`}
         >
           {t('brands')}
+        </Link>
+        <Link
+          href="/timeline"
+          className={`transition-colors shrink-0 ${
+            isNavActive('/timeline') ? 'text-fg font-semibold' : 'hover:text-fg'
+          }`}
+        >
+          Timeline
         </Link>
         <Link
           href="/annees"

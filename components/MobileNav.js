@@ -8,7 +8,8 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeToggle from '@/components/ThemeToggle';
 
 const LINKS = [
-  { href: '/#marques', key: 'brands' },
+  { href: '/marques', key: 'brands' },
+  { href: '/timeline', key: 'timeline', label: 'Timeline' },
   { href: '/annees', key: 'years' },
   { href: '/technologies', key: 'technologies' },
   { href: '/comparaisons', key: 'comparisons' },
@@ -73,7 +74,7 @@ export default function MobileNav() {
                 href={l.href}
                 className="rounded-xl px-4 py-3.5 text-fg font-medium hover:bg-panel transition-colors"
               >
-                {t(l.key)}
+                {l.label || t(l.key)}
               </Link>
             ))}
           </nav>
