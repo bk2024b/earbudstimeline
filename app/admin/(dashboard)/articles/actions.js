@@ -12,12 +12,25 @@ function computeReadingMinutes(html) {
   return Math.max(1, Math.round(words / 200));
 }
 
+function parseJsonField(value, fallback) {
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value.toString());
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function parseArticleForm(formData) {
   const title = formData.get('title')?.toString().trim() || '';
   const excerpt = formData.get('excerpt')?.toString().trim() || '';
   const content_html = formData.get('content_html')?.toString() || '';
   const status = formData.get('status')?.toString() === 'published' ? 'published' : 'draft';
-  return { title, excerpt, content_html, status };
+  const table_of_contents = parseJsonField(formData.get('table_of_contents'), []);
+  const submittedWordCount = Number(formData.get('word_count'));
+  const word_count = Number.isFinite(submittedWordCount) ? submittedWordCount : 0;
+  return { title, excerpt, content_html, status, table_of_contents, word_count };
 }
 
 function isValid(data) {
@@ -41,7 +54,6 @@ function revalidateArticleCaches(articleId) {
 export async function createArticle(formData) {
   const data = parseArticleForm(formData);
   if (!isValid(data)) redirect('/admin/articles/new?error=missing');
-
   const idRaw = formData.get('id')?.toString().trim();
   const id = slugify(idRaw || data.title);
   if (!id) redirect('/admin/articles/new?error=missing');
@@ -49,17 +61,13 @@ export async function createArticle(formData) {
   let cover_image_url = null;
   const file = formData.get('cover_image');
   if (file && file.size > 0) {
-    try {
-      cover_image_url = await uploadImage(file, 'articles');
-    } catch (e) {
-      redirect(`/admin/articles/new?error=${encodeURIComponent(e.message)}`);
-    }
+    try { cover_image_url = await uploadImage(file, 'articles'); }
+    catch (e) { redirect(`/admin/articles/new?error=${encodeURIComponent(e.message)}`); }
   }
 
   const supabase = getSupabaseAdmin();
   const locale = formData.get('locale')?.toString() === 'en' ? 'en' : 'fr';
   const translation_of = formData.get('translation_of')?.toString().trim() || null;
-
   const { error } = await supabase.from('articles').insert({
     id,
     locale,
@@ -70,7 +78,6 @@ export async function createArticle(formData) {
     published_at: data.status === 'published' ? new Date().toISOString() : null,
   });
   if (error) redirect(`/admin/articles/new?error=${encodeURIComponent(error.message)}`);
-
   revalidateArticleCaches(id);
   redirect('/admin/articles');
 }
@@ -78,20 +85,14 @@ export async function createArticle(formData) {
 export async function updateArticle(id, formData) {
   const data = parseArticleForm(formData);
   if (!isValid(data)) redirect(`/admin/articles/${id}?error=missing`);
-
   const supabase = getSupabaseAdmin();
-
-  // On ne fixe published_at que lors du tout premier passage en "published".
   const { data: existing } = await supabase.from('articles').select('status, published_at').eq('id', id).single();
 
   const file = formData.get('cover_image');
   let cover_image_url;
   if (file && file.size > 0) {
-    try {
-      cover_image_url = await uploadImage(file, 'articles');
-    } catch (e) {
-      redirect(`/admin/articles/${id}?error=${encodeURIComponent(e.message)}`);
-    }
+    try { cover_image_url = await uploadImage(file, 'articles'); }
+    catch (e) { redirect(`/admin/articles/${id}?error=${encodeURIComponent(e.message)}`); }
   }
 
   const patch = {
@@ -99,16 +100,11 @@ export async function updateArticle(id, formData) {
     reading_minutes: computeReadingMinutes(data.content_html),
   };
   if (cover_image_url) patch.cover_image_url = cover_image_url;
-  if (data.status === 'published' && !existing?.published_at) {
-    patch.published_at = new Date().toISOString();
-  }
-  if (data.status === 'draft') {
-    patch.published_at = null;
-  }
+  if (data.status === 'published' && !existing?.published_at) patch.published_at = new Date().toISOString();
+  if (data.status === 'draft') patch.published_at = null;
 
   const { error } = await supabase.from('articles').update(patch).eq('id', id);
   if (error) redirect(`/admin/articles/${id}?error=${encodeURIComponent(error.message)}`);
-
   revalidateArticleCaches(id);
   redirect('/admin/articles');
 }
@@ -117,36 +113,23 @@ export async function deleteArticle(id) {
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('articles').delete().eq('id', id);
   if (error) redirect(`/admin/articles?error=${encodeURIComponent(error.message)}`);
-
   revalidateArticleCaches(id);
   redirect('/admin/articles');
 }
 
-// Appelée directement depuis l'éditeur riche (client) quand on insère une image
-// dans le corps de l'article. Retourne l'URL publique, pas de redirect.
 export async function uploadEditorImage(formData) {
   const file = formData.get('image');
   if (!file || file.size === 0) return { error: 'Aucun fichier reçu' };
-  try {
-    const url = await uploadImage(file, 'articles-content');
-    return { url };
-  } catch (e) {
-    return { error: e.message };
-  }
+  try { return { url: await uploadImage(file, 'articles-content') }; }
+  catch (e) { return { error: e.message }; }
 }
 
-// Bascule rapide de statut (Brouillon <-> Publié) depuis la liste des articles
 export async function toggleArticleStatus(id, currentStatus) {
   const supabase = getSupabaseAdmin();
   const nextStatus = currentStatus === 'published' ? 'draft' : 'published';
-  const patch = {
-    status: nextStatus,
-    published_at: nextStatus === 'published' ? new Date().toISOString() : null,
-  };
-
+  const patch = { status: nextStatus, published_at: nextStatus === 'published' ? new Date().toISOString() : null };
   const { error } = await supabase.from('articles').update(patch).eq('id', id);
   if (error) redirect(`/admin/articles?error=${encodeURIComponent(error.message)}`);
-
   revalidatePath('/admin/articles');
   revalidatePath('/fr/blog');
   revalidatePath('/en/blog');
@@ -154,4 +137,3 @@ export async function toggleArticleStatus(id, currentStatus) {
   revalidatePath(`/en/blog/${id}`);
   redirect('/admin/articles');
 }
-
