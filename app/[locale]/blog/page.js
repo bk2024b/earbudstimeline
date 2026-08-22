@@ -44,7 +44,7 @@ export default async function BlogPage({ params }) {
 
       {articles.length > 0 && (
         <div className="grid lg:grid-cols-[1fr_300px] gap-8 items-start">
-          <div>
+          <div className="min-w-0">
             <FeaturedArticle article={articles[0]} locale={locale} />
 
             <div className="grid sm:grid-cols-2 gap-5">

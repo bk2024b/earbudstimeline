@@ -115,7 +115,7 @@ export default async function ArticlePage({ params }) {
     <>
       <ReadingProgressBar />
       <div className="grid lg:grid-cols-[1fr_300px] gap-8 items-start">
-        <article>
+        <article className="min-w-0">
           <div>
             <JsonLd data={buildArticleJsonLd(article, locale)} />
             <JsonLd
