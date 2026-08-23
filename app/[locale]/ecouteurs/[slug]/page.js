@@ -25,9 +25,9 @@ export async function generateMetadata({ params }) {
   const m = await getEarbudBySlug(slug).catch(() => null);
   if (!m) return { title: 'Not found — EarbudsTimeline' };
 
-  const brands = await getBrands();
-  const brand = brands.find((b) => b.id === m.brand_id);
-  const year = new Date(m.release_date).getFullYear();
+  const brands = await getBrands().catch(() => []);
+  const brand = (brands || []).find((b) => b.id === m.brand_id);
+  const year = yearOf(m.release_date);
   const tagline = displayTagline(m, locale);
 
   const title =
@@ -36,8 +36,8 @@ export async function generateMetadata({ params }) {
       : `${m.name} — Fiche complète, specs et comparaisons | EarbudsTimeline`;
   const description =
     locale === 'en'
-      ? `${m.name} (${brand?.name || m.brand_id}, ${year}): ${tagline} Battery life, ANC, Bluetooth, launch price and comparisons.`
-      : `${m.name} (${brand?.name || m.brand_id}, ${year}) : ${tagline} Autonomie, ANC, Bluetooth, prix au lancement et comparaisons.`;
+      ? `${m.name} (${brand?.name || m.brand_id}${year ? `, ${year}` : ''}): ${tagline} Battery life, ANC, Bluetooth, launch price and comparisons.`
+      : `${m.name} (${brand?.name || m.brand_id}${year ? `, ${year}` : ''}) : ${tagline} Autonomie, ANC, Bluetooth, prix au lancement et comparaisons.`;
 
   return {
     title,
@@ -56,34 +56,35 @@ export default async function ModelPage({ params }) {
   const m = await getEarbudBySlug(slug).catch(() => null);
   if (!m) notFound();
 
-  const [lineup, brands, allModels, articles, t, tc, tComp, tDiff] = await Promise.all([
-    getGammeModels(m.brand_id, m.gamme),
-    getBrands(),
-    getAllEarbuds(),
-    getPublishedArticles(locale),
+  const [rawLineup, brands, allModels, articles, t, tc, tComp, tDiff] = await Promise.all([
+    getGammeModels(m.brand_id, m.gamme).catch(() => []),
+    getBrands().catch(() => []),
+    getAllEarbuds().catch(() => []),
+    getPublishedArticles(locale).catch(() => []),
     getTranslations({ locale, namespace: 'product' }),
     getTranslations({ locale, namespace: 'common' }),
     getTranslations({ locale, namespace: 'comparisonSuggestions' }),
     getTranslations({ locale, namespace: 'diff' }),
   ]);
 
-  const brand = brands.find((b) => b.id === m.brand_id);
-  const first = lineup[0];
+  const lineup = Array.isArray(rawLineup) && rawLineup.length > 0 ? rawLineup : [m];
+  const brand = (brands || []).find((b) => b.id === m.brand_id);
+  const first = lineup[0] || m;
   const isFirst = first.id === m.id;
   const idx = lineup.findIndex((x) => x.id === m.id);
   const prev = idx > 0 ? lineup[idx - 1] : null;
-  const next = idx < lineup.length - 1 ? lineup[idx + 1] : null;
-  const brandOf = (id) => brands.find((b) => b.id === id);
-  const comparisonSuggestions = getComparisonSuggestions(m, { prev, next, allModels, t: tComp });
+  const next = idx >= 0 && idx < lineup.length - 1 ? lineup[idx + 1] : null;
+  const brandOf = (id) => (brands || []).find((b) => b.id === id);
+  const comparisonSuggestions = getComparisonSuggestions(m, { prev, next, allModels: allModels || [], t: tComp });
   const comparisonBullets = comparisonSuggestions.length > 0 ? buildDiffBullets(m, comparisonSuggestions[0].model, tDiff) : [];
-  const relatedArticles = findRelatedArticles(articles, [brand.name, m.gamme, m.name]);
+  const relatedArticles = findRelatedArticles(articles || [], [brand?.name || m.brand_id, m.gamme, m.name]);
   const homeLabel = locale === 'en' ? 'Home' : 'Accueil';
 
   function metric(label, key, higherIsBetter, fmt) {
-    const cur = Number(m[key]);
-    const base = Number(first[key]);
-    const values = lineup.map((x) => Number(x[key]));
-    const best = higherIsBetter ? Math.max(...values) : Math.min(...values);
+    const cur = Number(m[key]) || 0;
+    const base = Number(first?.[key]) || cur;
+    const values = lineup.map((x) => Number(x[key])).filter((v) => Number.isFinite(v));
+    const best = values.length > 0 ? (higherIsBetter ? Math.max(...values) : Math.min(...values)) : cur;
     const isRecord = cur === best && lineup.length > 1;
     const d = isFirst ? null : pct(cur, base);
 
@@ -194,7 +195,7 @@ export default async function ModelPage({ params }) {
           <p className="text-dim text-xs m-0 mb-4">
             {isFirst
               ? t('firstInLine', { gamme: m.gamme })
-              : t('trackedSince', { name: first.name, year: yearOf(first.release_date) })}
+              : t('trackedSince', { name: first?.name || m.name, year: yearOf(first?.release_date || m.release_date) })}
           </p>
           {lineup.length === 1 ? (
             <p className="text-dim text-[13.5px] py-4">{t('onlyModel')}</p>

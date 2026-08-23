@@ -17,8 +17,8 @@ const AI_BOTS = [
 export default function robots() {
   return {
     rules: [
-      { userAgent: '*', allow: '/', disallow: ['/admin'] },
-      ...AI_BOTS.map((userAgent) => ({ userAgent, allow: '/', disallow: ['/admin'] })),
+      { userAgent: '*', allow: '/', disallow: ['/admin', '/*?*'] },
+      ...AI_BOTS.map((userAgent) => ({ userAgent, allow: '/', disallow: ['/admin', '/*?*'] })),
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

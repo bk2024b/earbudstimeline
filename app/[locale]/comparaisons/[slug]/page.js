@@ -17,21 +17,25 @@ async function loadPair(slug) {
   const parsed = parseComparisonSlug(slug);
   if (!parsed) return { a: null, b: null, brands: [], models: [] };
 
-  const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]);
-  const a = models.find((m) => m.id === parsed[0]);
-  const b = models.find((m) => m.id === parsed[1]);
-  return { a, b, brands, models };
+  const [models, brands] = await Promise.all([
+    getAllEarbuds().catch(() => []),
+    getBrands().catch(() => []),
+  ]);
+  const a = (models || []).find((m) => m.id === parsed[0]);
+  const b = (models || []).find((m) => m.id === parsed[1]);
+  return { a, b, brands: brands || [], models: models || [] };
 }
 
 // Position d'un modèle dans sa propre lignée (même brand_id + gamme),
 // pour réutiliser EntityGraph dans le comparateur sans requête supplémentaire :
 // `models` est déjà chargé une fois pour toute la page via loadPair.
 function lineagePosition(model, models) {
-  const lineup = models
+  if (!model) return { prev: null, next: null };
+  const lineup = (models || [])
     .filter((x) => x.brand_id === model.brand_id && x.gamme === model.gamme)
-    .sort((x, y) => x.release_date.localeCompare(y.release_date));
+    .sort((x, y) => (x.release_date || '').localeCompare(y.release_date || ''));
   const idx = lineup.findIndex((x) => x.id === model.id);
-  return { prev: idx > 0 ? lineup[idx - 1] : null, next: idx < lineup.length - 1 ? lineup[idx + 1] : null };
+  return { prev: idx > 0 ? lineup[idx - 1] : null, next: idx >= 0 && idx < lineup.length - 1 ? lineup[idx + 1] : null };
 }
 
 export async function generateMetadata({ params }) {

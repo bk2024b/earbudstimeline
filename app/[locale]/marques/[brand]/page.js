@@ -18,8 +18,8 @@ export async function generateMetadata({ params }) {
   const brand = await getBrandById(brandId).catch(() => null);
   if (!brand) return { title: 'Not found — EarbudsTimeline' };
 
-  const models = await getEarbudsByBrand(brandId);
-  const years = models.map((m) => Number(m.release_date.slice(0, 4)));
+  const models = (await getEarbudsByBrand(brandId).catch(() => [])) || [];
+  const years = models.map((m) => yearOf(m.release_date)).filter(Boolean);
   const period = years.length ? `${Math.min(...years)}–${Math.max(...years)}` : '';
 
   const title =
@@ -48,15 +48,19 @@ export default async function BrandPage({ params }) {
   const brand = await getBrandById(brandId).catch(() => null);
   if (!brand) notFound();
 
-  const [models, t] = await Promise.all([getEarbudsByBrand(brandId), getTranslations({ locale, namespace: 'brandPage' })]);
+  const [rawModels, t] = await Promise.all([
+    getEarbudsByBrand(brandId).catch(() => []),
+    getTranslations({ locale, namespace: 'brandPage' }),
+  ]);
+  const models = rawModels || [];
 
-  const gammes = [...new Set(models.map((m) => m.gamme))].map((g) => ({
+  const gammes = [...new Set(models.map((m) => m.gamme).filter(Boolean))].map((g) => ({
     name: g,
     slug: slugify(g),
     count: models.filter((m) => m.gamme === g).length,
   }));
 
-  const years = models.map((m) => Number(m.release_date.slice(0, 4)));
+  const years = models.map((m) => yearOf(m.release_date)).filter(Boolean);
   const stats = computeStats(models);
   const homeLabel = locale === 'en' ? 'Home' : 'Accueil';
 

@@ -24,10 +24,10 @@ async function loadGamme(brandId, gammeSlug) {
   const brand = await getBrandById(brandId).catch(() => null);
   if (!brand) return { brand: null, gammeName: null, models: [] };
 
-  const all = await getEarbudsByBrand(brandId);
+  const all = (await getEarbudsByBrand(brandId).catch(() => [])) || [];
   const models = all
-    .filter((m) => slugify(m.gamme) === gammeSlug)
-    .sort((a, b) => a.release_date.localeCompare(b.release_date));
+    .filter((m) => m.gamme && slugify(m.gamme) === gammeSlug)
+    .sort((a, b) => (a.release_date || '').localeCompare(b.release_date || ''));
 
   return { brand, gammeName: models[0]?.gamme || null, models };
 }
