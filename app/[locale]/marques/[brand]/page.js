@@ -5,6 +5,7 @@ import { BatteryCharging, Cpu, DollarSign } from 'lucide-react';
 import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { slugify } from '@/lib/slug';
+import { yearOf } from '@/lib/format';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import ModelCard from '@/components/ModelCard';
 import BrandBadge from '@/components/BrandBadge';
