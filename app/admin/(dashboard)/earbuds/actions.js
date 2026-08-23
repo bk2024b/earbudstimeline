@@ -229,3 +229,19 @@ export async function importBuyLinksCsv(payload) {
   if (brandIds.size === 0) revalidateEarbudCaches();
   return results;
 }
+
+export async function updateEarbudBuyUrl(id, buy_url) {
+  const supabase = getSupabaseAdmin();
+  const cleanUrl = buy_url?.trim() || null;
+  const { data, error } = await supabase
+    .from('earbuds')
+    .update({ buy_url: cleanUrl })
+    .eq('id', id)
+    .select('id, brand_id, name, buy_url')
+    .single();
+
+  if (error) throw new Error(error.message);
+  revalidateEarbudCaches(data?.brand_id, id);
+  return { ok: true, data };
+}
+

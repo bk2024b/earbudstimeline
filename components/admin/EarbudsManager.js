@@ -1,14 +1,28 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import ConfirmSubmitButton from './ConfirmSubmitButton';
-import { deleteEarbud } from '@/app/admin/(dashboard)/earbuds/actions';
+import { deleteEarbud, updateEarbudBuyUrl } from '@/app/admin/(dashboard)/earbuds/actions';
+import { ExternalLink, Link2, Plus, Check, X, Loader2 } from 'lucide-react';
 
-export default function EarbudsManager({ earbuds = [], brands = [], initialBrand = 'all' }) {
+export default function EarbudsManager({ earbuds: initialEarbuds = [], brands = [], initialBrand = 'all' }) {
+  const [earbuds, setEarbuds] = useState(initialEarbuds);
   const [search, setSearch] = useState('');
   const [selectedBrand, setSelectedBrand] = useState(initialBrand);
-  const [filterMode, setFilterMode] = useState('all'); // 'all', 'no-image', 'marquant', 'anc', ou un qa_status
+  const [filterMode, setFilterMode] = useState('all'); // 'all', 'no-image', 'no-buy-url', 'has-buy-url', 'marquant', 'anc', etc.
+
+  // État de la modale d'édition rapide du lien d'achat
+  const [editingBuyUrlModel, setEditingBuyUrlModel] = useState(null);
+  const [buyUrlInput, setBuyUrlInput] = useState('');
+  const [isSavingBuyUrl, setIsSavingBuyUrl] = useState(false);
+  const [buyUrlError, setBuyUrlError] = useState(null);
+  const inputRef = useRef(null);
+
+  // Synchronise si initialEarbuds change depuis le serveur
+  useEffect(() => {
+    setEarbuds(initialEarbuds);
+  }, [initialEarbuds]);
 
   const QA_STATUS_STYLES = {
     VERIFIED: 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400',
@@ -34,6 +48,8 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
 
       // 2. Filtres rapides
       if (filterMode === 'no-image' && e.image_url) return false;
+      if (filterMode === 'no-buy-url' && e.buy_url) return false;
+      if (filterMode === 'has-buy-url' && !e.buy_url) return false;
       if (filterMode === 'marquant' && !e.marquant) return false;
       if (filterMode === 'anc' && !e.anc) return false;
       if (
@@ -59,6 +75,61 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
       return true;
     });
   }, [earbuds, search, selectedBrand, filterMode, brandMap]);
+
+  // Ouverture du popup pour un modèle
+  function openBuyUrlModal(model) {
+    setEditingBuyUrlModel(model);
+    setBuyUrlInput(model.buy_url || '');
+    setBuyUrlError(null);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 50);
+  }
+
+  // Fermeture du popup
+  function closeBuyUrlModal() {
+    setEditingBuyUrlModel(null);
+    setBuyUrlInput('');
+    setBuyUrlError(null);
+  }
+
+  // Sauvegarde rapide du lien d'achat
+  async function handleSaveBuyUrl(e) {
+    if (e) e.preventDefault();
+    if (!editingBuyUrlModel) return;
+
+    setIsSavingBuyUrl(true);
+    setBuyUrlError(null);
+
+    try {
+      const res = await updateEarbudBuyUrl(editingBuyUrlModel.id, buyUrlInput);
+      if (res.ok) {
+        const updatedUrl = buyUrlInput.trim() || null;
+        // Mise à jour de l'état local immédiatement
+        setEarbuds((prev) =>
+          prev.map((item) =>
+            item.id === editingBuyUrlModel.id ? { ...item, buy_url: updatedUrl } : item
+          )
+        );
+        closeBuyUrlModal();
+      }
+    } catch (err) {
+      setBuyUrlError(err.message || 'Erreur lors de la mise à jour du lien');
+    } finally {
+      setIsSavingBuyUrl(false);
+    }
+  }
+
+  // Coller depuis le presse-papier
+  async function handlePaste() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) setBuyUrlInput(text.trim());
+    } catch {
+      // Ignore si refus d'autorisation
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -111,6 +182,28 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
           </button>
           <button
             type="button"
+            onClick={() => setFilterMode('no-buy-url')}
+            className={`px-2.5 py-1 rounded-full border transition-colors ${
+              filterMode === 'no-buy-url'
+                ? 'bg-amber/20 border-amber text-amber font-semibold shadow-sm'
+                : 'border-line text-amber/80 hover:text-amber'
+            }`}
+          >
+            🔗 Sans lien ({earbuds.filter((e) => !e.buy_url).length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterMode('has-buy-url')}
+            className={`px-2.5 py-1 rounded-full border transition-colors ${
+              filterMode === 'has-buy-url'
+                ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 font-semibold'
+                : 'border-line text-dim hover:text-white'
+            }`}
+          >
+            ✓ Avec lien ({earbuds.filter((e) => e.buy_url).length})
+          </button>
+          <button
+            type="button"
             onClick={() => setFilterMode('no-image')}
             className={`px-2.5 py-1 rounded-full border transition-colors ${
               filterMode === 'no-image'
@@ -143,7 +236,7 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
             🎧 Avec ANC ({earbuds.filter((e) => e.anc).length})
           </button>
 
-          <span className="text-dim text-[11px] ml-1">· Qualité DATA V1 :</span>
+          <span className="text-dim text-[11px] ml-1">· Qualité :</span>
           {['VERIFIED', 'GOOD', 'INCOMPLETE', 'NEEDS_RESEARCH'].map((status) => {
             const count = earbuds.filter((e) => e.qa_status === status).length;
             return (
@@ -161,11 +254,6 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
               </button>
             );
           })}
-          {earbuds.some((e) => !e.qa_status) && (
-            <span className="text-[11px] text-dim">
-              ⚠ {earbuds.filter((e) => !e.qa_status).length} sans score (pré-migration DATA V1)
-            </span>
-          )}
         </div>
       </div>
 
@@ -181,7 +269,7 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
               className="flex items-center justify-between bg-panel border border-line rounded-xl p-3 sm:p-4 gap-3.5 flex-wrap hover:border-line/80 transition-colors"
             >
               {/* Miniature + Infos */}
-              <div className="flex items-center gap-3.5 min-w-0">
+              <div className="flex items-center gap-3.5 min-w-0 flex-1">
                 {/* Vignette photo */}
                 <div
                   className="w-12 h-12 rounded-lg border border-line bg-panel2 flex-none flex items-center justify-center overflow-hidden"
@@ -241,8 +329,44 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
                 </div>
               </div>
 
+              {/* Bouton rapide d'état du lien d'achat */}
+              <div className="flex items-center gap-2">
+                {e.buy_url ? (
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => openBuyUrlModal(e)}
+                      title="Modifier le lien d'achat"
+                      className="text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400 px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-colors"
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      <span>Lien OK</span>
+                    </button>
+                    <a
+                      href={e.buy_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Ouvrir le lien d'achat"
+                      className="text-dim hover:text-white p-1 rounded hover:bg-panel2"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => openBuyUrlModal(e)}
+                    title="Ajouter un lien d'achat en 1 clic"
+                    className="text-xs font-medium text-amber bg-amber/10 border border-amber/30 hover:bg-amber/20 hover:border-amber px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>+ Lien</span>
+                  </button>
+                )}
+              </div>
+
               {/* Actions rapides */}
-              <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+              <div className="flex items-center gap-2 shrink-0 ml-auto sm:ml-0">
                 <a
                   href={`/fr/ecouteurs/${e.id}`}
                   target="_blank"
@@ -286,6 +410,121 @@ export default function EarbudsManager({ earbuds = [], brands = [], initialBrand
           </div>
         )}
       </div>
+
+      {/* POPUP MODAL : Édition rapide du lien d'achat */}
+      {editingBuyUrlModel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          {/* Clic hors de la modale pour fermer */}
+          <div className="fixed inset-0" onClick={closeBuyUrlModal} />
+
+          <div
+            className="relative w-full max-w-lg bg-panel border border-line rounded-2xl shadow-2xl p-6 z-10 flex flex-col gap-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header du popup */}
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div>
+                <div className="text-xs font-mono uppercase tracking-wider text-accent">
+                  Lien d'achat rapide
+                </div>
+                <h3 className="text-lg font-bold text-white mt-0.5">
+                  {editingBuyUrlModel.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={closeBuyUrlModal}
+                className="w-8 h-8 rounded-full border border-line flex items-center justify-center text-dim hover:text-white hover:border-line/80"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Formulaire */}
+            <form onSubmit={handleSaveBuyUrl} className="flex flex-col gap-3">
+              <label className="text-xs text-dim flex flex-col gap-1.5">
+                <span>URL marchande ou affiliée (Amazon, constructeur, etc.) :</span>
+                <div className="relative flex items-center">
+                  <input
+                    ref={inputRef}
+                    type="url"
+                    value={buyUrlInput}
+                    onChange={(e) => setBuyUrlInput(e.target.value)}
+                    placeholder="https://www.amazon.fr/dp/..."
+                    className="w-full bg-panel2 border border-line rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-dim outline-none focus:border-accent pr-20"
+                  />
+                  {buyUrlInput && (
+                    <button
+                      type="button"
+                      onClick={() => setBuyUrlInput('')}
+                      className="absolute right-2 text-xs text-dim hover:text-white px-2 py-1 bg-panel rounded"
+                    >
+                      Effacer
+                    </button>
+                  )}
+                </div>
+              </label>
+
+              {/* Raccourcis utiles */}
+              <div className="flex items-center gap-2 flex-wrap text-xs">
+                <button
+                  type="button"
+                  onClick={handlePaste}
+                  className="px-2.5 py-1 rounded bg-panel2 border border-line text-dim hover:text-white flex items-center gap-1"
+                >
+                  📋 Coller du presse-papier
+                </button>
+                {buyUrlInput && (
+                  <a
+                    href={buyUrlInput}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 rounded bg-panel2 border border-line text-accent hover:underline flex items-center gap-1"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    <span>Tester le lien</span>
+                  </a>
+                )}
+              </div>
+
+              {buyUrlError && (
+                <div className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-lg p-2.5">
+                  {buyUrlError}
+                </div>
+              )}
+
+              {/* Boutons d'action */}
+              <div className="flex items-center justify-end gap-2.5 mt-2 pt-3 border-t border-line">
+                <button
+                  type="button"
+                  onClick={closeBuyUrlModal}
+                  disabled={isSavingBuyUrl}
+                  className="px-4 py-2 rounded-xl border border-line text-sm text-dim hover:text-white"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingBuyUrl}
+                  className="px-5 py-2 rounded-xl bg-accent text-ink font-bold text-sm hover:opacity-90 flex items-center gap-1.5 transition-all shadow-md shadow-accent/20 disabled:opacity-50"
+                >
+                  {isSavingBuyUrl ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Enregistrement...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Enregistrer</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
