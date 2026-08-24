@@ -1,0 +1,10 @@
+name = "earbudstimeline-image-cdn"
+main = "images-worker.js"
+compatibility_date = "2026-08-24"
+
+# Deploy this Worker to a dedicated hostname such as:
+# images.earbudstimeline.com
+#
+# Set SUPABASE_HOST to the exact <project>.supabase.co hostname before deploy.
+[vars]
+SUPABASE_HOST = "YOUR_PROJECT.supabase.co"
