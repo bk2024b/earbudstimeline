@@ -2,14 +2,13 @@
 
 import { useState } from 'react';
 import { matchEarbudByFilename } from '@/lib/slug';
+import { optimizeImageFile } from '@/lib/clientImageOptimization';
 import { bulkUploadImages } from '@/app/admin/(dashboard)/earbuds/actions';
 
 export default function BulkImageMatcher({ earbuds, brands }) {
   const [rows, setRows] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [results, setResults] = useState(null);
-
-  const brandName = (id) => brands.find((b) => b.id === id)?.name || id;
 
   function handleFiles(e) {
     const files = Array.from(e.target.files || []);
@@ -43,7 +42,8 @@ export default function BulkImageMatcher({ earbuds, brands }) {
     const acc = [];
     for (const r of toSend) {
       const fd = new FormData();
-      fd.append('files', r.file);
+      const optimizedFile = await optimizeImageFile(r.file).catch(() => r.file);
+      fd.append('files', optimizedFile);
       fd.append('earbudIds', r.earbudId);
 
       let entry;
@@ -78,61 +78,32 @@ export default function BulkImageMatcher({ earbuds, brands }) {
         />
         <p className="text-xs text-dim mt-1.5">
           Astuce : nomme tes fichiers avec l&apos;id (<code>app3.jpg</code>) ou le nom du modèle (<code>airpods-pro-3.jpg</code>)
-          pour un rattachement automatique.
+          pour un rattachement automatique. Les fichiers sont compressés avant leur envoi à Supabase.
         </p>
       </div>
 
       {rows.length > 0 && (
         <div className="flex flex-col gap-2">
           {rows.map((row, i) => (
-            <div
-              key={`${row.file.name}-${i}`}
-              className={`flex items-center gap-3 bg-panel border rounded-xl px-3 py-2.5 ${
-                row.matched ? 'border-line' : 'border-amber/50'
-              }`}
-            >
+            <div key={`${row.file.name}-${i}`} className={`flex items-center gap-3 bg-panel border rounded-xl px-3 py-2.5 ${row.matched ? 'border-line' : 'border-amber/50'}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={row.previewUrl} alt="" className="w-12 h-12 rounded-lg object-cover bg-panel2 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="text-xs text-dim truncate">{row.file.name}</div>
-                <select
-                  value={row.earbudId}
-                  onChange={(e) => updateRow(i, e.target.value)}
-                  className="mt-1 w-full bg-panel2 border border-line rounded-lg px-2 py-1.5 text-sm"
-                >
+                <select value={row.earbudId} onChange={(e) => updateRow(i, e.target.value)} className="mt-1 w-full bg-panel2 border border-line rounded-lg px-2 py-1.5 text-sm">
                   <option value="">— Ignorer ce fichier —</option>
                   {brands.map((b) => (
                     <optgroup key={b.id} label={b.name}>
-                      {earbuds
-                        .filter((e) => e.brand_id === b.id)
-                        .map((e) => (
-                          <option key={e.id} value={e.id}>
-                            {e.name} ({e.id})
-                          </option>
-                        ))}
+                      {earbuds.filter((e) => e.brand_id === b.id).map((e) => <option key={e.id} value={e.id}>{e.name} ({e.id})</option>)}
                     </optgroup>
                   ))}
                 </select>
-                {!row.matched && (
-                  <p className="text-[11px] text-amber mt-1">Aucune correspondance automatique trouvée</p>
-                )}
+                {!row.matched && <p className="text-[11px] text-amber mt-1">Aucune correspondance automatique trouvée</p>}
               </div>
-              <button
-                type="button"
-                onClick={() => removeRow(i)}
-                className="text-xs text-dim hover:text-rose-400 shrink-0"
-              >
-                Retirer
-              </button>
+              <button type="button" onClick={() => removeRow(i)} className="text-xs text-dim hover:text-rose-400 shrink-0">Retirer</button>
             </div>
           ))}
-
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={submitting || matchedCount === 0}
-            className="mt-2 bg-accent text-ink font-semibold rounded-lg px-4 py-2.5 text-sm disabled:opacity-50 w-fit"
-          >
+          <button type="button" onClick={handleSubmit} disabled={submitting || matchedCount === 0} className="mt-2 bg-accent text-ink font-semibold rounded-lg px-4 py-2.5 text-sm disabled:opacity-50 w-fit">
             {submitting ? `Import en cours… (${results?.length || 0}/${matchedCount})` : `Importer ${matchedCount} photo${matchedCount > 1 ? 's' : ''}`}
           </button>
         </div>
@@ -140,11 +111,7 @@ export default function BulkImageMatcher({ earbuds, brands }) {
 
       {results && (
         <div className="flex flex-col gap-1.5 border-t border-line pt-4">
-          {results.map((r, i) => (
-            <p key={i} className={`text-xs ${r.ok ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {r.ok ? '✓' : '✗'} {r.filename} → {r.earbudId} {r.error ? `(${r.error})` : ''}
-            </p>
-          ))}
+          {results.map((r, i) => <p key={i} className={`text-xs ${r.ok ? 'text-emerald-400' : 'text-rose-400'}`}>{r.ok ? '✓' : '✗'} {r.filename} → {r.earbudId} {r.error ? `(${r.error})` : ''}</p>)}
         </div>
       )}
     </div>
