@@ -11,6 +11,7 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import { useEffect, useRef } from 'react';
 import { uploadEditorImage } from '@/app/admin/(dashboard)/articles/actions';
+import { optimizeImageFile } from '@/lib/clientImageOptimization';
 
 function ToolbarButton({ onClick, active, disabled, children, title }) {
   return (
@@ -93,8 +94,9 @@ export default function RichTextEditor({ name, defaultValue = '', value, onChang
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !editor) return;
+    const optimized = await optimizeImageFile(file).catch(() => file);
     const fd = new FormData();
-    fd.append('image', file);
+    fd.append('image', optimized);
     const res = await uploadEditorImage(fd);
     if (res.url) {
       editor.chain().focus().setImage({ src: res.url }).run();
