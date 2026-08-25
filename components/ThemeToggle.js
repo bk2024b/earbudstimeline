@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
-export default function ThemeToggle() {
+function ThemeToggle() {
   // null tant qu'on n'a pas lu localStorage côté client, pour ne pas afficher
   // une icône incohérente avec le thème réellement appliqué (déjà posé par le
   // script anti-flash dans app/layout.js) le temps de l'hydratation.
@@ -42,3 +42,5 @@ export default function ThemeToggle() {
     </button>
   );
 }
+
+export default memo(ThemeToggle);

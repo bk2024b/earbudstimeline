@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Search, X, Volume2, ArrowRight } from 'lucide-react';
 import BrandBadge from './BrandBadge';
 
-export default function GlobalSearchModal({ models = [], brands = [] }) {
+function GlobalSearchModal({ models = [], brands = [] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [q, setQ] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -192,3 +192,5 @@ export default function GlobalSearchModal({ models = [], brands = [] }) {
     </>
   );
 }
+
+export default memo(GlobalSearchModal);

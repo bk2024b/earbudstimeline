@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   Menu,
@@ -20,7 +20,7 @@ import { Link, usePathname } from '@/i18n/navigation';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeToggle from '@/components/ThemeToggle';
 
-export default function MobileNav() {
+function MobileNav() {
   const t = useTranslations('nav');
   const locale = useLocale();
   const pathname = usePathname();
@@ -187,3 +187,5 @@ export default function MobileNav() {
     </div>
   );
 }
+
+export default memo(MobileNav);
