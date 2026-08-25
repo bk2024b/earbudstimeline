@@ -10,7 +10,7 @@ import ModelCard from '@/components/ModelCard';
 import StatTile from '@/components/StatTile';
 import { Stat, Footer } from '@/components/UI';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 async function loadYear(yearParam) {
   const year = Number(yearParam);

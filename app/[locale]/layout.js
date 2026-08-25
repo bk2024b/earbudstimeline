@@ -39,15 +39,18 @@ export async function generateMetadata({ params }) {
   };
 }
 
-import { getAllEarbuds, getBrands } from '@/lib/queries';
+import { getSearchCatalog, getBrands } from '@/lib/queries';
 
 export default async function LocaleLayout({ children, params }) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
 
+  // Le Header (composant client, présent sur toutes les pages) n'a besoin que
+  // des champs de recherche — getSearchCatalog() évite d'envoyer le catalogue
+  // complet (select('*')) au client sur chaque navigation. Voir GlobalSearchModal.
   const [messages, models, brands] = await Promise.all([
     (await import(`../../messages/${locale}.json`)).default,
-    getAllEarbuds().catch(() => []),
+    getSearchCatalog().catch(() => []),
     getBrands().catch(() => []),
   ]);
 

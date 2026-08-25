@@ -18,7 +18,7 @@ import StatTile from '@/components/StatTile';
 import LineageTechGraph from '@/components/LineageTechGraph';
 import { Stat, Footer } from '@/components/UI';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 async function loadGamme(brandId, gammeSlug) {
   const brand = await getBrandById(brandId).catch(() => null);

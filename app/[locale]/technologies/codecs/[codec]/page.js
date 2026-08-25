@@ -5,7 +5,16 @@ import { getCodecList, modelHasCodec } from '@/lib/tech';
 import TechHubPage from '@/components/TechHubPage';
 import { canonicalFor } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  try {
+    const models = await getAllEarbuds();
+    return getCodecList(models).map((c) => ({ codec: c.slug }));
+  } catch {
+    return [];
+  }
+}
 
 async function loadCodec(slug) {
   const allModels = await getAllEarbuds();

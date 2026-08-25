@@ -16,9 +16,9 @@ import TrustBar from '@/components/TrustBar';
 import AdSlot from '@/components/AdSlot';
 import { Stat, Footer } from '@/components/UI';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
-export default async function HomePage({ params, searchParams }) {
+export default async function HomePage({ params }) {
   const { locale } = params;
   const [models, brands, articles, t] = await Promise.all([
     getAllEarbuds(),
@@ -62,7 +62,10 @@ export default async function HomePage({ params, searchParams }) {
           <p className="text-dim max-w-[520px] mb-6 text-[15.5px]">{t('subtitle')}</p>
 
           <div className="mb-3">
-            <SearchBar models={models} brands={brands} />
+            <SearchBar
+              models={models.map(({ id, name, brand_id, gamme }) => ({ id, name, brand_id, gamme }))}
+              brands={brands}
+            />
           </div>
 
           <PopularTags topModels={topRecentMarquant} commonBt={stats.commonBt} locale={locale} />

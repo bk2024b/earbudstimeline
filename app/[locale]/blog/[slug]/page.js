@@ -9,6 +9,7 @@ import {
   getBrands,
   getAllEarbuds,
   getPublishedArticles,
+  getAllPublishedArticles,
 } from '@/lib/queries';
 import { buildArticleJsonLd, buildBreadcrumbJsonLd, JsonLd, absoluteUrl } from '@/lib/seo';
 import { findRelatedArticles } from '@/lib/relatedArticles';
@@ -23,7 +24,16 @@ import NewsletterSignup from '@/components/NewsletterSignup';
 import { Footer } from '@/components/UI';
 import { Calendar, Clock, ArrowLeft, Globe, Share2, Sparkles, BookOpen } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 600;
+
+export async function generateStaticParams() {
+  try {
+    const articles = await getAllPublishedArticles();
+    return articles.map((a) => ({ locale: a.locale, slug: a.id }));
+  } catch {
+    return [];
+  }
+}
 
 function fmtPublished(iso, locale) {
   if (!iso) return '';

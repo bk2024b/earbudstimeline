@@ -5,7 +5,7 @@ import { getBluetoothVersionList, getCodecList } from '@/lib/tech';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }) {
   const { locale } = params;

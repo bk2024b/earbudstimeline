@@ -8,7 +8,7 @@ import BlogSidebar from '@/components/BlogSidebar';
 import { Footer } from '@/components/UI';
 import { Sparkles, Clock, Calendar, ArrowRight, BookOpen } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 600;
 
 export async function generateMetadata({ params }) {
   const { locale } = params;

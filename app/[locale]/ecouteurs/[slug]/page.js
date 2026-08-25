@@ -18,7 +18,16 @@ import TimelinePosition from '@/components/TimelinePosition';
 import EntityGraph from '@/components/EntityGraph';
 import { Badge, Footer } from '@/components/UI';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  try {
+    const models = await getAllEarbuds();
+    return models.map((m) => ({ slug: m.id }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }) {
   const { locale, slug } = params;

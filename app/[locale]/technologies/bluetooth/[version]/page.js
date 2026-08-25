@@ -1,10 +1,20 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
+import { getBluetoothVersionList } from '@/lib/tech';
 import TechHubPage from '@/components/TechHubPage';
 import { canonicalFor } from '@/lib/seo';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  try {
+    const models = await getAllEarbuds();
+    return getBluetoothVersionList(models).map((v) => ({ version: v.version }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }) {
   const { locale, version } = params;

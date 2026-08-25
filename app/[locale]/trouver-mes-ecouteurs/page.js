@@ -4,7 +4,7 @@ import { canonicalFor, JsonLd } from '@/lib/seo';
 import TimelineIntelligenceFinder from '@/components/TimelineIntelligenceFinder';
 import { Footer } from '@/components/UI';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }) {
   const { locale } = await params;

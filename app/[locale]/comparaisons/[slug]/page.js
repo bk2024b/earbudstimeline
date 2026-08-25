@@ -11,7 +11,7 @@ import EarbudsIcon from '@/components/EarbudsIcon';
 import EntityGraph from '@/components/EntityGraph';
 import { Footer } from '@/components/UI';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 async function loadPair(slug) {
   const parsed = parseComparisonSlug(slug);

@@ -2,7 +2,7 @@ import { Link } from '@/i18n/navigation';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { BatteryCharging, Cpu, DollarSign } from 'lucide-react';
-import { getBrandById, getEarbudsByBrand } from '@/lib/queries';
+import { getBrandById, getEarbudsByBrand, getBrands } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { slugify } from '@/lib/slug';
 import { yearOf } from '@/lib/format';
@@ -12,7 +12,16 @@ import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
 import { Stat, Footer } from '@/components/UI';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  try {
+    const brands = await getBrands();
+    return brands.map((b) => ({ brand: b.id }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }) {
   const { locale, brand: brandId } = params;
