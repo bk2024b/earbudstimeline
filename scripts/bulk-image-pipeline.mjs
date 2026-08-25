@@ -29,7 +29,7 @@
  *                              used for the admin cookie)
  *
  * OPTIONAL ENV
- *   SITE_BASE_URL             (default: http://localhost:3000 — point this
+ *   SITE_BASE_URL             (default: http://earbudstimeline.com — point this
  *                              at your production URL to revalidate prod)
  * ---------------------------------------------------------------------------
  */
@@ -73,7 +73,7 @@ loadEnvLocal();
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ADMIN_SECRET = process.env.ADMIN_SESSION_SECRET;
-const SITE_BASE_URL = process.env.SITE_BASE_URL || 'http://localhost:3000';
+const SITE_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://earbudstimeline.com';
 const BUCKET = 'media';
 
 const MAX_DIMENSION = 1600;
