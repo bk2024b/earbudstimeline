@@ -5,77 +5,79 @@ import { useEffect, useRef } from 'react';
 /**
  * Emplacement publicitaire Adsterra.
  *
- * - Réserve l'espace (width/height) dès le rendu pour éviter tout saut de
- *   mise en page (CLS) pendant le chargement du script tiers.
- * - Nettoie les scripts injectés au démontage (utile en navigation client Next.js).
- * - Le label "Publicité"/"Advertisement" garde la transparence vis-à-vis des visiteurs.
+ * variant="banner" (défaut) : format atOptions/iframe classique (ex: Leaderboard
+ *   728x90, Medium Rectangle 300x250). Props requises : zoneKey, width, height,
+ *   invokeDomain.
  *
- * Format "banner" (ex. 728x90, 300x250...) — nécessite juste la clé de zone Adsterra.
- * Format "native" — colle l'URL exacte du script fournie par Adsterra pour ta
- * Native Banner (elle contient un identifiant différent du "key" du banner classique).
+ * variant="native" : Native Banner, s'intègre au style du contenu qui l'entoure.
+ *   Props requises : zoneKey, invokeDomain.
+ *
+ * `label` (optionnel) : petite mention "Publicité"/"Advertisement" affichée
+ * au-dessus pour la transparence — utile sur les Native Banners noyés dans du
+ * contenu éditorial.
+ *
+ * Chaque emplacement doit avoir sa propre zone créée dans le dashboard
+ * Adsterra (donc son propre zoneKey) pour des stats fiables par placement —
+ * ne réutilise pas la même zone à plusieurs endroits d'une même page.
  */
 export default function AdSlot({
+  variant = 'banner',
   zoneKey,
   width = 728,
   height = 90,
-  format = 'banner',
-  // Domaine fourni par Adsterra pour cette zone précise (visible dans le <script src="...">
-  // qu'ils te donnent). Il peut varier d'une zone à l'autre, d'où le rendre configurable
-  // plutôt que codé en dur.
-  invokeDomain = 'www.highrevenueformat.com',
-  nativeScriptSrc,
-  label = 'Publicité',
+  invokeDomain,
+  label,
+  className = '',
 }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
+    if (!containerRef.current || !zoneKey || !invokeDomain) return;
     const container = containerRef.current;
-    if (!container) return;
-    container.innerHTML = '';
+    container.replaceChildren();
 
-    if (format === 'native') {
-      if (!nativeScriptSrc) return;
+    if (variant === 'native') {
+      const nativeDiv = document.createElement('div');
+      nativeDiv.id = `container-${zoneKey}`;
+      container.appendChild(nativeDiv);
+
       const script = document.createElement('script');
       script.async = true;
       script.setAttribute('data-cfasync', 'false');
-      script.src = nativeScriptSrc;
+      script.src = `https://${invokeDomain}/${zoneKey}/invoke.js`;
       container.appendChild(script);
     } else {
-      if (!zoneKey) return;
       const optionsScript = document.createElement('script');
       optionsScript.type = 'text/javascript';
-      optionsScript.text = `
-        atOptions = {
-          'key': '${zoneKey}',
-          'format': 'iframe',
-          'height': ${height},
-          'width': ${width},
-          'params': {}
-        };
-      `;
-      const invokeScript = document.createElement('script');
-      invokeScript.type = 'text/javascript';
-      invokeScript.src = `https://${invokeDomain}/${zoneKey}/invoke.js`;
-
+      optionsScript.text = `atOptions = {
+        'key': '${zoneKey}',
+        'format': 'iframe',
+        'height': ${height},
+        'width': ${width},
+        'params': {}
+      };`;
       container.appendChild(optionsScript);
+
+      const invokeScript = document.createElement('script');
+      invokeScript.src = `https://${invokeDomain}/${zoneKey}/invoke.js`;
       container.appendChild(invokeScript);
     }
 
     return () => {
-      container.innerHTML = '';
+      container.replaceChildren();
     };
-  }, [zoneKey, width, height, format, invokeDomain, nativeScriptSrc]);
+  }, [variant, zoneKey, width, height, invokeDomain]);
 
-  // Rien à afficher si aucune clé n'est configurée (ex. en local/dev sans .env)
-  if (!zoneKey && !nativeScriptSrc) return null;
+  if (!zoneKey || !invokeDomain) return null;
 
   return (
-    <div className="flex flex-col items-center gap-1.5 mt-10 mb-4">
-      <span className="text-[10px] uppercase tracking-widest text-dim">{label}</span>
+    <div className={`not-prose flex flex-col items-center gap-1.5 my-8 ${className}`}>
+      {label && (
+        <span className="text-[10px] font-mono uppercase tracking-wider text-dim/50">{label}</span>
+      )}
       <div
         ref={containerRef}
-        style={{ minWidth: format === 'native' ? '100%' : width, minHeight: height }}
-        className="flex items-center justify-center overflow-hidden"
+        style={variant === 'banner' ? { minHeight: height, minWidth: Math.min(width, 320) } : { minHeight: 100, width: '100%' }}
       />
     </div>
   );

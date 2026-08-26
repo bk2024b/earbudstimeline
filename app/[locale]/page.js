@@ -171,6 +171,14 @@ export default async function HomePage({ params }) {
         </div>
       </div>
 
+      <AdSlot
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_HOME_MIDBRAND_KEY}
+        width={300}
+        height={250}
+        invokeDomain="www.highrevenueformat.com"
+        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
+      />
+
       {/* Teaser Timeline — la timeline interactive complète (filtres marque/ANC/BT)
           vit désormais sur sa propre page /timeline, avec les graphes d'évolution. */}
       <div id="timeline" className="bg-panel border border-line rounded-2xl p-6 sm:p-8 mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -199,6 +207,14 @@ export default async function HomePage({ params }) {
         <HomeArticles articles={articles.slice(0, 3)} locale={locale} />
       </div>
 
+      <AdSlot
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_HOME_AFTERCOMPARISONS_KEY}
+        width={728}
+        height={90}
+        invokeDomain="www.highrevenueformat.com"
+        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
         <div>
           <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">{t('latestAdditions')}</h2>
@@ -221,14 +237,6 @@ export default async function HomePage({ params }) {
       </div>
 
       <TrustBar locale={locale} />
-
-      <AdSlot
-        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_HOME_BANNER_KEY}
-        width={728}
-        height={90}
-        invokeDomain="www.highrevenueformat.com"
-        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-      />
 
       <Footer locale={locale} />
     </>
