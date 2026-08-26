@@ -76,7 +76,7 @@ export default async function PrivacyPolicyPage({ params }) {
 
             <h2>3. Google AdSense & Advertising</h2>
             <p>
-              EarbudsTimeline displays ads served by <strong>Google AdSense</strong> (publisher ID: <code>ca-pub-6118188753194161</code>). Google may use cookies to serve ads based on your prior visits to our site and other sites. You can opt out of personalized advertising by visiting{' '}
+              EarbudsTimeline displays ads served by <strong>Google AdSense</strong> (publisher ID: <code>ca-pub-3521871496373731</code>). Google may use cookies to serve ads based on your prior visits to our site and other sites. You can opt out of personalized advertising by visiting{' '}
               <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-accent inline-flex items-center gap-1">
                 Google Ads Settings <ExternalLink className="w-3 h-3" />
               </a>.
@@ -159,7 +159,7 @@ export default async function PrivacyPolicyPage({ params }) {
 
             <h2>3. Google AdSense & Publicité</h2>
             <p>
-              EarbudsTimeline affiche des publicités via <strong>Google AdSense</strong> (ID éditeur : <code>ca-pub-6118188753194161</code>). Google peut utiliser des cookies pour diffuser des annonces basées sur vos visites précédentes sur notre site et d'autres sites. Vous pouvez désactiver la publicité personnalisée en visitant les{' '}
+              EarbudsTimeline affiche des publicités via <strong>Google AdSense</strong> (ID éditeur : <code>ca-pub-3521871496373731</code>). Google peut utiliser des cookies pour diffuser des annonces basées sur vos visites précédentes sur notre site et d'autres sites. Vous pouvez désactiver la publicité personnalisée en visitant les{' '}
               <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-accent inline-flex items-center gap-1">
                 Paramètres des annonces Google <ExternalLink className="w-3 h-3" />
               </a>.
