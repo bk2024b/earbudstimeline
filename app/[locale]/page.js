@@ -175,7 +175,7 @@ export default async function HomePage({ params }) {
         zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_HOME_MIDBRAND_KEY}
         width={300}
         height={250}
-        invokeDomain="www.highrevenueformat.com"
+        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_HOME_MIDBRAND_DOMAIN}
         label={locale === 'en' ? 'Advertisement' : 'Publicité'}
       />
 
@@ -211,7 +211,7 @@ export default async function HomePage({ params }) {
         zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_HOME_AFTERCOMPARISONS_KEY}
         width={728}
         height={90}
-        invokeDomain="www.highrevenueformat.com"
+        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_HOME_AFTERCOMPARISONS_DOMAIN}
         label={locale === 'en' ? 'Advertisement' : 'Publicité'}
       />
 
