@@ -16,8 +16,8 @@ module.exports = {
         line: 'var(--color-line)',
         dim: 'var(--color-dim)',
         fg: 'var(--color-fg)',
-        accent: '#22D07A',
-        amber: '#FFB454',
+        accent: 'var(--color-accent)',
+        amber: 'var(--color-amber)',
       },
       fontFamily: {
         display: ['var(--font-display)', 'sans-serif'],
@@ -32,7 +32,7 @@ module.exports = {
           css: {
             '--tw-prose-body': 'var(--color-fg-muted)',
             '--tw-prose-headings': 'var(--color-fg)',
-            '--tw-prose-links': '#22D07A',
+            '--tw-prose-links': 'var(--color-accent)',
             '--tw-prose-bold': 'var(--color-fg)',
             '--tw-prose-quotes': 'var(--color-dim)',
             '--tw-prose-quote-borders': 'var(--color-line)',
