@@ -1,0 +1,100 @@
+diff --git a/app/[locale]/guides/page.js b/app/[locale]/guides/page.js
+index 7197eb7..5d7a96c 100644
+--- a/app/[locale]/guides/page.js
++++ b/app/[locale]/guides/page.js
+@@ -13,6 +13,7 @@ const guides = [
+   { slug: 'best-earbuds-under-100', icon: '💵', en: 'Best Earbuds Under $100', fr: 'Meilleurs écouteurs sous 100 $', enDesc: 'Our top wireless earbuds below $100.', frDesc: 'Nos meilleurs écouteurs sans fil sous 100 $.', cat: 'Price' },
+   { slug: 'best-earbuds-under-150', icon: '💎', en: 'Best Earbuds Under $150', fr: 'Meilleurs écouteurs sous 150 $', enDesc: 'Premium features without crossing $150.', frDesc: 'Des fonctions premium sans dépasser 150 $.', cat: 'Price' },
+   { slug: 'best-earbuds-under-200', icon: '💎', en: 'Best Earbuds Under $200', fr: 'Meilleurs écouteurs sous 200 $', enDesc: 'High-end earbuds below the $200 mark.', frDesc: 'Des écouteurs haut de gamme sous 200 $.', cat: 'Price' },
++  { slug: 'best-premium-earbuds', icon: '👑', en: 'Best Premium Earbuds', fr: 'Meilleurs écouteurs premium', enDesc: 'The best wireless earbuds once price stops being the limiting factor.', frDesc: 'Les meilleurs écouteurs sans fil quand le prix n’est plus la contrainte.', cat: 'Price' },
+   { slug: 'best-battery-life-earbuds', icon: '🔋', en: 'Best Earbuds for Battery Life', fr: 'Meilleurs écouteurs pour l’autonomie', enDesc: 'Earbuds for people who hate charging.', frDesc: 'Les écouteurs pour ceux qui veulent recharger le moins possible.', cat: 'Use case' },
+   { slug: 'best-noise-cancelling-earbuds', icon: '🔇', en: 'Best Noise-Cancelling Earbuds', fr: 'Meilleurs écouteurs avec réduction de bruit', enDesc: 'Top picks for blocking unwanted noise.', frDesc: 'Les meilleurs choix pour réduire les bruits environnants.', cat: 'Features' },
+   { slug: 'best-earbuds-for-iphone', icon: '', en: 'Best Earbuds for iPhone', fr: 'Meilleurs écouteurs pour iPhone', enDesc: 'Earbuds that pair well with Apple devices.', frDesc: 'Les écouteurs adaptés à l’écosystème Apple.', cat: 'Devices' },
+diff --git a/lib/guidePages.js b/lib/guidePages.js
+index 3a255a2..2f36513 100644
+--- a/lib/guidePages.js
++++ b/lib/guidePages.js
+@@ -1,38 +1,4 @@
+ export const GUIDE_PAGES = [
+-  {
+-    slug: 'best-budget-earbuds',
+-    priority: 0.9,
+-    en: {
+-      title: 'Best Budget Earbuds',
+-      description: 'A practical guide to the best budget wireless earbuds, with clear criteria for price, features, battery life and everyday value.',
+-      intro: 'The best budget earbuds are not simply the cheapest models. They are the models that deliver the strongest mix of sound, battery life, comfort and useful features for the money.',
+-      sections: [
+-        ['What makes a good budget pair?', 'Look beyond the launch price. Battery life, water resistance, Bluetooth support, ANC and weight can make a cheaper pair much better or worse for daily use.'],
+-        ['How we compare them', 'We start with price, then look at the specifications available in our database. We separate objective specifications from subjective claims so the shortlist stays transparent.'],
+-        ['Who should buy budget earbuds?', 'Budget earbuds are ideal for a first pair, a backup pair, commuting, exercise or anyone who does not need every premium feature.'],
+-      ],
+-    },
+-    fr: {
+-      title: 'Les meilleurs écouteurs sans fil pas chers',
+-      description: 'Guide des meilleurs écouteurs sans fil abordables : prix, autonomie, fonctions, confort et rapport qualité-prix.',
+-      intro: 'Les meilleurs écouteurs abordables ne sont pas forcément les moins chers. Il faut rechercher le meilleur équilibre entre son, autonomie, confort et fonctionnalités.',
+-      sections: [
+-        ['Qu’est-ce qu’un bon modèle abordable ?', 'Le prix ne suffit pas. L’autonomie, la résistance à l’eau, le Bluetooth, l’ANC et le poids peuvent faire une grande différence au quotidien.'],
+-        ['Comment les comparer', 'Nous partons du prix puis comparons les caractéristiques disponibles dans notre base. Les données objectives sont séparées des appréciations éditoriales.'],
+-        ['Pour qui ?', 'Ils conviennent à un premier achat, à une paire de secours, aux transports ou au sport sans payer pour toutes les fonctions premium.'],
+-      ],
+-    },
+-    filter: (m) => Number.isFinite(Number(m.price)) && Number(m.price) <= 100,
+-    sort: (a, b) => Number(a.price) - Number(b.price),
+-  },
+-  {
+-    slug: 'best-wireless-earbuds-under-100',
+-    priority: 0.9,
+-    en: { title: 'Best Wireless Earbuds Under $100', description: 'Find the best wireless earbuds under $100 by comparing price, ANC, battery life, Bluetooth and everyday specifications.', intro: 'A $100 ceiling still leaves a wide range of wireless earbuds. The right choice depends on which features matter most to you.', sections: [['What to prioritize under $100', 'Prioritize the features you will use every day: battery life, fit, water resistance, ANC when available and reliable Bluetooth connectivity.'], ['Price is only the first filter', 'Two earbuds can cost almost the same while offering very different battery, weight or ANC specifications. Compare the full specification set before choosing.'], ['A good $100 shortlist', 'Use the live catalogue below as a starting point, then open each product page for the complete specifications and timeline context.']] },
+-    fr: { title: 'Les meilleurs écouteurs sans fil à moins de 100 $', description: 'Comparez les meilleurs écouteurs sans fil à moins de 100 $ selon le prix, l’ANC, l’autonomie et le Bluetooth.', intro: 'Avec un plafond de 100 $, le choix reste très large. Le meilleur modèle dépend surtout des fonctions que vous utilisez réellement.', sections: [['Les critères prioritaires', 'Autonomie, confort, résistance à l’eau, ANC lorsqu’il est disponible et connectivité Bluetooth sont de bons points de départ.'], ['Le prix ne suffit pas', 'Deux modèles au même prix peuvent avoir une autonomie, un poids ou un ANC très différents.'], ['Une première sélection', 'Utilisez la sélection ci-dessous puis ouvrez chaque fiche pour consulter toutes les caractéristiques.']] },
+-    filter: (m) => Number.isFinite(Number(m.price)) && Number(m.price) <= 100,
+-    sort: (a, b) => Number(a.price) - Number(b.price),
+-  },
+   {
+     slug: 'best-wireless-earbuds-for-calls',
+     priority: 0.9,
+@@ -141,14 +107,7 @@ export const GUIDE_PAGES = [
+     sort: (a, b) => Number(a.price) - Number(b.price),
+   },
+   {
+-    slug: 'best-earbuds-150-to-250', priority: 0.8,
+-    en: { title: 'Best Earbuds Between $150 and $250', description: 'Wireless earbuds in the $150–$250 range, where ANC, multipoint and premium chips become common.', intro: 'This price range is where ANC, multipoint and more advanced chips become the norm rather than the exception.', sections: [['What this budget typically buys', 'Expect ANC, decent water resistance and often multipoint support in this range.'], ['Diminishing returns start here', 'Beyond this range, gains are often about incremental battery life or software features rather than core capability.'], ['Compare within the range', 'Prices vary a lot inside this band — a $160 and a $240 pair can differ meaningfully in features.']] },
+-    fr: { title: 'Les meilleurs écouteurs entre 150 et 250 $', description: 'Écouteurs sans fil entre 150 et 250 $, une tranche où ANC, multipoint et puces avancées deviennent courants.', intro: 'C’est la tranche où l’ANC, le multipoint et des puces plus avancées deviennent la norme plutôt que l’exception.', sections: [['Ce que cette tranche apporte', 'ANC, bonne résistance à l’eau et souvent multipoint sont courants ici.'], ['Les rendements diminuent au-delà', 'Passé cette tranche, les gains portent surtout sur l’autonomie ou des fonctions logicielles annexes.'], ['Comparez à l’intérieur de la tranche', 'Les prix varient beaucoup ici — un modèle à 160 $ et un à 240 $ peuvent différer nettement.']] },
+-    filter: (m) => Number.isFinite(Number(m.price)) && Number(m.price) >= 150 && Number(m.price) <= 250,
+-    sort: (a, b) => Number(a.price) - Number(b.price),
+-  },
+-  {
+-    slug: 'best-premium-earbuds', priority: 0.8,
++    slug: 'best-premium-earbuds', priority: 0.85,
+     en: { title: 'Best Premium Wireless Earbuds', description: 'The best premium wireless earbuds over $200, compared by ANC, battery life, chip and water resistance.', intro: 'Above $200, price alone stops being a useful signal — the comparison has to rely on the full specification sheet.', sections: [['What premium usually adds', 'Newer chips, stronger ANC evidence coverage and additional software features are common above this price.'], ['Price is not a quality guarantee', 'A high price does not automatically mean better real-world performance; check the specifications and available evidence.'], ['Use the Finder for a personal fit', 'If budget is not the constraint, our Finder tool can prioritize the exact features that matter to you.']] },
+     fr: { title: 'Les meilleurs écouteurs sans fil premium', description: 'Les meilleurs écouteurs sans fil premium à plus de 200 $, comparés selon l’ANC, l’autonomie, la puce et la résistance à l’eau.', intro: 'Au-delà de 200 $, le prix seul cesse d’être un bon indicateur — la comparaison doit s’appuyer sur la fiche technique complète.', sections: [['Ce que le premium ajoute en général', 'Puces plus récentes, meilleure couverture de preuves ANC et fonctions logicielles supplémentaires sont courantes au-delà de ce prix.'], ['Le prix ne garantit pas la qualité', 'Un prix élevé ne signifie pas automatiquement de meilleures performances réelles — vérifiez les caractéristiques et les preuves disponibles.'], ['Utilisez le Finder pour un choix personnalisé', 'Si le budget n’est pas la contrainte, notre Finder peut prioriser exactement les fonctions qui comptent pour vous.']] },
+     filter: (m) => Number.isFinite(Number(m.price)) && Number(m.price) > 200,
+diff --git a/next.config.mjs b/next.config.mjs
+index 5fcbe64..a05f8be 100644
+--- a/next.config.mjs
++++ b/next.config.mjs
+@@ -5,6 +5,24 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.js');
+ 
+ /** @type {import('next').NextConfig} */
+ const nextConfig = {
++  async redirects() {
++    // Cluster Price/Budget : ces deux guides faisaient doublon d'intention
++    // avec des pages déjà en place (cannibalisation SEO) et ont été retirés
++    // de GUIDE_PAGES. Redirect 301 au lieu d'une simple suppression pour ne
++    // pas perdre le jus SEO si l'une des deux URLs a déjà été explorée/indexée.
++    return [
++      {
++        source: '/:locale(en|fr)/guides/best-wireless-earbuds-under-100',
++        destination: '/:locale/guides/best-earbuds-under-100',
++        permanent: true,
++      },
++      {
++        source: '/:locale(en|fr)/guides/best-earbuds-150-to-250',
++        destination: '/:locale/guides/best-premium-earbuds',
++        permanent: true,
++      },
++    ];
++  },
+   experimental: {
+     serverActions: {
+       bodySizeLimit: '25mb',

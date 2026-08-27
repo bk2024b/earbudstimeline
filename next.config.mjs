@@ -5,6 +5,24 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.js');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    // Cluster Price/Budget : ces deux guides faisaient doublon d'intention
+    // avec des pages déjà en place (cannibalisation SEO) et ont été retirés
+    // de GUIDE_PAGES. Redirect 301 au lieu d'une simple suppression pour ne
+    // pas perdre le jus SEO si l'une des deux URLs a déjà été explorée/indexée.
+    return [
+      {
+        source: '/:locale(en|fr)/guides/best-wireless-earbuds-under-100',
+        destination: '/:locale/guides/best-earbuds-under-100',
+        permanent: true,
+      },
+      {
+        source: '/:locale(en|fr)/guides/best-earbuds-150-to-250',
+        destination: '/:locale/guides/best-premium-earbuds',
+        permanent: true,
+      },
+    ];
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '25mb',
