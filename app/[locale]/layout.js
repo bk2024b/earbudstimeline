@@ -7,6 +7,7 @@ import { display, body, mono } from '@/lib/fonts';
 import Header from '@/components/Header';
 import MicrosoftClarity from '@/components/MicrosoftClarity';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import SocialBar from '@/components/SocialBar';
 import { SITE_URL } from '@/lib/seo';
 
 export function generateStaticParams() {
@@ -72,6 +73,7 @@ export default async function LocaleLayout({ children, params }) {
           l'usage de /admin comme du trafic visiteur. */}
       <MicrosoftClarity />
       <GoogleAnalytics />
+      <SocialBar />
     </NextIntlClientProvider>
   );
 }
