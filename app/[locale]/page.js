@@ -172,10 +172,9 @@ export default async function HomePage({ params }) {
       </div>
 
       <AdSlot
-        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_HOME_MIDBRAND_KEY}
-        width={300}
-        height={250}
-        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_HOME_MIDBRAND_DOMAIN}
+        variant="native"
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
+        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
         label={locale === 'en' ? 'Advertisement' : 'Publicité'}
       />
 
@@ -208,10 +207,9 @@ export default async function HomePage({ params }) {
       </div>
 
       <AdSlot
-        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_HOME_AFTERCOMPARISONS_KEY}
-        width={728}
-        height={90}
-        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_HOME_AFTERCOMPARISONS_DOMAIN}
+        variant="native"
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_AFTER_INTRO_KEY}
+        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_AFTER_INTRO_DOMAIN}
         label={locale === 'en' ? 'Advertisement' : 'Publicité'}
       />
 
