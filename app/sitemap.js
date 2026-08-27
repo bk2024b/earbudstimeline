@@ -29,8 +29,10 @@ export default async function sitemap() {
   const staticPaths = [
     { path: '', priority: 1 },
     { path: '/trouver-mes-ecouteurs', priority: 0.95 },
+    { path: '/ecouteurs', priority: 0.85 },
     { path: '/marques', priority: 0.8 },
     { path: '/timeline', priority: 0.8 },
+    { path: '/guides', priority: 0.75 },
     { path: '/comparaisons', priority: 0.7 },
     { path: '/comparer', priority: 0.7 },
     { path: '/blog', priority: 0.7 },
@@ -39,8 +41,9 @@ export default async function sitemap() {
     { path: '/technologies/anc', priority: 0.7 },
     { path: '/technologies/usb-c', priority: 0.7 },
     { path: '/technologies/multipoint', priority: 0.7 },
+    { path: '/confidentialite', priority: 0.3, changeFrequency: 'yearly' },
   ];
-  const staticRoutes = staticPaths.flatMap(({ path, priority }) => localizedEntries(path, { changeFrequency: 'weekly', priority }));
+  const staticRoutes = staticPaths.flatMap(({ path, priority, changeFrequency = 'weekly' }) => localizedEntries(path, { changeFrequency, priority }));
   const guideRoutes = GUIDE_PAGES.flatMap((guide) =>
     localizedEntries(`/guides/${guide.slug}`, { changeFrequency: 'weekly', priority: guide.priority || 0.7 })
   );
