@@ -3,6 +3,7 @@ import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
 import { rankByValuePerDollar } from '@/lib/budgetValue';
 import { canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
+import AdSlot from '@/components/AdSlot';
 
 export const revalidate = 3600;
 
@@ -117,7 +118,7 @@ export default async function BestEarbudsUnder100Page({ params }) {
 
         <section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-5">FAQ</h2><div className="divide-y divide-line border-y border-line">{(fr ? [['Quels sont les meilleurs écouteurs sous 100 $ ?','Notre classement utilise le moteur Value per Dollar pour comparer les modèles du catalogue jusqu’à 100 $.'],['Les écouteurs à 50 $ sont-ils meilleurs que ceux à 100 $ ?','Pas nécessairement. Le Utility Score mesure l’utilité indépendamment du prix, puis le Value per Dollar mesure le compromis entre cette utilité et le prix.'],['Le prix affiché est-il garanti ?','Non. Les prix peuvent changer selon le marché et le moment. Vérifiez toujours le prix actuel avant l’achat.'],['Pourquoi certains modèles sont-ils absents ?','Seuls les modèles avec un prix valide et inférieur ou égal à 100 $ peuvent entrer dans ce classement.']] : [['What are the best earbuds under $100?','Our ranking uses the Value per Dollar engine to compare catalog models priced at or below $100.'],['Are $50 earbuds better than $100 earbuds?','Not necessarily. Utility Score measures utility independently of price, then Value per Dollar measures the trade-off between utility and price.'],['Are listed prices guaranteed?','No. Prices can change by market and over time. Always verify the current price before buying.'],['Why are some models missing?','Only models with a valid price at or below $100 can enter this ranking.']]).map(([q,a]) => <details key={q} className="py-4"><summary className="cursor-pointer font-display font-medium">{q}</summary><p className="text-dim text-sm leading-7 mt-3 max-w-3xl">{a}</p></details>)}</div></section>
       </article>
-      <Footer />
+      <AdSlot variant="native" zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY} invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN} label={locale === 'en' ? 'Advertisement' : 'Publicité'} /><Footer />
     </>
   );
 }

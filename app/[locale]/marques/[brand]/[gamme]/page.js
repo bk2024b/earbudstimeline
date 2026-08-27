@@ -16,6 +16,7 @@ import BrandBadge from '@/components/BrandBadge';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import StatTile from '@/components/StatTile';
 import LineageTechGraph from '@/components/LineageTechGraph';
+import AdSlot from '@/components/AdSlot';
 import { Stat, Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -197,6 +198,13 @@ export default async function GammePage({ params }) {
           </div>
         ))}
       </div>
+
+      <AdSlot
+        variant="native"
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
+        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
+        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
+      />
 
       {!isSingle && (
         <>

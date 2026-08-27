@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
 import { canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
+import AdSlot from '@/components/AdSlot';
 
 export const revalidate = 3600;
 
@@ -193,7 +194,7 @@ export default async function BestWirelessEarbudsPage({ params }) {
           </div>
         </section>
       </article>
-      <Footer />
+      <AdSlot variant="native" zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY} invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN} label={locale === 'en' ? 'Advertisement' : 'Publicité'} /><Footer />
     </>
   );
 }

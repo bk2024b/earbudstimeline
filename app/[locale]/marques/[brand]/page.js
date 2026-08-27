@@ -10,6 +10,7 @@ import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd 
 import ModelCard from '@/components/ModelCard';
 import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
+import AdSlot from '@/components/AdSlot';
 import { Stat, Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -138,6 +139,12 @@ export default async function BrandPage({ params }) {
           <ModelCard key={m.id} m={m} color={brand.color} locale={locale} />
         ))}
       </div>
+      <AdSlot
+        variant="native"
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
+        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
+        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
+      />
       <Footer locale={locale} />
     </>
   );

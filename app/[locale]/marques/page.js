@@ -2,6 +2,7 @@ import { Link } from '@/i18n/navigation';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import BrandBadge from '@/components/BrandBadge';
+import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -76,6 +77,13 @@ export default async function MarquesPage({ params }) {
           );
         })}
       </div>
+
+      <AdSlot
+        variant="native"
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
+        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
+        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
+      />
 
       <Footer locale={locale} />
     </>

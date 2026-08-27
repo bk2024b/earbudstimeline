@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { computeStats } from '@/lib/stats';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, JsonLd } from '@/lib/seo';
 import ModelCard from './ModelCard';
+import AdSlot from './AdSlot';
 import { Stat, Footer } from './UI';
 
 export default async function TechHubPage({ eyebrow, title, intro, models, brands, breadcrumbItems, locale }) {
@@ -46,6 +47,13 @@ export default async function TechHubPage({ eyebrow, title, intro, models, brand
           ))}
         </div>
       )}
+
+      <AdSlot
+        variant="native"
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
+        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
+        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
+      />
 
       <Footer locale={locale} />
     </>

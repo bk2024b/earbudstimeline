@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { canonicalFor, JsonLd } from '@/lib/seo';
+import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -94,6 +95,12 @@ export default async function GuidesPage({ params }) {
           ))}
         </section>
       </article>
+      <AdSlot
+        variant="native"
+        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
+        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
+        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
+      />
       <Footer locale={locale} />
     </>
   );

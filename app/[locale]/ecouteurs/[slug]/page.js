@@ -16,6 +16,7 @@ import RelatedArticles from '@/components/RelatedArticles';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import TimelinePosition from '@/components/TimelinePosition';
 import EntityGraph from '@/components/EntityGraph';
+import AdSlot from '@/components/AdSlot';
 import { Badge, Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -252,6 +253,13 @@ export default async function ModelPage({ params }) {
         <Link href={`/annees/${yearOf(m.release_date)}`} className="inline-block text-accent text-xs hover:underline mb-8">
           {t('seeReleasedIn', { year: yearOf(m.release_date) })}
         </Link>
+
+        <AdSlot
+          variant="native"
+          zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
+          invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
+          label={locale === 'en' ? 'Advertisement' : 'Publicité'}
+        />
 
         <ComparisonSuggestions
           model={m}

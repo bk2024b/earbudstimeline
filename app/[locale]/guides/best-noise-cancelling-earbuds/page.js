@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
 import { canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
+import AdSlot from '@/components/AdSlot';
 
 export const revalidate = 3600;
 
@@ -116,7 +117,7 @@ export default async function BestNoiseCancellingEarbudsPage({ params }) {
 
         <section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-5">FAQ</h2><div className="divide-y divide-line border-y border-line">{(fr ? [['Quels sont les meilleurs écouteurs avec réduction de bruit ?','Notre classement principal utilise le score ANC Intelligence disponible dans le catalogue et distingue aussi plusieurs environnements.'],['Quel est le meilleur ANC pour les voyages ?','Consultez le classement Travel, conçu pour comparer les modèles selon leur score ANC dans les environnements de voyage disponibles.'],['Le score ANC est-il un test de laboratoire EarbudsTimeline ?','Non. La page expose des données ANC structurées dans notre couche d’intelligence ; elle ne prétend pas remplacer des mesures indépendantes.'],['Les écouteurs sous 100 $ peuvent-ils avoir un bon ANC ?','Oui. La section dédiée permet de comparer les modèles ANC sous 100 $ présents dans notre catalogue.']] : [['What are the best noise cancelling earbuds?','Our main ranking uses the ANC Intelligence score available in the catalog and also separates several environments.'],['What are the best ANC earbuds for travel?','See the Travel ranking, which compares models using the available Travel ANC scores.'],['Is the ANC score an EarbudsTimeline laboratory test?','No. The page exposes structured ANC intelligence data and does not claim to replace independent measurements.'],['Can earbuds under $100 have good ANC?','Yes. The dedicated section compares ANC models under $100 represented in our catalog.']]).map(([q,a]) => <details key={q} className="py-4"><summary className="cursor-pointer font-display font-medium">{q}</summary><p className="text-dim text-sm leading-7 mt-3 max-w-3xl">{a}</p></details>)}</div></section>
       </article>
-      <Footer />
+      <AdSlot variant="native" zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY} invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN} label={locale === 'en' ? 'Advertisement' : 'Publicité'} /><Footer />
     </>
   );
 }
