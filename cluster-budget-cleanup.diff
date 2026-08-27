@@ -1,17 +1,171 @@
 diff --git a/app/[locale]/guides/page.js b/app/[locale]/guides/page.js
-index 7197eb7..5d7a96c 100644
+index 7197eb7..2f8d3c5 100644
 --- a/app/[locale]/guides/page.js
 +++ b/app/[locale]/guides/page.js
-@@ -13,6 +13,7 @@ const guides = [
-   { slug: 'best-earbuds-under-100', icon: '💵', en: 'Best Earbuds Under $100', fr: 'Meilleurs écouteurs sous 100 $', enDesc: 'Our top wireless earbuds below $100.', frDesc: 'Nos meilleurs écouteurs sans fil sous 100 $.', cat: 'Price' },
-   { slug: 'best-earbuds-under-150', icon: '💎', en: 'Best Earbuds Under $150', fr: 'Meilleurs écouteurs sous 150 $', enDesc: 'Premium features without crossing $150.', frDesc: 'Des fonctions premium sans dépasser 150 $.', cat: 'Price' },
+@@ -1,11 +1,15 @@
+ import Link from 'next/link';
+ import { canonicalFor, JsonLd } from '@/lib/seo';
++import { GUIDE_PAGES } from '@/lib/guidePages';
+ import AdSlot from '@/components/AdSlot';
+ import { Footer } from '@/components/UI';
+ 
+ export const revalidate = 3600;
+ 
+-const guides = [
++// Hand-curated cards for the original static guide pages (dedicated page.js
++// files, not driven by GUIDE_PAGES). Kept separate so their icon/description
++// stay hand-tuned instead of falling back to the generic GUIDE_PAGES copy.
++const curatedGuides = [
+   { slug: 'best-wireless-earbuds', icon: '🎧', en: 'Best Wireless Earbuds', fr: 'Meilleurs écouteurs sans fil', enDesc: 'The best wireless earbuds across budgets and use cases.', frDesc: 'Les meilleurs écouteurs sans fil, tous budgets et usages confondus.', cat: 'Basics' },
+   { slug: 'best-budget-earbuds', icon: '💰', en: 'Best Budget Earbuds', fr: 'Meilleurs écouteurs pas chers', enDesc: 'Strong wireless earbuds when you want to spend less.', frDesc: 'De bons écouteurs sans fil pour dépenser moins.', cat: 'Price' },
+   { slug: 'best-earbuds-under-50', icon: '💵', en: 'Best Earbuds Under $50', fr: 'Meilleurs écouteurs sous 50 $', enDesc: 'The best options at $50 or less.', frDesc: 'Les meilleures options à 50 $ ou moins.', cat: 'Price' },
+@@ -15,7 +19,7 @@ const guides = [
    { slug: 'best-earbuds-under-200', icon: '💎', en: 'Best Earbuds Under $200', fr: 'Meilleurs écouteurs sous 200 $', enDesc: 'High-end earbuds below the $200 mark.', frDesc: 'Des écouteurs haut de gamme sous 200 $.', cat: 'Price' },
-+  { slug: 'best-premium-earbuds', icon: '👑', en: 'Best Premium Earbuds', fr: 'Meilleurs écouteurs premium', enDesc: 'The best wireless earbuds once price stops being the limiting factor.', frDesc: 'Les meilleurs écouteurs sans fil quand le prix n’est plus la contrainte.', cat: 'Price' },
    { slug: 'best-battery-life-earbuds', icon: '🔋', en: 'Best Earbuds for Battery Life', fr: 'Meilleurs écouteurs pour l’autonomie', enDesc: 'Earbuds for people who hate charging.', frDesc: 'Les écouteurs pour ceux qui veulent recharger le moins possible.', cat: 'Use case' },
    { slug: 'best-noise-cancelling-earbuds', icon: '🔇', en: 'Best Noise-Cancelling Earbuds', fr: 'Meilleurs écouteurs avec réduction de bruit', enDesc: 'Top picks for blocking unwanted noise.', frDesc: 'Les meilleurs choix pour réduire les bruits environnants.', cat: 'Features' },
-   { slug: 'best-earbuds-for-iphone', icon: '', en: 'Best Earbuds for iPhone', fr: 'Meilleurs écouteurs pour iPhone', enDesc: 'Earbuds that pair well with Apple devices.', frDesc: 'Les écouteurs adaptés à l’écosystème Apple.', cat: 'Devices' },
+-  { slug: 'best-earbuds-for-iphone', icon: '', en: 'Best Earbuds for iPhone', fr: 'Meilleurs écouteurs pour iPhone', enDesc: 'Earbuds that pair well with Apple devices.', frDesc: 'Les écouteurs adaptés à l’écosystème Apple.', cat: 'Devices' },
++  { slug: 'best-earbuds-for-iphone', icon: '', en: 'Best Earbuds for iPhone', fr: 'Meilleurs écouteurs pour iPhone', enDesc: 'Earbuds that pair well with Apple devices.', frDesc: 'Les écouteurs adaptés à l’écosystème Apple.', cat: 'Devices' },
+   { slug: 'best-earbuds-for-android', icon: '▣', en: 'Best Earbuds for Android', fr: 'Meilleurs écouteurs pour Android', enDesc: 'Great choices for Android phones.', frDesc: 'Les meilleurs choix pour les smartphones Android.', cat: 'Devices' },
+   { slug: 'best-earbuds-for-music', icon: '🎵', en: 'Best Earbuds for Music', fr: 'Meilleurs écouteurs pour la musique', enDesc: 'Models selected for everyday music listening.', frDesc: 'Des modèles pensés pour écouter de la musique au quotidien.', cat: 'Audio' },
+   { slug: 'best-earbuds-for-audiophiles', icon: '🎼', en: 'Best Earbuds for Audiophiles', fr: 'Meilleurs écouteurs pour audiophiles', enDesc: 'Prioritizing sound quality and listening detail.', frDesc: 'Priorité à la qualité sonore et aux détails musicaux.', cat: 'Audio' },
+@@ -37,9 +41,69 @@ const guides = [
+   { slug: 'best-earbuds-for-outdoor-use', icon: '🌤️', en: 'Best Earbuds for Outdoor Use', fr: 'Meilleurs écouteurs pour l’extérieur', enDesc: 'Resistance, awareness and battery for outdoor use.', frDesc: 'Résistance, autonomie et perception de l’environnement.', cat: 'Sport' },
+   { slug: 'best-earbuds-for-large-ears', icon: '👂', en: 'Best Earbuds for Large Ears', fr: 'Meilleurs écouteurs pour grandes oreilles', enDesc: 'Models worth considering for larger ears.', frDesc: 'Des modèles à considérer pour les grandes oreilles.', cat: 'Fit' },
+   { slug: 'best-earbuds-for-small-ears', icon: '👂', en: 'Best Earbuds for Small Ears', fr: 'Meilleurs écouteurs pour petites oreilles', enDesc: 'Smaller and more comfortable options to consider.', frDesc: 'Des options plus compactes à considérer pour les petites oreilles.', cat: 'Fit' },
++  { slug: 'best-premium-earbuds', icon: '👑', en: 'Best Premium Earbuds', fr: 'Meilleurs écouteurs premium', enDesc: 'The best wireless earbuds once price stops being the limiting factor.', frDesc: 'Les meilleurs écouteurs sans fil quand le prix n’est plus la contrainte.', cat: 'Price' },
+ ];
+ 
+-const categories = ['All', 'Price', 'Audio', 'Sport', 'Travel', 'Work', 'Features', 'Devices', 'Fit', 'Lifestyle'];
++// Every other GUIDE_PAGES entry (brand hubs, comparisons, feature pages) was
++// previously reachable only via the sitemap — no internal link pointed to
++// most of them. Rather than hand-writing ~45 more curated cards (and having
++// this list silently go stale every time a guide is added to GUIDE_PAGES),
++// we derive their hub cards straight from GUIDE_PAGES itself: the source of
++// truth becomes the single array in lib/guidePages.js, so a future addition
++// there is automatically linked from this hub with no extra step.
++const GUIDE_CATEGORY = {
++  'best-wireless-earbuds-for-calls': 'Use case',
++  'best-earbuds-for-office': 'Use case',
++  'best-sport-earbuds': 'Use case',
++  'best-gaming-earbuds': 'Use case',
++  'best-earbuds-for-gaming-pc': 'Use case',
++  'best-gaming-earbuds-under-100': 'Use case',
++  'sony-earbuds-guide': 'Brands',
++  'google-pixel-buds-guide': 'Brands',
++  'jbl-earbuds-guide': 'Brands',
++  'skullcandy-earbuds-guide': 'Brands',
++  'xiaomi-redmi-earbuds-guide': 'Brands',
++  'soundcore-earbuds-guide': 'Brands',
++  'oppo-earbuds-guide': 'Brands',
++  'jabra-earbuds-guide': 'Brands',
++  'oneplus-earbuds-guide': 'Brands',
++  'audio-technica-earbuds-guide': 'Brands',
++  'huawei-earbuds-guide': 'Brands',
++  'sennheiser-earbuds-guide': 'Brands',
++  'technics-earbuds-guide': 'Brands',
++  'beats-earbuds-guide': 'Brands',
++  'shokz-earbuds-guide': 'Brands',
++  'bose-earbuds-guide': 'Brands',
++  'samsung-earbuds-guide': 'Brands',
++  'nothing-ear-reviews': 'Brands',
++  'airpods-vs-galaxy-buds': 'Comparisons',
++  'sony-vs-apple': 'Comparisons',
++  'bose-vs-sony': 'Comparisons',
++  'beats-vs-airpods': 'Comparisons',
++  'jbl-vs-soundcore': 'Comparisons',
++  'jabra-vs-bose': 'Comparisons',
++  'huawei-vs-samsung': 'Comparisons',
++};
++const GUIDE_ICON = { 'Use case': '🎯', Brands: '🏷️', Comparisons: '⚖️', Features: '⚙️' };
++
++const curatedSlugs = new Set(curatedGuides.map((g) => g.slug));
++const generatedGuides = GUIDE_PAGES.filter((g) => !curatedSlugs.has(g.slug)).map((g) => {
++  const cat = GUIDE_CATEGORY[g.slug] || 'Features';
++  return {
++    slug: g.slug,
++    icon: GUIDE_ICON[cat],
++    en: g.en.title,
++    fr: g.fr.title,
++    enDesc: g.en.description,
++    frDesc: g.fr.description,
++    cat,
++  };
++});
++
++const guides = [...curatedGuides, ...generatedGuides];
++
++const categories = ['All', 'Price', 'Use case', 'Audio', 'Sport', 'Travel', 'Work', 'Features', 'Devices', 'Fit', 'Lifestyle', 'Brands', 'Comparisons', 'Basics', 'Entertainment'];
++const categoryId = (category) => category.toLowerCase().replace(/\s+/g, '-');
+ 
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+@@ -65,6 +129,11 @@ export default async function GuidesPage({ params }) {
+     inLanguage: locale,
+   };
+ 
++  const sections = categories
++    .filter((c) => c !== 'All')
++    .map((cat) => ({ cat, items: guides.filter((g) => g.cat === cat) }))
++    .filter((s) => s.items.length > 0);
++
+   return (
+     <>
+       <JsonLd data={jsonLd} />
+@@ -75,25 +144,36 @@ export default async function GuidesPage({ params }) {
+ 
+         <div className="flex gap-2 overflow-x-auto no-scrollbar mt-8 pb-2">
+           {categories.map((category) => (
+-            <span key={category} className="shrink-0 px-3 py-1.5 rounded-full border border-line bg-panel text-dim text-xs font-mono">
+-              {category === 'All' ? (fr ? 'Tous' : 'All') : category}
+-            </span>
++            category === 'All' ? (
++              <span key={category} className="shrink-0 px-3 py-1.5 rounded-full border border-line bg-panel text-dim text-xs font-mono">
++                {fr ? 'Tous' : 'All'}
++              </span>
++            ) : (
++              <a key={category} href={`#${categoryId(category)}`} className="shrink-0 px-3 py-1.5 rounded-full border border-line bg-panel text-dim text-xs font-mono hover:border-accent hover:text-accent transition-colors">
++                {category}
++              </a>
++            )
+           ))}
+         </div>
+ 
+-        <section className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+-          {guides.map((guide) => (
+-            <Link key={guide.slug} href={`/${locale}/guides/${guide.slug}`} className="group block bg-panel border border-line rounded-2xl p-5 hover:border-accent transition-colors">
+-              <div className="flex items-start justify-between gap-4">
+-                <span className="text-2xl" aria-hidden="true">{guide.icon}</span>
+-                <span className="font-mono text-[9px] uppercase text-dim border border-line rounded-full px-2 py-1">{guide.cat}</span>
+-              </div>
+-              <h2 className="font-display font-semibold text-[19px] mt-5 group-hover:text-accent transition-colors">{fr ? guide.fr : guide.en}</h2>
+-              <p className="text-dim text-sm leading-6 mt-2">{fr ? guide.frDesc : guide.enDesc}</p>
+-              <div className="mt-5 text-accent font-mono text-[10px] uppercase">{fr ? 'Lire le guide →' : 'Read guide →'}</div>
+-            </Link>
+-          ))}
+-        </section>
++        {sections.map(({ cat, items }) => (
++          <section key={cat} id={categoryId(cat)} className="mt-12 scroll-mt-24">
++            <h2 className="font-mono text-xs text-accent uppercase tracking-[0.12em] mb-4">{cat} · {items.length}</h2>
++            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
++              {items.map((guide) => (
++                <Link key={guide.slug} href={`/${locale}/guides/${guide.slug}`} className="group block bg-panel border border-line rounded-2xl p-5 hover:border-accent transition-colors">
++                  <div className="flex items-start justify-between gap-4">
++                    <span className="text-2xl" aria-hidden="true">{guide.icon}</span>
++                    <span className="font-mono text-[9px] uppercase text-dim border border-line rounded-full px-2 py-1">{guide.cat}</span>
++                  </div>
++                  <h3 className="font-display font-semibold text-[19px] mt-5 group-hover:text-accent transition-colors">{fr ? guide.fr : guide.en}</h3>
++                  <p className="text-dim text-sm leading-6 mt-2">{fr ? guide.frDesc : guide.enDesc}</p>
++                  <div className="mt-5 text-accent font-mono text-[10px] uppercase">{fr ? 'Lire le guide →' : 'Read guide →'}</div>
++                </Link>
++              ))}
++            </div>
++          </section>
++        ))}
+       </article>
+       <AdSlot
+         variant="native"
 diff --git a/lib/guidePages.js b/lib/guidePages.js
-index 3a255a2..2f36513 100644
+index 3a255a2..a1b88aa 100644
 --- a/lib/guidePages.js
 +++ b/lib/guidePages.js
 @@ -1,38 +1,4 @@
@@ -53,10 +207,37 @@ index 3a255a2..2f36513 100644
    {
      slug: 'best-wireless-earbuds-for-calls',
      priority: 0.9,
-@@ -141,14 +107,7 @@ export const GUIDE_PAGES = [
-     sort: (a, b) => Number(a.price) - Number(b.price),
+@@ -40,19 +6,6 @@ export const GUIDE_PAGES = [
+     fr: { title: 'Les meilleurs écouteurs sans fil pour les appels', description: 'Guide pour choisir des écouteurs sans fil adaptés aux appels, réunions et conversations vocales.', intro: 'Pour les appels, la qualité du microphone compte autant que le son. Une fiche technique ne suffit cependant pas à prédire la qualité réelle de la voix.', sections: [['Les critères importants', 'Microphones, réduction du vent, stabilité Bluetooth et confort sont essentiels. Lorsque nous ne disposons pas de tests micro, nous ne prétendons pas qu’une simple fiche technique prouve la qualité des appels.'], ['Pour le travail', 'L’autonomie et le confort deviennent particulièrement importants pendant les longues réunions.'], ['Comment utiliser cette page', 'Considérez la sélection comme un point de départ puis consultez chaque fiche produit.']] },
+     sort: (a, b) => Number(b.battery_bud_h) - Number(a.battery_bud_h),
+   },
+-  {
+-    slug: 'best-noise-cancelling-earbuds', priority: 0.95,
+-    en: { title: 'Best Noise Cancelling Earbuds', description: 'Compare wireless earbuds with active noise cancellation and learn which specifications matter when choosing ANC earbuds.', intro: 'Active noise cancellation is one of the most useful features for commuting, travel and focused listening. But ANC quality cannot be reduced to a simple yes/no checkbox.', sections: [['ANC is more than a checkbox', 'The database records whether ANC is offered, while real-world cancellation also depends on fit, microphones, processing and the environment.'], ['For commuting and travel', 'Combine ANC with a secure fit, good battery life and the right water resistance for your routine.'], ['Compare the specifications', 'Start with the ANC-enabled catalogue below, then open individual products to inspect battery, weight, Bluetooth and other details.']] },
+-    fr: { title: 'Les meilleurs écouteurs avec réduction de bruit', description: 'Comparez les écouteurs sans fil avec réduction active du bruit et les caractéristiques importantes pour l’ANC.', intro: 'La réduction active du bruit est particulièrement utile dans les transports, en voyage et pour travailler. Mais l’ANC ne se résume pas à une case oui/non.', sections: [['L’ANC ne fait pas tout', 'Notre base indique si l’ANC est disponible. La qualité réelle dépend aussi de l’ajustement, des microphones et du traitement du signal.'], ['Transport et voyage', 'Associez l’ANC à un bon maintien, une autonomie suffisante et une résistance à l’eau adaptée à votre usage.'], ['Comparer les caractéristiques', 'Commencez par les modèles ANC puis consultez chaque fiche pour l’autonomie, le poids et le Bluetooth.']] },
+-    filter: (m) => m.anc === true,
+-    sort: (a, b) => Number(b.battery_bud_h) - Number(a.battery_bud_h),
+-  },
+-  {
+-    slug: 'best-earbuds-for-small-ears', priority: 0.85,
+-    en: { title: 'Best Earbuds for Small Ears', description: 'A practical guide to choosing earbuds for small ears, focusing on weight, fit and the specifications that can be checked before buying.', intro: 'Small ears can make fit more important than headline specifications. Weight is measurable, but physical comfort still depends on ear shape and the supplied tips.', sections: [['What to look for', 'Lower weight can help, but it is not a guarantee of a good fit. Tip selection, nozzle shape and the physical design matter too.'], ['Avoid choosing on weight alone', 'A lightweight earbud can still be uncomfortable if its shape does not match your ear.'], ['Our shortlist', 'The catalogue is ordered by weight as a useful first filter, not as a definitive comfort ranking.']] },
+-    fr: { title: 'Les meilleurs écouteurs pour petites oreilles', description: 'Guide pour choisir des écouteurs adaptés aux petites oreilles, avec un focus sur le poids et le confort.', intro: 'Pour les petites oreilles, le maintien peut être plus important que les caractéristiques marketing. Le poids est mesurable, mais le confort dépend aussi de la morphologie.', sections: [['Que regarder', 'Un poids réduit peut aider, mais ne garantit pas un bon ajustement. Les embouts et la forme comptent aussi.'], ['Ne pas choisir uniquement sur le poids', 'Un écouteur léger peut rester inconfortable si sa forme ne convient pas.'], ['Notre sélection', 'Le catalogue est trié par poids comme premier filtre, pas comme classement absolu du confort.']] },
+-    sort: (a, b) => Number(a.weight_g) - Number(b.weight_g),
+-  },
+   {
+     slug: 'best-gaming-earbuds', priority: 0.85,
+     en: { title: 'Best Gaming Earbuds', description: 'Guide to gaming earbuds, covering Bluetooth, weight, battery life and the limitations of specification-only comparisons.', intro: 'Gaming earbuds need low perceived latency, a stable connection, comfort and enough battery for long sessions. A Bluetooth version alone does not prove gaming latency.', sections: [['What gamers should check', 'Look for low-latency modes when documented, stable wireless connectivity, comfort and battery life.'], ['PC and console gaming', 'Compatibility varies by platform and connection method. Always check the product documentation before buying for a specific console or PC setup.'], ['Use the database intelligently', 'The shortlist below is organized around measurable specifications; it is not presented as a substitute for latency testing.']] },
+@@ -134,21 +87,7 @@ export const GUIDE_PAGES = [
+     sort: (a, b) => new Date(b.release_date) - new Date(a.release_date),
    },
    {
+-    slug: 'best-earbuds-under-50', priority: 0.85,
+-    en: { title: 'Best Wireless Earbuds Under $50', description: 'The best wireless earbuds under $50, compared by battery life, ANC availability, water resistance and Bluetooth.', intro: 'Under $50, most premium features become rare, so the comparison focuses on the fundamentals: battery life, fit and reliable Bluetooth.', sections: [['What to expect at this price', 'ANC and multipoint are uncommon under $50; prioritize battery life, comfort and water resistance instead.'], ['A good first or backup pair', 'This price range works well for a first pair, a spare for the gym, or a low-risk gift.'], ['Compare before deciding', 'Two models at the same price can differ significantly in battery life and water resistance — check the full spec sheet.']] },
+-    fr: { title: 'Les meilleurs écouteurs sans fil à moins de 50 $', description: 'Les meilleurs écouteurs sans fil à moins de 50 $, comparés selon l’autonomie, l’ANC, la résistance à l’eau et le Bluetooth.', intro: 'Sous 50 $, les fonctions premium se font rares, la comparaison se concentre donc sur l’essentiel : autonomie, confort et Bluetooth fiable.', sections: [['À quoi s’attendre à ce prix', 'ANC et multipoint sont rares sous 50 $ ; privilégiez plutôt l’autonomie, le confort et la résistance à l’eau.'], ['Un bon premier achat ou une paire de secours', 'Cette tranche convient à un premier achat, une paire de sport ou un cadeau sans grand risque.'], ['Comparez avant de choisir', 'Deux modèles au même prix peuvent différer beaucoup en autonomie ou résistance à l’eau — vérifiez la fiche complète.']] },
+-    filter: (m) => Number.isFinite(Number(m.price)) && Number(m.price) > 0 && Number(m.price) <= 50,
+-    sort: (a, b) => Number(a.price) - Number(b.price),
+-  },
+-  {
 -    slug: 'best-earbuds-150-to-250', priority: 0.8,
 -    en: { title: 'Best Earbuds Between $150 and $250', description: 'Wireless earbuds in the $150–$250 range, where ANC, multipoint and premium chips become common.', intro: 'This price range is where ANC, multipoint and more advanced chips become the norm rather than the exception.', sections: [['What this budget typically buys', 'Expect ANC, decent water resistance and often multipoint support in this range.'], ['Diminishing returns start here', 'Beyond this range, gains are often about incremental battery life or software features rather than core capability.'], ['Compare within the range', 'Prices vary a lot inside this band — a $160 and a $240 pair can differ meaningfully in features.']] },
 -    fr: { title: 'Les meilleurs écouteurs entre 150 et 250 $', description: 'Écouteurs sans fil entre 150 et 250 $, une tranche où ANC, multipoint et puces avancées deviennent courants.', intro: 'C’est la tranche où l’ANC, le multipoint et des puces plus avancées deviennent la norme plutôt que l’exception.', sections: [['Ce que cette tranche apporte', 'ANC, bonne résistance à l’eau et souvent multipoint sont courants ici.'], ['Les rendements diminuent au-delà', 'Passé cette tranche, les gains portent surtout sur l’autonomie ou des fonctions logicielles annexes.'], ['Comparez à l’intérieur de la tranche', 'Les prix varient beaucoup ici — un modèle à 160 $ et un à 240 $ peuvent différer nettement.']] },
@@ -69,6 +250,20 @@ index 3a255a2..2f36513 100644
      en: { title: 'Best Premium Wireless Earbuds', description: 'The best premium wireless earbuds over $200, compared by ANC, battery life, chip and water resistance.', intro: 'Above $200, price alone stops being a useful signal — the comparison has to rely on the full specification sheet.', sections: [['What premium usually adds', 'Newer chips, stronger ANC evidence coverage and additional software features are common above this price.'], ['Price is not a quality guarantee', 'A high price does not automatically mean better real-world performance; check the specifications and available evidence.'], ['Use the Finder for a personal fit', 'If budget is not the constraint, our Finder tool can prioritize the exact features that matter to you.']] },
      fr: { title: 'Les meilleurs écouteurs sans fil premium', description: 'Les meilleurs écouteurs sans fil premium à plus de 200 $, comparés selon l’ANC, l’autonomie, la puce et la résistance à l’eau.', intro: 'Au-delà de 200 $, le prix seul cesse d’être un bon indicateur — la comparaison doit s’appuyer sur la fiche technique complète.', sections: [['Ce que le premium ajoute en général', 'Puces plus récentes, meilleure couverture de preuves ANC et fonctions logicielles supplémentaires sont courantes au-delà de ce prix.'], ['Le prix ne garantit pas la qualité', 'Un prix élevé ne signifie pas automatiquement de meilleures performances réelles — vérifiez les caractéristiques et les preuves disponibles.'], ['Utilisez le Finder pour un choix personnalisé', 'Si le budget n’est pas la contrainte, notre Finder peut prioriser exactement les fonctions qui comptent pour vous.']] },
      filter: (m) => Number.isFinite(Number(m.price)) && Number(m.price) > 200,
+@@ -341,13 +280,6 @@ export const GUIDE_PAGES = [
+     filter: (m) => m.brand_id === 'huawei' || m.brand_id === 'samsung',
+     sort: (a, b) => new Date(b.release_date) - new Date(a.release_date),
+   },
+-  {
+-    slug: 'best-earbuds-for-travel', priority: 0.85,
+-    en: { title: 'Best Wireless Earbuds for Travel', description: 'Wireless earbuds best suited for travel, combining ANC with strong total battery life for long flights and trips.', intro: 'Travel puts two demands on earbuds at once: sustained noise cancellation and enough total battery life, including the case, to survive a long flight without a charger.', sections: [['Why ANC and battery matter together', 'A great ANC pair with weak total battery life still means carrying a cable — this list favors models that do both reasonably well.'], ['Consider carry-on practicality', 'Case size and weight, while not scored here, are also worth checking on the individual product page before a trip.'], ['Compare the shortlist', 'Use the candidates below as a starting point, then check full specifications on each product page.']] },
+-    fr: { title: 'Les meilleurs écouteurs sans fil pour voyager', description: 'Écouteurs sans fil adaptés au voyage, combinant ANC et bonne autonomie totale pour les longs vols et trajets.', intro: 'Le voyage impose deux exigences à la fois : une réduction de bruit tenace et une autonomie totale, boîtier compris, suffisante pour un long vol sans chargeur.', sections: [['Pourquoi ANC et autonomie comptent ensemble', 'Un excellent ANC avec une faible autonomie totale oblige quand même à emporter un câble — cette sélection favorise les modèles solides sur les deux plans.'], ['Pensez à l’encombrement', 'Taille et poids du boîtier, non notés ici, valent aussi le coup d’œil sur chaque fiche avant un voyage.'], ['Comparez la sélection', 'Utilisez les candidats ci-dessous comme point de départ, puis vérifiez la fiche complète de chaque modèle.']] },
+-    filter: (m) => m.anc === true && Number.isFinite(Number(m.battery_case_h)) && Number(m.battery_case_h) > 0,
+-    sort: (a, b) => Number(b.battery_case_h) - Number(a.battery_case_h),
+-  },
+   {
+     slug: 'best-earbuds-for-office', priority: 0.75,
+     en: { title: 'Best Wireless Earbuds for the Office', description: 'Wireless earbuds well suited for office use, favoring transparency mode and comfort for long workdays.', intro: 'Office use often benefits more from transparency mode than pure ANC — hearing a colleague or a meeting notification without removing an earbud matters day to day.', sections: [['Transparency over isolation', 'A transparency mode that sounds natural is often more useful in an office than maximum noise cancellation.'], ['Comfort for long days', 'Weight and fit matter more when earbuds are worn for a full workday rather than a single commute.'], ['Compare the shortlist', 'Use the candidates below as a starting point, then check full specifications on each product page.']] },
 diff --git a/next.config.mjs b/next.config.mjs
 index 5fcbe64..a05f8be 100644
 --- a/next.config.mjs

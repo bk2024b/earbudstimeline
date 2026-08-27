@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "earbudstimeline.vercel.app"
+        }
+      ],
+      "destination": "https://www.earbudstimeline.com/:path*",
+      "permanent": true
+    }
+  ]
+}
