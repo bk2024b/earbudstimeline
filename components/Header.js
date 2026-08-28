@@ -22,7 +22,7 @@ export default function Header() {
     <header className="py-3 sm:py-5 mb-6 sm:mb-8 sticky top-0 bg-page/95 backdrop-blur z-20 border-b border-line/40 flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-3 sm:gap-6">
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <Image src="/logo-icon.png" alt="" width={28} height={28} priority />
+          <Image src="/logo-icon.png" alt="EarbudsTimeline" width={28} height={28} priority />
           <span className="font-display font-bold text-lg hidden xs:inline">EarbudsTimeline</span>
           <span className="sr-only xs:hidden">EarbudsTimeline</span>
         </Link>
