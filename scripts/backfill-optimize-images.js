@@ -7,6 +7,14 @@
 // (resize 1600px max, WebP qualité 82 → 55 par paliers, cible ≤500 Ko) mais
 // côté serveur avec `sharp`, puisqu'il n'y a pas de Canvas/DOM en Node.
 //
+// Génère aussi, pour chaque image déjà traitée par ce script (nouvelle ou
+// ancienne), les variantes responsives manquantes (voir lib/imageVariants.js
+// et lib/storage.js — même convention de nommage `<nom>-<largeur>.webp`) :
+// c'est ce qui permet au loader Next custom (lib/imageLoader.js) de servir
+// une taille adaptée à chaque visiteur plutôt que le fichier 1600px à tout
+// le monde. Sûr à relancer plusieurs fois : une variante déjà présente dans
+// le bucket n'est jamais régénérée.
+//
 // Couvre trois sources :
 //   - earbuds.image_url
 //   - articles.cover_image_url
@@ -19,6 +27,7 @@
 //   node scripts/backfill-optimize-images.js --table=earbuds    # limiter à une table
 //   node scripts/backfill-optimize-images.js --limit=20         # limiter le nombre de lignes (tests)
 //   node scripts/backfill-optimize-images.js --delete-old       # supprime aussi l'ancien fichier du bucket
+//   node scripts/backfill-optimize-images.js --skip-variants    # ne pas (re)générer les variantes responsives
 //
 // Nécessite les mêmes variables d'env que l'app : NEXT_PUBLIC_SUPABASE_URL
 // et SUPABASE_SERVICE_ROLE_KEY (voir env.local.example / lib/supabaseAdmin.js).
@@ -48,6 +57,7 @@ const MAX_OUTPUT_BYTES = 500 * 1024;
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
 const DELETE_OLD = args.includes('--delete-old');
+const SKIP_VARIANTS = args.includes('--skip-variants');
 const TABLE_FILTER = args.find((a) => a.startsWith('--table='))?.split('=')[1] || null;
 const LIMIT = Number(args.find((a) => a.startsWith('--limit='))?.split('=')[1]) || null;
 // Petite limite de concurrence pour ne pas saturer l'API Storage/Postgres de Supabase.
@@ -66,24 +76,27 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.
 const SUPABASE_HOST = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host;
 
 const stats = { scanned: 0, optimized: 0, skippedExternal: 0, skippedAlreadyOptimal: 0, skippedNoGain: 0, failed: 0, bytesBefore: 0, bytesAfter: 0 };
+const variantStats = { created: 0, alreadyPresent: 0, failed: 0 };
 // Cache par URL source → { url: nouvelle URL publique, storagePath: ancien chemin } pour ne
 // traiter qu'une seule fois une même image référencée plusieurs fois (ex. réutilisée dans
 // deux articles), et pour appliquer le même remplacement partout où elle apparaît.
 const urlCache = new Map();
 
+// lib/imageVariants.js est en ESM (`export`) alors que ce script tourne en
+// CommonJS (exécuté directement via `node`, hors du bundler Next) — on le
+// charge donc via un `import()` dynamique plutôt que de dupliquer la
+// convention de nommage des variantes ici.
+let imageVariants;
+async function loadImageVariants() {
+  imageVariants = await import('../lib/imageVariants.js');
+}
+
 function isOwnStorageUrl(url) {
-  try {
-    const u = new URL(url);
-    return u.host === SUPABASE_HOST && u.pathname.includes(`/storage/v1/object/public/${BUCKET}/`);
-  } catch {
-    return false;
-  }
+  return imageVariants.isOwnStorageUrl(url, SUPABASE_HOST);
 }
 
 function storagePathFromUrl(url) {
-  const marker = `/storage/v1/object/public/${BUCKET}/`;
-  const idx = url.indexOf(marker);
-  return idx === -1 ? null : decodeURIComponent(url.slice(idx + marker.length));
+  return imageVariants.storagePathFromUrl(url);
 }
 
 async function withConcurrency(items, worker, limit) {
@@ -120,8 +133,57 @@ async function optimizeBuffer(buffer) {
   return output;
 }
 
+// S'assure que chaque variante responsive (lib/imageVariants.VARIANT_WIDTHS)
+// existe dans le bucket pour le fichier canonique donné — sans quoi le
+// loader Next (lib/imageLoader.js) pointerait vers un fichier absent pour
+// toutes les images uploadées avant l'introduction de cette fonctionnalité.
+// Idempotent : une variante déjà présente n'est ni retéléchargée ni recréée.
+async function ensureVariants(canonicalPath, canonicalBuffer) {
+  if (SKIP_VARIANTS) return;
+
+  const dir = canonicalPath.split('/').slice(0, -1).join('/');
+
+  await Promise.all(
+    imageVariants.VARIANT_WIDTHS.map(async (width) => {
+      const variantPath = imageVariants.variantStoragePath(canonicalPath, width);
+      const fileName = variantPath.split('/').pop();
+
+      try {
+        const { data: existing } = await supabase.storage.from(BUCKET).list(dir, { search: fileName });
+        if (existing?.some((f) => f.name === fileName)) {
+          variantStats.alreadyPresent += 1;
+          return;
+        }
+
+        if (DRY_RUN) {
+          console.log(`  [dry-run] variante manquante : ${variantPath}`);
+          return;
+        }
+
+        const resized = await sharp(canonicalBuffer)
+          .resize({ width, height: width, fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 78 })
+          .toBuffer();
+
+        const { error } = await supabase.storage.from(BUCKET).upload(variantPath, resized, {
+          contentType: 'image/webp',
+          upsert: true,
+        });
+        if (error) throw error;
+
+        variantStats.created += 1;
+      } catch (err) {
+        variantStats.failed += 1;
+        console.error(`  ✖ variante ${variantPath} : ${err.message}`);
+      }
+    })
+  );
+}
+
 // Télécharge, optimise, ré-uploade une URL Supabase Storage, met le cache à
 // jour. Retourne la nouvelle URL publique (ou l'URL d'origine si inchangée).
+// Génère aussi ses variantes responsives (sauf --skip-variants) avant de
+// retourner, qu'un ré-encodage ait eu lieu ou non cette fois-ci.
 async function processImageUrl(sourceUrl, folderHint) {
   if (urlCache.has(sourceUrl)) return urlCache.get(sourceUrl).url;
 
@@ -141,16 +203,16 @@ async function processImageUrl(sourceUrl, folderHint) {
   }
 
   // Déjà un petit WebP produit par le pipeline client (voir seuils dans
-  // lib/clientImageOptimization.js) → rien à gagner à le retraiter.
+  // lib/clientImageOptimization.js) → rien à gagner à le retraiter, mais on
+  // vérifie quand même ses variantes plus bas.
+  let alreadyOptimal = false;
   if (oldPath.endsWith('.webp')) {
     const { data: head } = await supabase.storage.from(BUCKET).list(oldPath.split('/').slice(0, -1).join('/'), {
       search: oldPath.split('/').pop(),
     });
     const meta = head?.[0];
     if (meta?.metadata?.size && meta.metadata.size <= MAX_OUTPUT_BYTES) {
-      stats.skippedAlreadyOptimal += 1;
-      urlCache.set(sourceUrl, { url: sourceUrl });
-      return sourceUrl;
+      alreadyOptimal = true;
     }
   }
 
@@ -159,10 +221,18 @@ async function processImageUrl(sourceUrl, folderHint) {
     if (dlError) throw dlError;
     const originalBuffer = Buffer.from(await downloaded.arrayBuffer());
 
+    if (alreadyOptimal) {
+      stats.skippedAlreadyOptimal += 1;
+      await ensureVariants(oldPath, originalBuffer);
+      urlCache.set(sourceUrl, { url: sourceUrl });
+      return sourceUrl;
+    }
+
     const optimizedBuffer = await optimizeBuffer(originalBuffer);
 
     if (optimizedBuffer.length >= originalBuffer.length) {
       stats.skippedNoGain += 1;
+      await ensureVariants(oldPath, originalBuffer);
       urlCache.set(sourceUrl, { url: sourceUrl });
       return sourceUrl;
     }
@@ -196,6 +266,7 @@ async function processImageUrl(sourceUrl, folderHint) {
     }
 
     console.log(`✓ ${oldPath} → ${newPath} (${(originalBuffer.length / 1024).toFixed(0)} Ko → ${(optimizedBuffer.length / 1024).toFixed(0)} Ko)`);
+    await ensureVariants(newPath, optimizedBuffer);
     urlCache.set(sourceUrl, { url: newUrl, storagePath: oldPath });
     return newUrl;
   } catch (err) {
@@ -255,13 +326,15 @@ async function backfillArticles() {
 }
 
 async function main() {
-  console.log(`Backfill images ${DRY_RUN ? '(DRY RUN — aucune écriture)' : '(exécution réelle)'}`);
+  await loadImageVariants();
+
+  console.log(`Backfill images ${DRY_RUN ? '(DRY RUN — aucune écriture)' : '(exécution réelle)'}${SKIP_VARIANTS ? ' [variantes désactivées]' : ''}`);
   if (TABLE_FILTER !== 'articles') await backfillEarbuds();
   if (TABLE_FILTER !== 'earbuds') await backfillArticles();
 
   const savedMb = ((stats.bytesBefore - stats.bytesAfter) / (1024 * 1024)).toFixed(1);
   const pct = stats.bytesBefore > 0 ? Math.round((1 - stats.bytesAfter / stats.bytesBefore) * 100) : 0;
-  console.log('\n— Résumé —');
+  console.log('\n— Résumé optimisation —');
   console.log(`Images vues        : ${stats.scanned}`);
   console.log(`Optimisées${DRY_RUN ? ' (simulé)' : ''}       : ${stats.optimized}`);
   console.log(`Déjà optimales     : ${stats.skippedAlreadyOptimal}`);
@@ -269,6 +342,13 @@ async function main() {
   console.log(`Aucun gain         : ${stats.skippedNoGain}`);
   console.log(`Échecs             : ${stats.failed}`);
   console.log(`Poids économisé    : ${savedMb} Mo (−${pct}%)`);
+
+  if (!SKIP_VARIANTS) {
+    console.log('\n— Résumé variantes responsives —');
+    console.log(`Créées             : ${variantStats.created}`);
+    console.log(`Déjà présentes     : ${variantStats.alreadyPresent}`);
+    console.log(`Échecs             : ${variantStats.failed}`);
+  }
 
   if (DRY_RUN) console.log('\nRelancez sans --dry-run pour appliquer réellement ces changements.');
 }

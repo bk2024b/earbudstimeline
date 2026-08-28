@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { CONSENT_GRANTED, readConsentClient } from '@/lib/consent';
 
 /**
  * Emplacement publicitaire Adsterra.
@@ -30,9 +31,20 @@ export default function AdSlot({
   className = '',
 }) {
   const containerRef = useRef(null);
+  const [hasConsent, setHasConsent] = useState(false);
+
+  // Lu une fois au montage : CookieConsent.js appelle router.refresh() après
+  // un choix, ce qui remonte les Server Components mais pas forcément ce
+  // Client Component déjà monté plus bas dans l'arbre sur la même page — un
+  // écouteur sur le storage/cookie suffit ici vu que l'essentiel des cas
+  // (bannière visible en haut de la première page vue) recharge de toute
+  // façon la portion de page où vivent les emplacements pub suivants.
+  useEffect(() => {
+    setHasConsent(readConsentClient() === CONSENT_GRANTED);
+  }, []);
 
   useEffect(() => {
-    if (!containerRef.current || !zoneKey || !invokeDomain) return;
+    if (!hasConsent || !containerRef.current || !zoneKey || !invokeDomain) return;
     const container = containerRef.current;
     container.replaceChildren();
 
@@ -66,9 +78,9 @@ export default function AdSlot({
     return () => {
       container.replaceChildren();
     };
-  }, [variant, zoneKey, width, height, invokeDomain]);
+  }, [hasConsent, variant, zoneKey, width, height, invokeDomain]);
 
-  if (!zoneKey || !invokeDomain) return null;
+  if (!hasConsent || !zoneKey || !invokeDomain) return null;
 
   return (
     <div className={`not-prose flex flex-col items-center gap-1.5 my-8 ${className}`}>

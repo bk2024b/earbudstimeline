@@ -9,7 +9,7 @@ import GlobalSearchModal from '@/components/GlobalSearchModal';
 import MobileNav from '@/components/MobileNav';
 import { Sparkles } from 'lucide-react';
 
-export default function Header({ models = [], brands = [] }) {
+export default function Header() {
   const t = useTranslations('nav');
   const pathname = usePathname();
 
@@ -42,7 +42,7 @@ export default function Header({ models = [], brands = [] }) {
         </nav>
 
         <div className="flex items-center gap-2 shrink-0">
-          <GlobalSearchModal models={models} brands={brands} />
+          <GlobalSearchModal />
           <div className="hidden md:flex items-center gap-2"><ThemeToggle /><LanguageSwitcher /></div>
           <MobileNav />
         </div>

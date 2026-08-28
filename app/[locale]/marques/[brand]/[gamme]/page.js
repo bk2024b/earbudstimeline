@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import { ArrowRight, BatteryCharging, Cpu, DollarSign } from 'lucide-react';
-import { getBrandById, getEarbudsByBrand, getPublishedArticles } from '@/lib/queries';
+import { getAllEarbuds, getBrandById, getEarbudsByBrand, getPublishedArticles } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { buildDiffBullets } from '@/lib/compare';
 import { buildComparisonSlug } from '@/lib/compareSlug';
@@ -12,6 +12,7 @@ import RelatedArticles from '@/components/RelatedArticles';
 import { fmtDate, fmtMoney, yearOf, pct } from '@/lib/format';
 import { slugify } from '@/lib/slug';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, JsonLd, canonicalFor } from '@/lib/seo';
+import { routing } from '@/i18n/routing';
 import BrandBadge from '@/components/BrandBadge';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import StatTile from '@/components/StatTile';
@@ -20,6 +21,19 @@ import AdSlot from '@/components/AdSlot';
 import { Stat, Footer } from '@/components/UI';
 
 export const revalidate = 3600;
+
+// Mêmes paires brand/gamme que celles listées dans app/sitemap.js — pré-
+// générées au build (SSG) au lieu d'un rendu ISR à froid au premier hit.
+export async function generateStaticParams() {
+  const models = await getAllEarbuds();
+  const gammeKeys = new Set(models.map((m) => `${m.brand_id}::${slugify(m.gamme)}`));
+  return routing.locales.flatMap((locale) =>
+    [...gammeKeys].map((key) => {
+      const [brand, gamme] = key.split('::');
+      return { locale, brand, gamme };
+    })
+  );
+}
 
 async function loadGamme(brandId, gammeSlug) {
   const brand = await getBrandById(brandId).catch(() => null);
