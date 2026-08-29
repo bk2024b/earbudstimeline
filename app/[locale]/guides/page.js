@@ -52,10 +52,10 @@ const curatedGuides = [
 // truth becomes the single array in lib/guidePages.js, so a future addition
 // there is automatically linked from this hub with no extra step.
 const GUIDE_CATEGORY = {
-  'best-wireless-earbuds-for-calls': 'Use case',
   'best-earbuds-for-office': 'Use case',
+  'best-earbuds-with-best-microphone': 'Use case',
+  'best-earbuds-for-video-meetings': 'Use case',
   'best-sport-earbuds': 'Use case',
-  'best-gaming-earbuds': 'Use case',
   'best-earbuds-for-gaming-pc': 'Use case',
   'best-gaming-earbuds-under-100': 'Use case',
   'sony-earbuds-guide': 'Brands',
