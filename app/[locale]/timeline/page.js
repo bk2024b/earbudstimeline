@@ -5,7 +5,7 @@ import EvolutionExplorer from '@/components/EvolutionExplorer';
 import BrandComparisonChart from '@/components/BrandComparisonChart';
 import { Footer } from '@/components/UI';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }) {
   const { locale } = params;
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function TimelinePage({ params, searchParams }) {
+export default async function TimelinePage({ params }) {
   const { locale } = params;
   const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]);
 
@@ -54,7 +54,7 @@ export default async function TimelinePage({ params, searchParams }) {
       <p className="text-dim text-[13.5px] mb-8 max-w-[640px]">
         {locale === 'en'
           ? `${models.length} models tracked, brand by brand, from the earliest true wireless earbuds to the latest releases. Filter below, or see how key specs evolved over the years.`
-          : `${models.length} modèles référencés, marque par marque, des tout premiers écouteurs true wireless aux sorties les plus récentes. Filtrez ci-dessous, ou explorez l'évolution des caractéristiques clés au fil des années.`}
+          : `${models.length} modèles référencés, marque par marque, des tout premiers écouteurs true wireless aux sorties les plus récentes. Filtrez ci-dessous, ou explorez l'évolution des caractéristiques clés au fil du temps.`}
       </p>
 
       <div className="mb-8">
@@ -68,13 +68,7 @@ export default async function TimelinePage({ params, searchParams }) {
         <BrandComparisonChart models={models} brands={brands} />
       </div>
 
-      <InteractiveTimeline
-        models={models}
-        brands={brands}
-        locale={locale}
-        initialAnc={searchParams?.anc === 'yes' ? 'yes' : 'all'}
-        initialBt={searchParams?.bt || 'all'}
-      />
+      <InteractiveTimeline models={models} brands={brands} locale={locale} />
 
       <Footer locale={locale} />
     </>
