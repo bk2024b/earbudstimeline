@@ -53,9 +53,9 @@ export default function AncIntelligenceFinder({ initialModels = [], initialBrand
         </div>
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <div className="flex justify-between mb-3"><span className="text-xs font-semibold uppercase tracking-wider text-dim">{t('budgetLabel')}</span><strong className="text-accent">{maxBudget >= 500 ? t('unlimitedBudget') : `${maxBudget} €`}</strong></div>
+            <div className="flex justify-between mb-3"><span className="text-xs font-semibold uppercase tracking-wider text-dim">{t('budgetLabel')}</span><strong className="text-accent">{maxBudget >= 500 ? t('unlimitedBudget') : `${maxBudget} $`}</strong></div>
             <input aria-label={t('budgetLabel')} type="range" min="50" max="500" step="10" value={maxBudget} onChange={(e) => setMaxBudget(Number(e.target.value))} className="w-full accent-accent" />
-            <div className="flex flex-wrap gap-2 mt-4">{PRESETS.map((p) => <button key={p} onClick={() => setMaxBudget(p)} className={`text-xs px-3 py-1.5 rounded-lg border ${maxBudget === p ? 'bg-accent text-ink border-accent font-semibold' : 'bg-panel2 border-line text-dim hover:text-white'}`}>{p >= 500 ? t('all') : `≤ ${p} €`}</button>)}</div>
+            <div className="flex flex-wrap gap-2 mt-4">{PRESETS.map((p) => <button key={p} onClick={() => setMaxBudget(p)} className={`text-xs px-3 py-1.5 rounded-lg border ${maxBudget === p ? 'bg-accent text-ink border-accent font-semibold' : 'bg-panel2 border-line text-dim hover:text-white'}`}>{p >= 500 ? t('all') : `≤ ${p} $`}</button>)}</div>
           </div>
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-dim block mb-3">{t('ecosystemLabel')}</span>
@@ -77,7 +77,7 @@ export default function AncIntelligenceFinder({ initialModels = [], initialBrand
         <div className="flex items-center justify-between gap-4 mb-5 flex-wrap"><span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/30 text-accent text-xs font-semibold"><Sparkles className="w-3.5 h-3.5" /> #1 Timeline Intelligence</span><span className="text-xs text-dim">{totalUnderBudget} {t('modelsAnalyzed')}</span></div>
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <div><div className="text-xs uppercase tracking-widest text-dim mb-1">{winner.brand.name} • {winner.model.gamme}</div><h2 className="font-display font-bold text-3xl text-white">{winner.model.name}</h2><p className="text-dim text-sm mt-1">Timeline Score <strong className="text-white">{winner.score}/100</strong></p></div>
-          <div className="text-3xl font-bold text-white">{winner.model.price ? `${winner.model.price} €` : '—'}</div>
+          <div className="text-3xl font-bold text-white">{winner.model.price ? `${winner.model.price} $` : '—'}</div>
         </div>
 
         <div className="mb-6 p-4 rounded-xl bg-accent/5 border border-accent/20">

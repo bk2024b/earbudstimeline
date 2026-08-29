@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { getAllEarbuds, getBrands, getAncScores } from '@/lib/queries';
+import { getFinderCatalog, getBrands, getAncScores } from '@/lib/queries';
 import { canonicalFor, JsonLd } from '@/lib/seo';
 import TimelineIntelligenceFinder from '@/components/TimelineIntelligenceFinder';
 import { Footer } from '@/components/UI';
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }) {
 export default async function FinderPage({ params }) {
   const { locale } = await params;
   const [models, brands, ancScores, t] = await Promise.all([
-    getAllEarbuds(),
+    getFinderCatalog(),
     getBrands(),
     getAncScores(),
     getTranslations({ locale, namespace: 'intelligence' }),

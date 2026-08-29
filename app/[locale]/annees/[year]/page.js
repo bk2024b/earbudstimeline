@@ -6,11 +6,22 @@ import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { computeStats } from '@/lib/stats';
 import { pct } from '@/lib/format';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
+import { routing } from '@/i18n/routing';
 import ModelCard from '@/components/ModelCard';
 import StatTile from '@/components/StatTile';
 import { Stat, Footer } from '@/components/UI';
 
 export const revalidate = 3600;
+
+// Pré-génère toutes les pages années au build (SSG) plutôt que de les laisser
+// en rendu à la demande : ce sont des pages d'atterrissage SEO (liées dans le
+// sitemap avec changeFrequency "monthly"), le premier visiteur organique sur
+// chaque année ne doit pas payer le coût d'un rendu à froid.
+export async function generateStaticParams() {
+  const models = await getAllEarbuds();
+  const years = [...new Set(models.map((m) => m.release_date.slice(0, 4)))];
+  return routing.locales.flatMap((locale) => years.map((year) => ({ locale, year })));
+}
 
 async function loadYear(yearParam) {
   const year = Number(yearParam);

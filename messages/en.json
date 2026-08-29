@@ -384,5 +384,11 @@
     "alternativesTitle": "Smart Alternatives",
     "alternativesSubtitle": "Other high-ranking options tailored to different angles",
     "details": "Specs"
+  },
+  "cookieConsent": {
+    "message": "We use cookies to measure audience (Google Analytics, Microsoft Clarity) and show ads. You can accept them or continue with only what's strictly necessary.",
+    "accept": "Accept",
+    "decline": "Continue without accepting",
+    "learnMore": "Learn more"
   }
 }

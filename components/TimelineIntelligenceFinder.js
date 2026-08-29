@@ -131,7 +131,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                 {t('budgetLabel')}
               </label>
               <div className="font-display text-2xl font-bold text-accent">
-                {maxBudget >= 500 ? t('unlimitedBudget') : `${maxBudget} €`}
+                {maxBudget >= 500 ? t('unlimitedBudget') : `${maxBudget} $`}
               </div>
             </div>
 
@@ -158,7 +158,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                       : 'bg-panel2 border-line text-dim hover:text-fg hover:border-dim/50'
                   }`}
                 >
-                  {preset >= 500 ? t('all') : `≤ ${preset} €`}
+                  {preset >= 500 ? t('all') : `≤ ${preset} $`}
                 </button>
               ))}
             </div>
@@ -282,7 +282,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
 
               <div className="flex sm:flex-col items-baseline sm:items-end justify-between border-t sm:border-t-0 border-line pt-3 sm:pt-0">
                 <div className="font-display text-3xl sm:text-4xl font-bold text-fg">
-                  {winner.model.price ? `${winner.model.price} €` : '—'}
+                  {winner.model.price ? `${winner.model.price} $` : '—'}
                 </div>
                 <div className="text-xs text-dim">
                   {winner.model.release_date?.slice(0, 4)} • Lancement
@@ -419,7 +419,7 @@ export default function TimelineIntelligenceFinder({ initialModels = [], initial
                       {alt.tag}
                     </span>
                     <span className="font-display font-bold text-sm text-fg">
-                      {alt.model.price ? `${alt.model.price} €` : '—'}
+                      {alt.model.price ? `${alt.model.price} $` : '—'}
                     </span>
                   </div>
 

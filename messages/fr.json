@@ -384,5 +384,11 @@
     "alternativesTitle": "Alternatives Intelligentes",
     "alternativesSubtitle": "D'autres options pertinentes selon différents angles d'achat",
     "details": "Fiche technique"
+  },
+  "cookieConsent": {
+    "message": "On utilise des cookies pour mesurer l'audience (Google Analytics, Microsoft Clarity) et afficher des publicités. Vous pouvez accepter ou continuer avec le strict nécessaire.",
+    "accept": "Accepter",
+    "decline": "Continuer sans accepter",
+    "learnMore": "En savoir plus"
   }
 }
