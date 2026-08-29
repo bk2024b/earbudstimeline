@@ -21,6 +21,20 @@ const nextConfig = {
         destination: '/:locale/guides/best-premium-earbuds',
         permanent: true,
       },
+      // Cluster Calls/Microphone : même doublon d'intention que ci-dessus,
+      // entre l'ancienne page statique et l'entrée générique équivalente.
+      {
+        source: '/:locale(en|fr)/guides/best-wireless-earbuds-for-calls',
+        destination: '/:locale/guides/best-earbuds-for-calls',
+        permanent: true,
+      },
+      // Cluster Gaming : même doublon d'intention ("Best Gaming Earbuds" vs
+      // "Best Earbuds for Gaming") entre l'entrée générique et la page statique.
+      {
+        source: '/:locale(en|fr)/guides/best-gaming-earbuds',
+        destination: '/:locale/guides/best-earbuds-for-gaming',
+        permanent: true,
+      },
     ];
   },
   experimental: {
