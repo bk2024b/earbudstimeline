@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
-import { getFinderCatalog, getBrands, getAncScores } from '@/lib/queries';
-import { canonicalFor, JsonLd } from '@/lib/seo';
+import { getAllEarbuds, getBrands, getAncScores } from '@/lib/queries';
+import { canonicalFor, ogDefaults, JsonLd } from '@/lib/seo';
 import TimelineIntelligenceFinder from '@/components/TimelineIntelligenceFinder';
 import { Footer } from '@/components/UI';
 
@@ -15,13 +15,13 @@ export async function generateMetadata({ params }) {
   const description = isEn
     ? 'Find the best wireless earbuds for your budget and priorities, with evidence-based ANC scores for Travel, Office, Traffic and Voices.'
     : 'Trouvez les meilleurs écouteurs sans fil selon votre budget et vos priorités, avec des scores ANC fondés sur les preuves pour Voyage, Bureau, Trafic et Voix.';
-  return { title, description, ...canonicalFor(`/${locale}/trouver-mes-ecouteurs`), openGraph: { title, description } };
+  return { title, description, ...canonicalFor(`/${locale}/trouver-mes-ecouteurs`), openGraph: { ...ogDefaults(`/${locale}/trouver-mes-ecouteurs`, locale), title, description, images: ['/og-image.png'] } };
 }
 
 export default async function FinderPage({ params }) {
   const { locale } = await params;
   const [models, brands, ancScores, t] = await Promise.all([
-    getFinderCatalog(),
+    getAllEarbuds(),
     getBrands(),
     getAncScores(),
     getTranslations({ locale, namespace: 'intelligence' }),

@@ -1,0 +1,1303 @@
+diff --git a/app/[locale]/annees/[year]/page.js b/app/[locale]/annees/[year]/page.js
+index ab22fe2..6ba0970 100644
+--- a/app/[locale]/annees/[year]/page.js
++++ b/app/[locale]/annees/[year]/page.js
+@@ -5,7 +5,7 @@ import { BatteryCharging, Cpu, Trophy, DollarSign } from 'lucide-react';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+ import { computeStats } from '@/lib/stats';
+ import { pct } from '@/lib/format';
+-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
++import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, ogDefaults, JsonLd } from '@/lib/seo';
+ import ModelCard from '@/components/ModelCard';
+ import StatTile from '@/components/StatTile';
+ import { Stat, Footer } from '@/components/UI';
+@@ -43,6 +43,7 @@ export async function generateMetadata({ params }) {
+     description,
+     ...canonicalFor(`/${locale}/annees/${year}`),
+     openGraph: {
++      ...ogDefaults(`/${locale}/annees/${year}`, locale),
+       title: locale === 'en' ? `Earbuds released in ${year}` : `Écouteurs sortis en ${year}`,
+       description: `${models.length} models, ${brandCount} brands.`,
+     },
+diff --git a/app/[locale]/annees/page.js b/app/[locale]/annees/page.js
+index 6ed8444..b495983 100644
+--- a/app/[locale]/annees/page.js
++++ b/app/[locale]/annees/page.js
+@@ -1,7 +1,7 @@
+ import { Link } from '@/i18n/navigation';
+ import { getTranslations } from 'next-intl/server';
+ import { getAllEarbuds } from '@/lib/queries';
+-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
++import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ 
+ export const revalidate = 3600;
+@@ -9,13 +9,16 @@ export const revalidate = 3600;
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const t = await getTranslations({ locale, namespace: 'years' });
++  const title = `${t('title')} — EarbudsTimeline`;
++  const description =
++    locale === 'en'
++      ? 'All tracked wireless earbuds, sorted by release year, from the earliest to the most recent.'
++      : "Tous les écouteurs sans fil référencés, classés par année de sortie, de la première à la plus récente.";
+   return {
+-    title: `${t('title')} — EarbudsTimeline`,
+-    description:
+-      locale === 'en'
+-        ? 'All tracked wireless earbuds, sorted by release year, from the earliest to the most recent.'
+-        : "Tous les écouteurs sans fil référencés, classés par année de sortie, de la première à la plus récente.",
++    title,
++    description,
+     ...canonicalFor(`/${locale}/annees`),
++    openGraph: { ...ogDefaults(`/${locale}/annees`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/blog/[slug]/page.js b/app/[locale]/blog/[slug]/page.js
+index a990911..9f93e27 100644
+--- a/app/[locale]/blog/[slug]/page.js
++++ b/app/[locale]/blog/[slug]/page.js
+@@ -11,7 +11,7 @@ import {
+   getPublishedArticles,
+   getAllPublishedArticles,
+ } from '@/lib/queries';
+-import { buildArticleJsonLd, buildBreadcrumbJsonLd, JsonLd, absoluteUrl } from '@/lib/seo';
++import { buildArticleJsonLd, buildBreadcrumbJsonLd, JsonLd, absoluteUrl, ogDefaults } from '@/lib/seo';
+ import { findRelatedArticles } from '@/lib/relatedArticles';
+ import ReadingProgressBar from '@/components/ReadingProgressBar';
+ import ShareButtons from '@/components/ShareButtons';
+@@ -59,9 +59,10 @@ export async function generateMetadata({ params }) {
+       description: article.excerpt,
+       alternates: { canonical: `/${locale}/blog/${article.id}`, languages },
+       openGraph: {
++        ...ogDefaults(`/${locale}/blog/${article.id}`, locale, 'article'),
+         title: article.title,
+         description: article.excerpt,
+-        images: article.cover_image_url ? [article.cover_image_url] : undefined,
++        images: [article.cover_image_url || '/og-image.png'],
+       },
+     };
+   } catch {
+diff --git a/app/[locale]/blog/page.js b/app/[locale]/blog/page.js
+index a6bfa5f..4a6ec5c 100644
+--- a/app/[locale]/blog/page.js
++++ b/app/[locale]/blog/page.js
+@@ -2,7 +2,7 @@ import { Link } from '@/i18n/navigation';
+ import { getTranslations } from 'next-intl/server';
+ import Image from 'next/image';
+ import { getPublishedArticles } from '@/lib/queries';
+-import { canonicalFor } from '@/lib/seo';
++import { canonicalFor, ogDefaults } from '@/lib/seo';
+ import FeaturedArticle from '@/components/FeaturedArticle';
+ import BlogSidebar from '@/components/BlogSidebar';
+ import { Footer } from '@/components/UI';
+@@ -25,8 +25,10 @@ export async function generateMetadata({ params }) {
+     description,
+     ...canonicalFor(`/${locale}/blog`),
+     openGraph: {
++      ...ogDefaults(`/${locale}/blog`, locale),
+       title,
+       description,
++      images: ['/og-image.png'],
+     },
+   };
+ }
+diff --git a/app/[locale]/comparaisons/[slug]/page.js b/app/[locale]/comparaisons/[slug]/page.js
+index 14eb587..34f6c19 100644
+--- a/app/[locale]/comparaisons/[slug]/page.js
++++ b/app/[locale]/comparaisons/[slug]/page.js
+@@ -6,7 +6,7 @@ import { ShoppingCart, ExternalLink } from 'lucide-react';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+ import { fmtH, fmtG, fmtMoney, yearOf } from '@/lib/format';
+ import { parseComparisonSlug, buildComparisonSlug, isCanonicalSlug } from '@/lib/compareSlug';
+-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
++import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, ogDefaults, JsonLd } from '@/lib/seo';
+ import EarbudsIcon from '@/components/EarbudsIcon';
+ import EntityGraph from '@/components/EntityGraph';
+ import AdSlot from '@/components/AdSlot';
+@@ -57,8 +57,10 @@ export async function generateMetadata({ params }) {
+     description,
+     ...canonicalFor(`/${locale}/comparaisons/${buildComparisonSlug(a.id, b.id)}`),
+     openGraph: {
++      ...ogDefaults(`/${locale}/comparaisons/${buildComparisonSlug(a.id, b.id)}`, locale),
+       title: `${a.name} vs ${b.name}`,
+       description: locale === 'en' ? `Full comparison between the ${a.name} and the ${b.name}.` : `Comparatif complet entre le ${a.name} et le ${b.name}.`,
++      images: [a.image_url || b.image_url || '/og-image.png'],
+     },
+   };
+ }
+diff --git a/app/[locale]/comparaisons/page.js b/app/[locale]/comparaisons/page.js
+index 9c0ec02..c94a778 100644
+--- a/app/[locale]/comparaisons/page.js
++++ b/app/[locale]/comparaisons/page.js
+@@ -4,7 +4,7 @@ import { getAllEarbuds, getBrands } from '@/lib/queries';
+ import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
+ import { buildComparisonSlug } from '@/lib/compareSlug';
+ import { yearOf } from '@/lib/format';
+-import { buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
++import { buildCollectionPageJsonLd, canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import EarbudsIcon from '@/components/EarbudsIcon';
+ import CompareSelectors from '@/components/CompareSelectors';
+ import AdSlot from '@/components/AdSlot';
+@@ -15,13 +15,16 @@ export const revalidate = 3600;
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const t = await getTranslations({ locale, namespace: 'comparisonsHub' });
++  const title = `${t('title')} — EarbudsTimeline`;
++  const description =
++    locale === 'en'
++      ? 'Compare wireless earbuds across generations and against competing brands: battery life, ANC, weight, price and Bluetooth.'
++      : 'Comparez des écouteurs sans fil entre générations et entre marques concurrentes : autonomie, ANC, poids, prix et Bluetooth.';
+   return {
+-    title: `${t('title')} — EarbudsTimeline`,
+-    description:
+-      locale === 'en'
+-        ? 'Compare wireless earbuds across generations and against competing brands: battery life, ANC, weight, price and Bluetooth.'
+-        : 'Comparez des écouteurs sans fil entre générations et entre marques concurrentes : autonomie, ANC, poids, prix et Bluetooth.',
++    title,
++    description,
+     ...canonicalFor(`/${locale}/comparaisons`),
++    openGraph: { ...ogDefaults(`/${locale}/comparaisons`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/comparer/page.js b/app/[locale]/comparer/page.js
+index a8a5f83..21f2e1e 100644
+--- a/app/[locale]/comparer/page.js
++++ b/app/[locale]/comparer/page.js
+@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
+ import { redirect } from '@/i18n/navigation';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+ import { buildComparisonSlug } from '@/lib/compareSlug';
+-import { canonicalFor } from '@/lib/seo';
++import { canonicalFor, ogDefaults } from '@/lib/seo';
+ import CompareSelectors from '@/components/CompareSelectors';
+ import { Footer } from '@/components/UI';
+ 
+@@ -11,13 +11,16 @@ export const dynamic = 'force-dynamic';
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const t = await getTranslations({ locale, namespace: 'comparer' });
++  const title = `${t('title')} — EarbudsTimeline`;
++  const description =
++    locale === 'en'
++      ? 'Compare two wireless earbuds side by side: battery life, ANC, weight, price, USB-C, multipoint and codecs.'
++      : 'Comparez deux écouteurs sans fil : autonomie, ANC, poids, prix, USB-C, multipoint et codecs, côte à côte.';
+   return {
+-    title: `${t('title')} — EarbudsTimeline`,
+-    description:
+-      locale === 'en'
+-        ? 'Compare two wireless earbuds side by side: battery life, ANC, weight, price, USB-C, multipoint and codecs.'
+-        : 'Comparez deux écouteurs sans fil : autonomie, ANC, poids, prix, USB-C, multipoint et codecs, côte à côte.',
++    title,
++    description,
+     ...canonicalFor(`/${locale}/comparer`),
++    openGraph: { ...ogDefaults(`/${locale}/comparer`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/confidentialite/page.js b/app/[locale]/confidentialite/page.js
+index 94cb4c1..4ee729f 100644
+--- a/app/[locale]/confidentialite/page.js
++++ b/app/[locale]/confidentialite/page.js
+@@ -1,6 +1,6 @@
+ import { getTranslations } from 'next-intl/server';
+ import { Link } from '@/i18n/navigation';
+-import { canonicalFor } from '@/lib/seo';
++import { canonicalFor, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import { Shield, ExternalLink } from 'lucide-react';
+ 
+@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
+     title,
+     description,
+     ...canonicalFor(`/${locale}/confidentialite`),
+-    openGraph: { title, description },
++    openGraph: { ...ogDefaults(`/${locale}/confidentialite`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/ecouteurs/[slug]/page.js b/app/[locale]/ecouteurs/[slug]/page.js
+index a882674..a759d79 100644
+--- a/app/[locale]/ecouteurs/[slug]/page.js
++++ b/app/[locale]/ecouteurs/[slug]/page.js
+@@ -9,7 +9,7 @@ import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct, displayTagline } from '@/li
+ import { getComparisonSuggestions, buildDiffBullets } from '@/lib/compare';
+ import { slugify } from '@/lib/slug';
+ import { buildComparisonSlug } from '@/lib/compareSlug';
+-import { buildProductJsonLd, buildBreadcrumbJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
++import { buildProductJsonLd, buildBreadcrumbJsonLd, canonicalFor, ogDefaults, JsonLd } from '@/lib/seo';
+ import QuickCompareSelect from '@/components/QuickCompareSelect';
+ import ComparisonSuggestions from '@/components/ComparisonSuggestions';
+ import RelatedArticles from '@/components/RelatedArticles';
+@@ -54,9 +54,10 @@ export async function generateMetadata({ params }) {
+     description,
+     ...canonicalFor(`/${locale}/ecouteurs/${m.id}`),
+     openGraph: {
++      ...ogDefaults(`/${locale}/ecouteurs/${m.id}`, locale),
+       title: `${m.name} — ${brand?.name || m.brand_id}`,
+       description: tagline,
+-      images: m.image_url ? [m.image_url] : undefined,
++      images: [m.image_url || '/og-image.png'],
+     },
+   };
+ }
+diff --git a/app/[locale]/ecouteurs/page.js b/app/[locale]/ecouteurs/page.js
+index 7678f44..47fae9c 100644
+--- a/app/[locale]/ecouteurs/page.js
++++ b/app/[locale]/ecouteurs/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import AdSlot from '@/components/AdSlot';
+ import { Footer } from '@/components/UI';
+ 
+@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
+   const description = locale === 'fr'
+     ? 'Parcourez le catalogue EarbudsTimeline et consultez les fiches détaillées des écouteurs.'
+     : 'Browse the EarbudsTimeline catalog and explore detailed earbud product pages.';
+-  return { title, description, ...canonicalFor(`/${locale}/ecouteurs`) };
++  return { title, description, ...canonicalFor(`/${locale}/ecouteurs`), openGraph: { ...ogDefaults(`/${locale}/ecouteurs`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function EarbudsCatalogPage({ params }) {
+diff --git a/app/[locale]/guides/[slug]/page.js b/app/[locale]/guides/[slug]/page.js
+index a8da13d..13f2e92 100644
+--- a/app/[locale]/guides/[slug]/page.js
++++ b/app/[locale]/guides/[slug]/page.js
+@@ -1,7 +1,7 @@
+ import { notFound } from 'next/navigation';
+ import { Link } from '@/i18n/navigation';
+ import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { getGuide } from '@/lib/guidePages';
+ import { rankByValuePerDollar } from '@/lib/budgetValue';
+ import AdSlot from '@/components/AdSlot';
+@@ -19,7 +19,7 @@ export async function generateMetadata({ params }) {
+   const guide = getGuide(slug);
+   if (!guide) return {};
+   const copy = guide[locale] || guide.en;
+-  return { title: `${copy.title} | EarbudsTimeline`, description: copy.description, ...canonicalFor(`/${locale}/guides/${slug}`) };
++  return { title: `${copy.title} | EarbudsTimeline`, description: copy.description, ...canonicalFor(`/${locale}/guides/${slug}`), openGraph: { ...ogDefaults(`/${locale}/guides/${slug}`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ const ANC_CONTENT = {
+diff --git a/app/[locale]/guides/best-battery-life-earbuds/page.js b/app/[locale]/guides/best-battery-life-earbuds/page.js
+index e3789a7..a8563af 100644
+--- a/app/[locale]/guides/best-battery-life-earbuds/page.js
++++ b/app/[locale]/guides/best-battery-life-earbuds/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -18,7 +18,7 @@ function Card({ row, brand, locale }) {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs avec la meilleure autonomie en 2026' : 'Best Earbuds for Battery Life in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs offrant la meilleure autonomie, par charge et avec leur boîtier, selon les données disponibles.' : 'Compare earbuds with the best battery life per charge and with their charging case using available catalog data.', ...canonicalFor(`/${locale}/guides/best-battery-life-earbuds`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs offrant la meilleure autonomie, par charge et avec leur boîtier, selon les données disponibles.' : 'Compare earbuds with the best battery life per charge and with their charging case using available catalog data.', ...canonicalFor(`/${locale}/guides/best-battery-life-earbuds`), openGraph: { ...ogDefaults(`/${locale}/guides/best-battery-life-earbuds`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-budget-earbuds/page.js b/app/[locale]/guides/best-budget-earbuds/page.js
+index 583074b..4781b04 100644
+--- a/app/[locale]/guides/best-budget-earbuds/page.js
++++ b/app/[locale]/guides/best-budget-earbuds/page.js
+@@ -1,7 +1,7 @@
+ import { Link } from '@/i18n/navigation';
+ import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
+ import { rankByValuePerDollar } from '@/lib/budgetValue';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -11,7 +11,7 @@ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Les meilleurs écouteurs sans fil pas chers : sélection par prix et rapport qualité-prix' : 'Best Budget Earbuds: Best Picks by Price, Value and Features';
+   const description = locale === 'fr' ? 'Comparez les meilleurs écouteurs abordables par budget, autonomie, ANC, résistance à l’eau et rapport qualité-prix.' : 'Compare the best budget earbuds by price, battery life, ANC, water resistance and overall value.';
+-  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-budget-earbuds`) };
++  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-budget-earbuds`), openGraph: { ...ogDefaults(`/${locale}/guides/best-budget-earbuds`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ const n = (v) => Number.isFinite(Number(v)) ? Number(v) : null;
+diff --git a/app/[locale]/guides/best-earbuds-for-android/page.js b/app/[locale]/guides/best-earbuds-for-android/page.js
+index a77bc00..3a146e5 100644
+--- a/app/[locale]/guides/best-earbuds-for-android/page.js
++++ b/app/[locale]/guides/best-earbuds-for-android/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -9,5 +9,5 @@ const n=(v)=>Number.isFinite(Number(v))?Number(v):null;
+ const price=(v)=>n(v)==null?'—':`$${Math.round(n(v))}`;
+ function androidScore(m){let score=55;const name=`${m.name||''} ${m.brand_id||''}`.toLowerCase();if(m.multipoint)score+=12;if(m.anc)score+=8;if(m.app_support||m.companion_app||m.app)score+=10;if(m.codec||m.codecs)score+=5;if(m.fast_pair||m.google_fast_pair)score+=10;if(name.includes('pixel')||name.includes('galaxy'))score+=5;return Math.min(100,score)}
+ function Card({row,brand}){const{model,score}=row;return <Link href={`/ecouteurs/${model.id}`} className="block bg-panel border border-line rounded-2xl p-5 hover:border-accent transition-colors"><div className="flex justify-between gap-4"><div><div className="font-mono text-[10px] text-accent uppercase">{brand?.name||model.brand_id}</div><h3 className="font-display font-semibold text-[17px] mt-1">{model.name}</h3></div><div className="text-right"><div className="font-display font-bold text-xl">{price(model.price)}</div><div className="font-mono text-[9px] text-accent mt-1">Android {score}/100</div></div></div><div className="mt-4 flex gap-3 flex-wrap text-[10px] font-mono text-dim"><span>{model.anc?'ANC':'No ANC'}</span><span>{model.multipoint?'Multipoint':'—'}</span><span>{n(model.battery_bud_h)??'—'}h</span></div></Link>}
+-export async function generateMetadata({params}){const{locale}=params;const title=locale==='fr'?'Meilleurs écouteurs pour Android en 2026':'Best Earbuds for Android in 2026';return{title:`${title} | EarbudsTimeline`,description:locale==='fr'?'Comparez les meilleurs écouteurs pour Android selon les fonctionnalités de connectivité et les données disponibles.':'Compare the best earbuds for Android using available connectivity and feature data.',...canonicalFor(`/${locale}/guides/best-earbuds-for-android`)}}
++export async function generateMetadata({params}){const{locale}=params;const title=locale==='fr'?'Meilleurs écouteurs pour Android en 2026':'Best Earbuds for Android in 2026';return{title:`${title} | EarbudsTimeline`,description:locale==='fr'?'Comparez les meilleurs écouteurs pour Android selon les fonctionnalités de connectivité et les données disponibles.':'Compare the best earbuds for Android using available connectivity and feature data.',...canonicalFor(`/${locale}/guides/best-earbuds-for-android`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-android`, locale), title, description, images: ['/og-image.png'] }}}
+ export default async function Page({params}){const{locale}=params;const fr=locale==='fr';const[models,brands]=await Promise.all([getAllEarbuds(),getBrands()]);const bm=new Map(brands.map(b=>[b.id,b]));const rows=models.map(model=>({model,score:androidScore(model)})).sort((a,b)=>b.score-a.score);const best=rows.slice(0,10),under100=rows.filter(r=>n(r.model.price)!=null&&n(r.model.price)<=100).slice(0,5),anc=rows.filter(r=>r.model.anc).slice(0,5),multi=rows.filter(r=>r.model.multipoint).slice(0,5);const title=fr?'Meilleurs écouteurs pour Android en 2026':'Best Earbuds for Android in 2026';const intro=fr?'Une sélection basée sur les fonctionnalités Android détectables dans notre catalogue. Le score Android est un indice de spécifications et ne remplace pas un test de compatibilité sur chaque téléphone.':'A selection based on Android-relevant features detectable in our catalog. The Android score is a specification index and does not replace compatibility testing on every phone.';const jsonLd={'@context':'https://schema.org','@type':'Article',headline:title,description:intro,url:`https://earbudstimeline.com/${locale}/guides/best-earbuds-for-android`,dateModified:'2026-08-24',inLanguage:locale};const guide=(s)=>`/${locale}/guides/${s}`;const product=(id)=>`/${locale}/ecouteurs/${id}`;return <><JsonLd data={jsonLd}/><article className="max-w-6xl mx-auto"><div className="font-mono text-xs text-accent uppercase mb-3">Android · 2026</div><h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1><p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{intro}</p><div className="mt-4 text-[10px] font-mono text-dim">{fr?'Dernière mise à jour : 24 août 2026':'Last updated: August 24, 2026'}</div><section className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">{[['overall','OVERALL',best],['under100','UNDER $100',under100],['anc','ANC',anc],['multipoint','MULTIPOINT',multi]].map(([id,l,x])=><a key={id} href={`#${id}`} className="bg-panel border border-line rounded-xl p-4 hover:border-accent"><div className="font-mono text-accent text-xs">{l}</div><div className="font-display font-semibold mt-1">{x.length} picks</div></a>)}</section><section id="overall" className="mt-12"><h2 className="font-display font-semibold text-[25px] mb-5">🤖 {fr?'Meilleurs écouteurs pour Android':'Best Earbuds for Android Overall'}</h2><div className="overflow-x-auto border border-line rounded-2xl bg-panel"><table className="w-full text-left text-xs"><thead className="border-b border-line font-mono text-[10px] text-dim uppercase"><tr><th className="p-4">#</th><th className="p-4">Earbuds</th><th className="p-4">Price</th><th className="p-4">Android</th><th className="p-4">Multipoint</th><th className="p-4">ANC</th></tr></thead><tbody>{best.map((r,i)=><tr key={r.model.id} className="border-b border-line last:border-0"><td className="p-4 text-accent">{i+1}</td><td className="p-4"><Link href={product(r.model.id)} className="font-semibold hover:text-accent">{r.model.name}</Link><div className="text-dim text-[10px]">{bm.get(r.model.brand_id)?.name||r.model.brand_id}</div></td><td className="p-4 font-mono">{price(r.model.price)}</td><td className="p-4 font-bold">{r.score}</td><td className="p-4">{r.model.multipoint?'✓':'—'}</td><td className="p-4">{r.model.anc?'✓':'—'}</td></tr>)}</tbody></table></div></section>{[['under100',fr?'💵 Meilleurs écouteurs Android sous 100 $':'💵 Best Android Earbuds Under $100',under100,fr?'Sélection sous 100 $.':'Under-$100 selection.'],['anc',fr?'🔇 Meilleurs écouteurs ANC pour Android':'🔇 Best ANC Earbuds for Android',anc,fr?'Sélection parmi les modèles ANC.':'Selection among ANC models.'],['multipoint',fr?'🔄 Meilleurs écouteurs Android avec multipoint':'🔄 Best Android Earbuds with Multipoint',multi,fr?'Sélection parmi les modèles déclarant le multipoint.':'Selection among models declaring multipoint.']].map(([id,h,items,s])=><section key={id} id={id} className="mt-12"><h2 className="font-display font-semibold text-[25px]">{h}</h2><p className="text-dim text-sm mt-1">{s}</p><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">{items.map(r=><Card key={r.model.id} row={r} brand={bm.get(r.model.brand_id)}/>)}</div></section>)}<section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-5">{fr?'Méthodologie':'Methodology'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr?'Le score Android combine uniquement des indicateurs de fonctionnalités présents dans les données du catalogue. Les champs absents ne sont pas transformés en affirmations de compatibilité.':'The Android score combines only feature indicators present in catalog data. Missing fields are not turned into compatibility claims.'}</p></section><section className="mt-14 grid md:grid-cols-2 gap-4"><div className="border border-line rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr?'Guides associés':'Related guides'}</h2><div className="mt-4 space-y-2 text-sm"><Link className="block hover:text-accent" href={guide('best-wireless-earbuds')}>→ Best Wireless Earbuds</Link><Link className="block hover:text-accent" href={guide('best-earbuds-for-calls')}>→ Best Earbuds for Calls</Link><Link className="block hover:text-accent" href={guide('best-noise-cancelling-earbuds')}>→ Best Noise Cancelling Earbuds</Link></div></div><div className="border border-accent/30 rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr?'Explorer le catalogue':'Explore the catalog'}</h2><Link className="inline-block mt-4 text-accent font-mono text-xs uppercase" href={`/${locale}/ecouteurs`}>{fr?'Voir le catalogue →':'Browse catalog →'}</Link></div></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-5">FAQ</h2><div className="divide-y divide-line border-y border-line">{(fr?[['Quels sont les meilleurs écouteurs pour Android ?','Le classement compare les fonctionnalités Android disponibles dans notre catalogue.'],['Les écouteurs Bluetooth fonctionnent-ils tous avec Android ?','La connectivité de base est généralement possible, mais les fonctionnalités avancées peuvent varier selon le modèle et le téléphone.'],['Quel est le meilleur ANC pour Android ?','Consultez la section ANC dédiée et notre guide complet sur la réduction de bruit.'],['Pourquoi le classement Android n’utilise-t-il pas une note de compatibilité universelle ?','Parce que les données disponibles ne permettent pas de garantir une compatibilité identique sur tous les appareils Android.']]:[['What are the best earbuds for Android?','The ranking compares Android-relevant features available in our catalog.'],['Do all Bluetooth earbuds work with Android?','Basic connectivity is generally possible, but advanced features can vary by model and phone.'],['What are the best ANC earbuds for Android?','See the dedicated ANC section and our full noise-cancelling guide.'],['Why not use a universal Android compatibility score?','Because available data cannot guarantee identical compatibility across all Android devices.']]).map(([q,a])=><details key={q} className="py-4"><summary className="cursor-pointer font-display font-medium">{q}</summary><p className="text-dim text-sm leading-7 mt-3 max-w-3xl">{a}</p></details>)}</div></section></article><AdSlot variant="native" zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY} invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN} label={locale === 'en' ? 'Advertisement' : 'Publicité'} /><Footer/></>}
+diff --git a/app/[locale]/guides/best-earbuds-for-audiophiles/page.js b/app/[locale]/guides/best-earbuds-for-audiophiles/page.js
+index 04cc59e..fc3ca7b 100644
+--- a/app/[locale]/guides/best-earbuds-for-audiophiles/page.js
++++ b/app/[locale]/guides/best-earbuds-for-audiophiles/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -12,7 +12,7 @@ const score = (m) => Math.min(100, 50 + (String(m.bluetooth_codecs || m.codecs |
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour audiophiles en 2026' : 'Best Earbuds for Audiophiles in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour audiophiles selon les spécifications audio disponibles.' : 'Compare earbuds for audiophiles using available audio specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-audiophiles`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour audiophiles selon les spécifications audio disponibles.' : 'Compare earbuds for audiophiles using available audio specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-audiophiles`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-audiophiles`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-bass/page.js b/app/[locale]/guides/best-earbuds-for-bass/page.js
+index 4d4d7e0..b0c4f22 100644
+--- a/app/[locale]/guides/best-earbuds-for-bass/page.js
++++ b/app/[locale]/guides/best-earbuds-for-bass/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -19,7 +19,7 @@ const bassScore = (m) => {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs avec des basses puissantes en 2026' : 'Best Earbuds for Bass in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour les amateurs de basses selon leurs caractéristiques disponibles.' : 'Compare earbuds for bass lovers using available specifications and features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-bass`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour les amateurs de basses selon leurs caractéristiques disponibles.' : 'Compare earbuds for bass lovers using available specifications and features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-bass`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-bass`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ export default async function Page({ params }) {
+   const { locale } = params; const fr = locale === 'fr';
+diff --git a/app/[locale]/guides/best-earbuds-for-calls/page.js b/app/[locale]/guides/best-earbuds-for-calls/page.js
+index 1274d20..6fb3e1a 100644
+--- a/app/[locale]/guides/best-earbuds-for-calls/page.js
++++ b/app/[locale]/guides/best-earbuds-for-calls/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -9,6 +9,6 @@ const n = (v) => Number.isFinite(Number(v)) ? Number(v) : null;
+ const formatPrice = (v) => n(v) == null ? '—' : `$${Math.round(n(v))}`;
+ function micScore(model) { const count = [model.microphones, model.mic_count].map(n).find(v => v != null); return count == null ? null : Math.min(100, 55 + count * 15); }
+ function Card({ row, brand, fr, locale }) { const { model, score } = row; return <Link href={`/${locale}/ecouteurs/${model.id}`} className="block bg-panel border border-line rounded-2xl p-5 hover:border-accent transition-colors"><div className="flex justify-between gap-4"><div className="min-w-0"><div className="font-mono text-[10px] text-accent uppercase">{brand?.name || model.brand_id}</div><h3 className="font-display font-semibold text-[17px] mt-1">{model.name}</h3></div><div className="text-right shrink-0"><div className="font-display font-bold text-xl">{formatPrice(model.price)}</div><div className="font-mono text-[9px] text-accent mt-1">{fr ? 'Appels' : 'Calls'} {score}/100</div></div></div><div className="mt-4 grid grid-cols-2 gap-2 text-[10px] font-mono"><div className="border border-line rounded-lg p-2"><span className="text-dim">{fr ? 'Micros' : 'Mics'}</span><strong className="block text-sm mt-1">{n(model.microphones) ?? n(model.mic_count) ?? '—'}</strong></div><div className="border border-line rounded-lg p-2"><span className="text-dim">ANC</span><strong className="block text-sm mt-1">{model.anc ? 'Yes' : 'No'}</strong></div></div></Link>; }
+-export async function generateMetadata({ params }) { const { locale } = params; const title = locale === 'fr' ? 'Meilleurs écouteurs pour les appels en 2026' : 'Best Earbuds for Calls in 2026'; return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour les appels selon les données microphone disponibles.' : 'Compare the best earbuds for calls using available microphone data.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-calls`) }; }
++export async function generateMetadata({ params }) { const { locale } = params; const title = locale === 'fr' ? 'Meilleurs écouteurs pour les appels en 2026' : 'Best Earbuds for Calls in 2026'; return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour les appels selon les données microphone disponibles.' : 'Compare the best earbuds for calls using available microphone data.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-calls`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-calls`, locale), title, description, images: ['/og-image.png'] } }; }
+ export default async function Page({ params }) { const { locale } = params; const fr = locale === 'fr'; const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]); const brandMap = new Map(brands.map(b => [b.id, b])); const rows = models.map(model => ({ model, score: micScore(model) })).filter(r => r.score != null).sort((a,b) => b.score-a.score); const best = rows.slice(0,10); const anc = rows.filter(r => r.model.anc).slice(0,5); const under100 = rows.filter(r => n(r.model.price) != null && n(r.model.price) <= 100).slice(0,5); const battery = [...rows].filter(r => n(r.model.battery_bud_h) != null).sort((a,b) => n(b.model.battery_bud_h)-n(a.model.battery_bud_h)).slice(0,5); const title = fr ? 'Meilleurs écouteurs pour les appels en 2026' : 'Best Earbuds for Calls in 2026'; const intro = fr ? 'Une sélection basée sur les données microphone disponibles dans notre catalogue. Le score appels est un indice de spécifications et ne remplace pas un test réel de qualité vocale.' : 'A selection based on microphone data available in our catalog. The calls score is a specification index and does not replace real-world voice testing.'; const jsonLd = { '@context':'https://schema.org','@type':'Article',headline:title,description:intro,url:`https://earbudstimeline.com/${locale}/guides/best-earbuds-for-calls`,dateModified:'2026-08-25',inLanguage:locale }; const section = (id, heading, items, subtitle) => items.length > 0 && <section id={id} className="mt-12"><div className="mb-5"><h2 className="font-display font-semibold text-[25px]">{heading}</h2><p className="text-dim text-sm mt-1">{subtitle}</p></div><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{items.map(r => <Card key={r.model.id} row={r} brand={brandMap.get(r.model.brand_id)} fr={fr} locale={locale}/>)}</div></section>; return <><JsonLd data={jsonLd}/><article className="max-w-6xl mx-auto"><div className="font-mono text-xs text-accent uppercase mb-3">Calls · 2026</div><h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1><p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{intro}</p><div className="mt-4 text-[10px] font-mono text-dim">{fr ? 'Dernière mise à jour : 25 août 2026' : 'Last updated: August 25, 2026'}</div><section className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">{[['overall','OVERALL',best],['anc','ANC',anc],['under100','UNDER $100',under100],['battery','BATTERY',battery]].map(([id,label,items])=><a key={id} href={`#${id}`} className="bg-panel border border-line rounded-xl p-4 hover:border-accent"><div className="font-mono text-accent text-xs">{label}</div><div className="font-display font-semibold mt-1">{items.length} picks</div></a>)}</section><section id="overall" className="mt-12"><h2 className="font-display font-semibold text-[25px] mb-5">📞 {fr?'Meilleurs écouteurs pour les appels':'Best Earbuds for Calls Overall'}</h2><div className="overflow-x-auto border border-line rounded-2xl bg-panel"><table className="w-full text-left text-xs"><thead className="border-b border-line font-mono text-[10px] text-dim uppercase"><tr><th className="p-4">#</th><th className="p-4">{fr?'Écouteurs':'Earbuds'}</th><th className="p-4">{fr?'Prix':'Price'}</th><th className="p-4">Calls</th><th className="p-4">Mic</th><th className="p-4">ANC</th></tr></thead><tbody>{best.map((r,i)=><tr key={r.model.id} className="border-b border-line last:border-0"><td className="p-4 font-mono text-accent">{i+1}</td><td className="p-4"><Link className="font-semibold hover:text-accent" href={`/${locale}/ecouteurs/${r.model.id}`}>{r.model.name}</Link><div className="text-dim text-[10px] mt-1">{brandMap.get(r.model.brand_id)?.name || r.model.brand_id}</div></td><td className="p-4 font-mono">{formatPrice(r.model.price)}</td><td className="p-4 font-mono font-bold">{r.score}</td><td className="p-4">{n(r.model.microphones)??n(r.model.mic_count)??'—'}</td><td className="p-4">{r.model.anc?'✓':'—'}</td></tr>)}</tbody></table></div></section>{section('anc',fr?'🎙️ Meilleurs écouteurs ANC pour les appels':'🎙️ Best ANC Earbuds for Calls',anc,fr?'Sélection parmi les modèles avec ANC.':'Selection among ANC models.')}{section('under100',fr?'💵 Meilleurs écouteurs pour les appels sous 100 $':'💵 Best Earbuds for Calls Under $100',under100,fr?'Sélection sous 100 $.':'Under-$100 selection.')}{section('battery',fr?'🔋 Meilleure autonomie pour les appels':'🔋 Best Battery Life for Calls',battery,fr?'Autonomie annoncée par écouteur.':'Advertised per-earbud battery life.')}<section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-5">{fr?'Méthodologie':'Methodology'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr?'Le score Calls est un indice simple dérivé du nombre de microphones lorsque cette donnée existe. Il ne constitue pas une mesure de clarté vocale ou de performance dans un environnement réel.':'The Calls score is a simple index derived from microphone count when that data exists. It is not a measurement of voice clarity or real-world performance.'}</p></section><section className="mt-14 grid md:grid-cols-2 gap-4"><div className="border border-line rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr?'Guides associés':'Related guides'}</h2><div className="mt-4 space-y-2 text-sm"><Link className="block hover:text-accent" href={`/${locale}/guides/best-wireless-earbuds`}>→ Best Wireless Earbuds</Link><Link className="block hover:text-accent" href={`/${locale}/guides/best-noise-cancelling-earbuds`}>→ Best Noise Cancelling Earbuds</Link><Link className="block hover:text-accent" href={`/${locale}/guides/best-earbuds-under-100`}>→ Best Earbuds Under $100</Link></div></div><div className="border border-accent/30 rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr?'Explorer le catalogue':'Explore the catalog'}</h2><Link className="inline-block mt-4 text-accent font-mono text-xs uppercase" href={`/${locale}/ecouteurs`}>{fr?'Voir le catalogue →':'Browse catalog →'}</Link></div></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-5">FAQ</h2><div className="divide-y divide-line border-y border-line">{(fr?[['Quels sont les meilleurs écouteurs pour les appels ?','Notre classement compare les modèles pour lesquels une donnée microphone exploitable est disponible.'],['Le nombre de microphones garantit-il une meilleure qualité ?','Non. C’est seulement un indicateur de spécifications.'],['Quels écouteurs pour les appels sous 100 $ ?','Utilisez la section dédiée sous 100 $ pour voir les modèles correspondants.'],['Le classement mesure-t-il la voix en environnement bruyant ?','Non. Il ne remplace pas des tests d’appel dédiés.']]:[['What are the best earbuds for calls?','Our ranking compares models for which usable microphone data is available.'],['Does more microphones guarantee better quality?','No. It is only a specification indicator.'],['What are the best earbuds for calls under $100?','Use the dedicated under-$100 section to see matching models.'],['Does the ranking measure voice quality in noisy environments?','No. It does not replace dedicated call tests.']]).map(([q,a])=><details key={q} className="py-4"><summary className="cursor-pointer font-display font-medium">{q}</summary><p className="text-dim text-sm leading-7 mt-3 max-w-3xl">{a}</p></details>)}</div></section></article><AdSlot variant="native" zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY} invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN} label={locale === 'en' ? 'Advertisement' : 'Publicité'} /><Footer/></>;
+ }
+diff --git a/app/[locale]/guides/best-earbuds-for-commuting/page.js b/app/[locale]/guides/best-earbuds-for-commuting/page.js
+index 596e92a..1179084 100644
+--- a/app/[locale]/guides/best-earbuds-for-commuting/page.js
++++ b/app/[locale]/guides/best-earbuds-for-commuting/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -27,7 +27,7 @@ function Card({ row, brand, locale }) {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour les trajets en 2026' : 'Best Earbuds for Commuting in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour les transports et les trajets quotidiens selon ANC, mode transparence, autonomie et poids.' : 'Compare the best earbuds for commuting and daily travel using ANC, transparency, battery life and weight.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-commuting`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour les transports et les trajets quotidiens selon ANC, mode transparence, autonomie et poids.' : 'Compare the best earbuds for commuting and daily travel using ANC, transparency, battery life and weight.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-commuting`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-commuting`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-cycling/page.js b/app/[locale]/guides/best-earbuds-for-cycling/page.js
+index c40fb74..c78fd08 100644
+--- a/app/[locale]/guides/best-earbuds-for-cycling/page.js
++++ b/app/[locale]/guides/best-earbuds-for-cycling/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -12,7 +12,7 @@ const score = (m) => Math.min(100, 50 + (m.transparency_mode || m.transparency ?
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour le vélo en 2026' : 'Best Earbuds for Cycling in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour le vélo selon poids, autonomie, transparence et résistance.' : 'Compare earbuds for cycling using weight, battery, transparency and resistance specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-cycling`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour le vélo selon poids, autonomie, transparence et résistance.' : 'Compare earbuds for cycling using weight, battery, transparency and resistance specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-cycling`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-cycling`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-gaming/page.js b/app/[locale]/guides/best-earbuds-for-gaming/page.js
+index 1694e63..2d9ecfe 100644
+--- a/app/[locale]/guides/best-earbuds-for-gaming/page.js
++++ b/app/[locale]/guides/best-earbuds-for-gaming/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -28,7 +28,7 @@ function Card({ row, brand, fr }) {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour le gaming en 2026' : 'Best Gaming Earbuds in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour le gaming selon les fonctions de faible latence, microphone, autonomie et ANC disponibles.' : 'Compare the best gaming earbuds using available low-latency, microphone, battery and ANC features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-gaming`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour le gaming selon les fonctions de faible latence, microphone, autonomie et ANC disponibles.' : 'Compare the best gaming earbuds using available low-latency, microphone, battery and ANC features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-gaming`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-gaming`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-gym/page.js b/app/[locale]/guides/best-earbuds-for-gym/page.js
+index 25e2b67..8105701 100644
+--- a/app/[locale]/guides/best-earbuds-for-gym/page.js
++++ b/app/[locale]/guides/best-earbuds-for-gym/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -17,7 +17,7 @@ const score = (m) => {
+   if (/IPX[4-8]|IP[4-6][4-9]/.test(ip)) s += 20;
+   return Math.min(100, s);
+ };
+-export async function generateMetadata({ params }) { const { locale } = params; const title = locale === 'fr' ? 'Meilleurs écouteurs pour la salle de sport en 2026' : 'Best Earbuds for the Gym in 2026'; return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour la salle de sport selon résistance à l’eau, poids, autonomie et fonctions disponibles.' : 'Compare the best earbuds for the gym using water resistance, weight, battery life and available features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-gym`) }; }
++export async function generateMetadata({ params }) { const { locale } = params; const title = locale === 'fr' ? 'Meilleurs écouteurs pour la salle de sport en 2026' : 'Best Earbuds for the Gym in 2026'; return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour la salle de sport selon résistance à l’eau, poids, autonomie et fonctions disponibles.' : 'Compare the best earbuds for the gym using water resistance, weight, battery life and available features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-gym`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-gym`, locale), title, description, images: ['/og-image.png'] } }; }
+ export default async function Page({ params }) {
+   const { locale } = params; const fr = locale === 'fr'; const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]); const bm = new Map(brands.map(b => [b.id, b])); const rows = models.map(model => ({ model, score: score(model) })).sort((a,b) => b.score-a.score); const best = rows.slice(0,10); const budget = rows.filter(r => n(r.model.price) != null && n(r.model.price) <= 100).slice(0,5); const title = fr ? 'Meilleurs écouteurs pour la salle de sport en 2026' : 'Best Earbuds for the Gym in 2026'; const intro = fr ? 'Une sélection pour les séances en salle, basée sur les caractéristiques disponibles dans notre catalogue. Le score est un indicateur de spécifications et ne remplace pas un test de maintien ou de résistance en conditions réelles.' : 'A selection for gym sessions based on specifications available in our catalog. The score is a specification indicator and does not replace real-world fit or durability testing.'; const jsonLd = {'@context':'https://schema.org','@type':'Article',headline:title,description:intro,url:`https://earbudstimeline.com/${locale}/guides/best-earbuds-for-gym`,dateModified:'2026-08-26',inLanguage:locale}; const guide = slug => `/${locale}/guides/${slug}`;
+   return <><JsonLd data={jsonLd}/><article className="max-w-6xl mx-auto"><div className="font-mono text-xs text-accent uppercase mb-3">Gym · 2026</div><h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1><p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{intro}</p><div className="mt-4 text-[10px] font-mono text-dim">{fr ? 'Dernière mise à jour : 26 août 2026' : 'Last updated: August 26, 2026'}</div><section className="mt-8 grid grid-cols-2 gap-3"><a href="#overall" className="bg-panel border border-line rounded-xl p-4 hover:border-accent"><div className="font-mono text-accent text-xs">OVERALL</div><div className="font-display font-semibold mt-1">{best.length} picks</div></a><a href="#budget" className="bg-panel border border-line rounded-xl p-4 hover:border-accent"><div className="font-mono text-accent text-xs">UNDER $100</div><div className="font-display font-semibold mt-1">{budget.length} picks</div></a></section><section id="overall" className="mt-12"><h2 className="font-display font-semibold text-[25px] mb-5">🏋️ {fr ? 'Meilleurs écouteurs pour la salle de sport' : 'Best Earbuds for the Gym Overall'}</h2><div className="overflow-x-auto border border-line rounded-2xl bg-panel"><table className="w-full text-left text-xs"><thead className="border-b border-line font-mono text-[10px] text-dim uppercase"><tr><th className="p-4">#</th><th className="p-4">{fr ? 'Écouteurs' : 'Earbuds'}</th><th className="p-4">{fr ? 'Prix' : 'Price'}</th><th className="p-4">Score</th><th className="p-4">{fr ? 'Résistance' : 'Resistance'}</th></tr></thead><tbody>{best.map((r,i) => <tr key={r.model.id} className="border-b border-line last:border-0"><td className="p-4 text-accent">{i+1}</td><td className="p-4"><Link href={`/${locale}/ecouteurs/${r.model.id}`} className="font-semibold hover:text-accent">{r.model.name}</Link><div className="text-dim text-[10px]">{bm.get(r.model.brand_id)?.name || r.model.brand_id}</div></td><td className="p-4 font-mono">{price(r.model.price)}</td><td className="p-4 font-bold">{r.score}</td><td className="p-4">{r.model.water_resistance || r.model.ip_rating || '—'}</td></tr>)}</tbody></table></div></section><section id="budget" className="mt-12"><h2 className="font-display font-semibold text-[25px] mb-5">💵 {fr ? 'Meilleurs écouteurs de sport sous 100 $' : 'Best Gym Earbuds Under $100'}</h2><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{budget.map(r => <Link key={r.model.id} href={`/${locale}/ecouteurs/${r.model.id}`} className="bg-panel border border-line rounded-2xl p-5 hover:border-accent"><div className="font-mono text-[10px] text-accent">{bm.get(r.model.brand_id)?.name || r.model.brand_id}</div><h3 className="font-display font-semibold mt-1">{r.model.name}</h3><div className="mt-3 font-display font-bold">{price(r.model.price)}</div><div className="mt-3 text-[10px] font-mono text-dim">{r.model.water_resistance || r.model.ip_rating || 'Resistance data —'} · {n(r.model.weight_g) != null ? `${n(r.model.weight_g)}g` : 'Weight —'}</div></Link>)}</div></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-4">{fr ? 'Résistance à la transpiration et à l’eau' : 'Sweat and water resistance'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr ? 'Les séances en salle peuvent exposer les écouteurs à la transpiration et à l’humidité. Une certification IP peut fournir une indication utile, mais elle ne signifie pas que les écouteurs sont invulnérables à tous les liquides ou à toutes les conditions.' : 'Gym sessions can expose earbuds to sweat and moisture. An IP rating can provide a useful indication, but it does not mean earbuds are invulnerable to every liquid or condition.'}</p></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-4">{fr ? 'Maintien et confort pendant les exercices' : 'Fit and comfort during workouts'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr ? 'Le maintien réel dépend de la forme de l’oreille, des embouts et du mouvement. Le poids peut aider à comparer les modèles, mais les données de poids ne suffisent pas à prédire le confort pendant une séance.' : 'Real-world fit depends on ear shape, tips and movement. Weight can help compare models, but weight data alone cannot predict workout comfort.'}</p></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-4">{fr ? 'Méthodologie' : 'Methodology'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr ? 'Le score Gym combine résistance à l’eau lorsqu’elle est disponible, poids, autonomie, transparence et ANC. Les données manquantes ne sont pas inventées et le score ne mesure pas le maintien réel pendant l’exercice.' : 'The Gym score combines available water resistance, weight, battery life, transparency and ANC data. Missing data is not invented, and the score does not measure real-world fit during exercise.'}</p></section><section className="mt-14 grid md:grid-cols-2 gap-4"><div className="border border-line rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr ? 'Guides associés' : 'Related guides'}</h2><div className="mt-4 space-y-2 text-sm"><Link className="block hover:text-accent" href={guide('best-earbuds-for-running')}>→ Best Earbuds for Running</Link><Link className="block hover:text-accent" href={guide('best-earbuds-for-sport')}>→ Best Earbuds for Sport</Link><Link className="block hover:text-accent" href={guide('best-earbuds-for-working')}>→ Best Earbuds for Working</Link></div></div><div className="border border-accent/30 rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr ? 'Explorer le catalogue' : 'Explore the catalog'}</h2><Link className="inline-block mt-4 text-accent font-mono text-xs uppercase" href={`/${locale}/ecouteurs`}>{fr ? 'Voir le catalogue →' : 'Browse catalog →'}</Link></div></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-5">FAQ</h2><div className="divide-y divide-line border-y border-line">{(fr ? [['Quels sont les meilleurs écouteurs pour la salle de sport ?','Privilégiez notamment un maintien stable, une résistance adaptée à la transpiration, un poids raisonnable et une autonomie suffisante.'],['Les écouteurs doivent-ils avoir une certification IP pour la salle ?','Une certification IP peut être un indicateur utile de résistance, mais le niveau pertinent dépend de votre usage.'],['Les écouteurs ANC sont-ils utiles à la salle ?','Ils peuvent réduire certaines distractions, mais le mode transparence peut être préférable lorsque vous devez rester attentif à votre environnement.']] : [['What are the best earbuds for the gym?','Look for secure fit, suitable sweat resistance, reasonable weight and enough battery life.'],['Do gym earbuds need an IP rating?','An IP rating can be a useful resistance indicator, but the appropriate level depends on your use.'],['Is ANC useful at the gym?','It can reduce some distractions, but transparency mode may be preferable when you need environmental awareness.']]).map(([q,a]) => <details key={q} className="py-4"><summary className="cursor-pointer font-display font-medium">{q}</summary><p className="text-dim text-sm leading-7 mt-3 max-w-3xl">{a}</p></details>)}</div></section></article><AdSlot variant="native" zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY} invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN} label={locale === 'en' ? 'Advertisement' : 'Publicité'} /><Footer /></>;
+diff --git a/app/[locale]/guides/best-earbuds-for-iphone/page.js b/app/[locale]/guides/best-earbuds-for-iphone/page.js
+index 5d0c387..95d1f9d 100644
+--- a/app/[locale]/guides/best-earbuds-for-iphone/page.js
++++ b/app/[locale]/guides/best-earbuds-for-iphone/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -28,7 +28,7 @@ function Card({ row, brand, fr }) {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour iPhone en 2026' : 'Best Earbuds for iPhone in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour iPhone selon les fonctionnalités disponibles, l’ANC, l’autonomie et le prix.' : 'Compare the best earbuds for iPhone using available features, ANC, battery life and price.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-iphone`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour iPhone selon les fonctionnalités disponibles, l’ANC, l’autonomie et le prix.' : 'Compare the best earbuds for iPhone using available features, ANC, battery life and price.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-iphone`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-iphone`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-large-ears/page.js b/app/[locale]/guides/best-earbuds-for-large-ears/page.js
+index 55b9aee..85b89db 100644
+--- a/app/[locale]/guides/best-earbuds-for-large-ears/page.js
++++ b/app/[locale]/guides/best-earbuds-for-large-ears/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -12,7 +12,7 @@ const score = (m) => Math.min(100, 50 + ((n(m.weight_g) || 99) <= 8 ? 12 : 0) +
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour grandes oreilles en 2026' : 'Best Earbuds for Large Ears in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour grandes oreilles selon poids, autonomie et caractéristiques disponibles.' : 'Compare earbuds for large ears using available weight, battery and feature data.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-large-ears`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour grandes oreilles selon poids, autonomie et caractéristiques disponibles.' : 'Compare earbuds for large ears using available weight, battery and feature data.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-large-ears`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-large-ears`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-long-flights/page.js b/app/[locale]/guides/best-earbuds-for-long-flights/page.js
+index 98d889a..58ea2df 100644
+--- a/app/[locale]/guides/best-earbuds-for-long-flights/page.js
++++ b/app/[locale]/guides/best-earbuds-for-long-flights/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -12,7 +12,7 @@ const score = (m) => Math.min(100, 45 + (m.anc ? 25 : 0) + (m.transparency_mode
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour les longs vols en 2026' : 'Best Earbuds for Long Flights in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour les longs vols selon ANC, autonomie, poids et transparence.' : 'Compare earbuds for long flights using ANC, battery life, weight and transparency.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-long-flights`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour les longs vols selon ANC, autonomie, poids et transparence.' : 'Compare earbuds for long flights using ANC, battery life, weight and transparency.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-long-flights`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-long-flights`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-music/page.js b/app/[locale]/guides/best-earbuds-for-music/page.js
+index f857e35..42a1020 100644
+--- a/app/[locale]/guides/best-earbuds-for-music/page.js
++++ b/app/[locale]/guides/best-earbuds-for-music/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -21,7 +21,7 @@ const musicScore = (m) => {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour écouter de la musique en 2026' : 'Best Earbuds for Music in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour la musique selon les spécifications audio, autonomie, ANC et fonctionnalités disponibles.' : 'Compare the best earbuds for music using available audio specifications, battery life, ANC and features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-music`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour la musique selon les spécifications audio, autonomie, ANC et fonctionnalités disponibles.' : 'Compare the best earbuds for music using available audio specifications, battery life, ANC and features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-music`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-music`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-outdoor-use/page.js b/app/[locale]/guides/best-earbuds-for-outdoor-use/page.js
+index 506bcc3..416c564 100644
+--- a/app/[locale]/guides/best-earbuds-for-outdoor-use/page.js
++++ b/app/[locale]/guides/best-earbuds-for-outdoor-use/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -12,7 +12,7 @@ const score = m => Math.min(100, 50 + (m.transparency_mode || m.transparency ? 1
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour l’extérieur en 2026' : 'Best Earbuds for Outdoor Use in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour une utilisation extérieure selon résistance, autonomie, poids et transparence.' : 'Compare earbuds for outdoor use using resistance, battery life, weight and transparency.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-outdoor-use`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour une utilisation extérieure selon résistance, autonomie, poids et transparence.' : 'Compare earbuds for outdoor use using resistance, battery life, weight and transparency.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-outdoor-use`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-outdoor-use`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-podcasts/page.js b/app/[locale]/guides/best-earbuds-for-podcasts/page.js
+index 48929c2..fa4198c 100644
+--- a/app/[locale]/guides/best-earbuds-for-podcasts/page.js
++++ b/app/[locale]/guides/best-earbuds-for-podcasts/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -16,7 +16,7 @@ export async function generateMetadata({ params }) {
+   return {
+     title: `${title} | EarbudsTimeline`,
+     description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour écouter des podcasts selon autonomie, transparence, ANC et confort indicatif.' : 'Compare the best earbuds for podcasts using battery life, transparency, ANC and indicative comfort factors.',
+-    ...canonicalFor(`/${locale}/guides/best-earbuds-for-podcasts`)
++    ...canonicalFor(`/${locale}/guides/best-earbuds-for-podcasts`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-podcasts`, locale), title, description, images: ['/og-image.png'] }
+   };
+ }
+ 
+diff --git a/app/[locale]/guides/best-earbuds-for-running/page.js b/app/[locale]/guides/best-earbuds-for-running/page.js
+index 968cabf..1e096ec 100644
+--- a/app/[locale]/guides/best-earbuds-for-running/page.js
++++ b/app/[locale]/guides/best-earbuds-for-running/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -17,7 +17,7 @@ const score = (m) => {
+   if (ip.includes('IPX4') || ip.includes('IPX5') || ip.includes('IPX6') || ip.includes('IPX7') || ip.includes('IPX8')) s += 15;
+   return Math.min(100, s);
+ };
+-export async function generateMetadata({ params }) { const { locale } = params; const title = locale === 'fr' ? 'Meilleurs écouteurs pour courir en 2026' : 'Best Earbuds for Running in 2026'; return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour courir selon résistance à l’eau, poids, autonomie et fonctions disponibles.' : 'Compare the best earbuds for running using water resistance, weight, battery life and available features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-running`) }; }
++export async function generateMetadata({ params }) { const { locale } = params; const title = locale === 'fr' ? 'Meilleurs écouteurs pour courir en 2026' : 'Best Earbuds for Running in 2026'; return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour courir selon résistance à l’eau, poids, autonomie et fonctions disponibles.' : 'Compare the best earbuds for running using water resistance, weight, battery life and available features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-running`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-running`, locale), title, description, images: ['/og-image.png'] } }; }
+ export default async function Page({ params }) {
+   const { locale } = params; const fr = locale === 'fr'; const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]); const bm = new Map(brands.map(b => [b.id, b])); const rows = models.map(model => ({ model, score: score(model) })).sort((a,b) => b.score-a.score); const best = rows.slice(0,10); const budget = rows.filter(r => n(r.model.price) != null && n(r.model.price) <= 100).slice(0,5); const title = fr ? 'Meilleurs écouteurs pour courir en 2026' : 'Best Earbuds for Running in 2026'; const intro = fr ? 'Une sélection pensée pour la course et les entraînements, basée sur les caractéristiques disponibles dans notre catalogue. Le score est un indicateur de spécifications et ne remplace pas un test réel de maintien.' : 'A selection for running and workouts based on specifications available in our catalog. The score is a specification indicator and does not replace real-world fit testing.'; const jsonLd = {'@context':'https://schema.org','@type':'Article',headline:title,description:intro,url:`https://earbudstimeline.com/${locale}/guides/best-earbuds-for-running`,dateModified:'2026-08-26',inLanguage:locale}; const guide = slug => `/${locale}/guides/${slug}`;
+   return <><JsonLd data={jsonLd}/><article className="max-w-6xl mx-auto"><div className="font-mono text-xs text-accent uppercase mb-3">Running · 2026</div><h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1><p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{intro}</p><div className="mt-4 text-[10px] font-mono text-dim">{fr ? 'Dernière mise à jour : 26 août 2026' : 'Last updated: August 26, 2026'}</div><section className="mt-8 grid grid-cols-2 gap-3"><a href="#overall" className="bg-panel border border-line rounded-xl p-4 hover:border-accent"><div className="font-mono text-accent text-xs">OVERALL</div><div className="font-display font-semibold mt-1">{best.length} picks</div></a><a href="#budget" className="bg-panel border border-line rounded-xl p-4 hover:border-accent"><div className="font-mono text-accent text-xs">UNDER $100</div><div className="font-display font-semibold mt-1">{budget.length} picks</div></a></section><section id="overall" className="mt-12"><h2 className="font-display font-semibold text-[25px] mb-5">🏃 {fr ? 'Meilleurs écouteurs pour courir' : 'Best Earbuds for Running Overall'}</h2><div className="overflow-x-auto border border-line rounded-2xl bg-panel"><table className="w-full text-left text-xs"><thead className="border-b border-line font-mono text-[10px] text-dim uppercase"><tr><th className="p-4">#</th><th className="p-4">{fr ? 'Écouteurs' : 'Earbuds'}</th><th className="p-4">{fr ? 'Prix' : 'Price'}</th><th className="p-4">Score</th><th className="p-4">{fr ? 'Résistance' : 'Resistance'}</th></tr></thead><tbody>{best.map((r,i) => <tr key={r.model.id} className="border-b border-line last:border-0"><td className="p-4 text-accent">{i+1}</td><td className="p-4"><Link href={`/${locale}/ecouteurs/${r.model.id}`} className="font-semibold hover:text-accent">{r.model.name}</Link><div className="text-dim text-[10px]">{bm.get(r.model.brand_id)?.name || r.model.brand_id}</div></td><td className="p-4 font-mono">{price(r.model.price)}</td><td className="p-4 font-bold">{r.score}</td><td className="p-4">{r.model.water_resistance || r.model.ip_rating || '—'}</td></tr>)}</tbody></table></div></section><section id="budget" className="mt-12"><h2 className="font-display font-semibold text-[25px] mb-5">💵 {fr ? 'Meilleurs écouteurs pour courir sous 100 $' : 'Best Running Earbuds Under $100'}</h2><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{budget.map(r => <Link key={r.model.id} href={`/${locale}/ecouteurs/${r.model.id}`} className="bg-panel border border-line rounded-2xl p-5 hover:border-accent"><div className="font-mono text-[10px] text-accent">{bm.get(r.model.brand_id)?.name || r.model.brand_id}</div><h3 className="font-display font-semibold mt-1">{r.model.name}</h3><div className="mt-3 font-display font-bold">{price(r.model.price)}</div><div className="mt-3 text-[10px] font-mono text-dim">{r.model.water_resistance || r.model.ip_rating || 'Resistance data —'} · {n(r.model.weight_g) != null ? `${n(r.model.weight_g)}g` : 'Weight —'}</div></Link>)}</div></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-4">{fr ? 'Pourquoi la résistance à l’eau compte' : 'Why water resistance matters'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr ? 'La transpiration et l’exposition à l’humidité rendent la résistance à l’eau importante pour le sport. Une certification IP peut fournir une indication utile, mais elle ne garantit pas que chaque écouteur conviendra à toutes les conditions d’entraînement.' : 'Sweat and moisture exposure make water resistance important for sports. An IP rating can provide a useful indication, but it does not guarantee that every earbud is suitable for every training condition.'}</p></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-4">{fr ? 'Maintien, poids et autonomie' : 'Fit, weight and battery life'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr ? 'Pour courir, un maintien stable et un poids raisonnable peuvent être plus importants que certaines fonctions premium. Une bonne autonomie évite également les recharges fréquentes entre les séances.' : 'For running, secure fit and reasonable weight can matter more than some premium features. Good battery life also reduces charging between workouts.'}</p></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-4">{fr ? 'Méthodologie' : 'Methodology'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr ? 'Le score Running combine résistance à l’eau lorsqu’elle est disponible, poids, autonomie, transparence et ANC. Les données manquantes ne sont pas inventées et le score ne mesure pas le maintien réel pendant la course.' : 'The Running score combines available water resistance, weight, battery life, transparency and ANC data. Missing data is not invented, and the score does not measure real-world fit during running.'}</p></section><section className="mt-14 grid md:grid-cols-2 gap-4"><div className="border border-line rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr ? 'Guides associés' : 'Related guides'}</h2><div className="mt-4 space-y-2 text-sm"><Link className="block hover:text-accent" href={guide('best-earbuds-for-sport')}>→ Best Earbuds for Sport</Link><Link className="block hover:text-accent" href={guide('best-earbuds-for-working')}>→ Best Earbuds for Working</Link><Link className="block hover:text-accent" href={guide('best-earbuds-for-commuting')}>→ Best Earbuds for Commuting</Link></div></div><div className="border border-accent/30 rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr ? 'Explorer le catalogue' : 'Explore the catalog'}</h2><Link className="inline-block mt-4 text-accent font-mono text-xs uppercase" href={`/${locale}/ecouteurs`}>{fr ? 'Voir le catalogue →' : 'Browse catalog →'}</Link></div></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-5">FAQ</h2><div className="divide-y divide-line border-y border-line">{(fr ? [['Quels sont les meilleurs écouteurs pour courir ?','Privilégiez notamment un maintien stable, une résistance adaptée à la transpiration, un poids raisonnable et une autonomie suffisante.'],['Les écouteurs doivent-ils être étanches pour courir ?','Une résistance à l’eau adaptée à l’usage sportif est utile, mais le niveau nécessaire dépend des conditions d’utilisation.'],['Les écouteurs ANC sont-ils adaptés à la course ?','Ils peuvent l’être, mais le mode transparence peut être préférable lorsque vous devez rester conscient de votre environnement.']] : [['What are the best earbuds for running?','Look for secure fit, suitable sweat resistance, reasonable weight and enough battery life.'],['Do running earbuds need to be waterproof?','Water resistance suited to sports use is useful, but the required level depends on your conditions.'],['Are ANC earbuds good for running?','They can be, but transparency mode may be preferable when you need awareness of your surroundings.']]).map(([q,a]) => <details key={q} className="py-4"><summary className="cursor-pointer font-display font-medium">{q}</summary><p className="text-dim text-sm leading-7 mt-3 max-w-3xl">{a}</p></details>)}</div></section></article><AdSlot variant="native" zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY} invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN} label={locale === 'en' ? 'Advertisement' : 'Publicité'} /><Footer /></>;
+diff --git a/app/[locale]/guides/best-earbuds-for-sleep/page.js b/app/[locale]/guides/best-earbuds-for-sleep/page.js
+index 9563056..c6e6299 100644
+--- a/app/[locale]/guides/best-earbuds-for-sleep/page.js
++++ b/app/[locale]/guides/best-earbuds-for-sleep/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -14,7 +14,7 @@ const score = (m) => {
+   if (m.anc) s += 10;
+   return Math.min(100, s);
+ };
+-export async function generateMetadata({ params }) { const { locale } = params; const title = locale === 'fr' ? 'Meilleurs écouteurs pour dormir en 2026' : 'Best Earbuds for Sleeping in 2026'; return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs adaptés au sommeil selon poids, autonomie et réduction du bruit disponibles.' : 'Compare earbuds for sleeping using available weight, battery life and noise-cancelling specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-sleep`) }; }
++export async function generateMetadata({ params }) { const { locale } = params; const title = locale === 'fr' ? 'Meilleurs écouteurs pour dormir en 2026' : 'Best Earbuds for Sleeping in 2026'; return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs adaptés au sommeil selon poids, autonomie et réduction du bruit disponibles.' : 'Compare earbuds for sleeping using available weight, battery life and noise-cancelling specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-sleep`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-sleep`, locale), title, description, images: ['/og-image.png'] } }; }
+ export default async function Page({ params }) {
+   const { locale } = params; const fr = locale === 'fr'; const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]); const bm = new Map(brands.map(b => [b.id, b])); const rows = models.map(model => ({ model, score: score(model) })).sort((a,b) => b.score-a.score); const best = rows.slice(0,10); const budget = rows.filter(r => n(r.model.price) != null && n(r.model.price) <= 100).slice(0,5); const title = fr ? 'Meilleurs écouteurs pour dormir en 2026' : 'Best Earbuds for Sleeping in 2026'; const intro = fr ? 'Une sélection basée sur les caractéristiques disponibles dans notre catalogue. Le poids, l’autonomie et l’ANC sont considérés, mais le confort pendant le sommeil dépend fortement de la morphologie et de la position de sommeil.' : 'A selection based on specifications available in our catalog. Weight, battery life and ANC are considered, but sleep comfort depends heavily on ear shape and sleeping position.'; const jsonLd = {'@context':'https://schema.org','@type':'Article',headline:title,description:intro,url:`https://earbudstimeline.com/${locale}/guides/best-earbuds-for-sleep`,dateModified:'2026-08-26',inLanguage:locale}; const guide = slug => `/${locale}/guides/${slug}`;
+   return <><JsonLd data={jsonLd}/><article className="max-w-6xl mx-auto"><div className="font-mono text-xs text-accent uppercase mb-3">Sleep · 2026</div><h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1><p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{intro}</p><div className="mt-4 text-[10px] font-mono text-dim">{fr ? 'Dernière mise à jour : 26 août 2026' : 'Last updated: August 26, 2026'}</div><section className="mt-8 grid grid-cols-2 gap-3"><a href="#overall" className="bg-panel border border-line rounded-xl p-4 hover:border-accent"><div className="font-mono text-accent text-xs">OVERALL</div><div className="font-display font-semibold mt-1">{best.length} picks</div></a><a href="#budget" className="bg-panel border border-line rounded-xl p-4 hover:border-accent"><div className="font-mono text-accent text-xs">UNDER $100</div><div className="font-display font-semibold mt-1">{budget.length} picks</div></a></section><section id="overall" className="mt-12"><h2 className="font-display font-semibold text-[25px] mb-5">😴 {fr ? 'Meilleurs écouteurs pour dormir' : 'Best Earbuds for Sleeping Overall'}</h2><div className="overflow-x-auto border border-line rounded-2xl bg-panel"><table className="w-full text-left text-xs"><thead className="border-b border-line font-mono text-[10px] text-dim uppercase"><tr><th className="p-4">#</th><th className="p-4">{fr ? 'Écouteurs' : 'Earbuds'}</th><th className="p-4">{fr ? 'Prix' : 'Price'}</th><th className="p-4">Score</th><th className="p-4">{fr ? 'Poids' : 'Weight'}</th></tr></thead><tbody>{best.map((r,i) => <tr key={r.model.id} className="border-b border-line last:border-0"><td className="p-4 text-accent">{i+1}</td><td className="p-4"><Link href={`/${locale}/ecouteurs/${r.model.id}`} className="font-semibold hover:text-accent">{r.model.name}</Link><div className="text-dim text-[10px]">{bm.get(r.model.brand_id)?.name || r.model.brand_id}</div></td><td className="p-4 font-mono">{price(r.model.price)}</td><td className="p-4 font-bold">{r.score}</td><td className="p-4">{n(r.model.weight_g) != null ? `${n(r.model.weight_g)}g` : '—'}</td></tr>)}</tbody></table></div></section><section id="budget" className="mt-12"><h2 className="font-display font-semibold text-[25px] mb-5">💵 {fr ? 'Meilleurs écouteurs pour dormir sous 100 $' : 'Best Sleep Earbuds Under $100'}</h2><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">{budget.map(r => <Link key={r.model.id} href={`/${locale}/ecouteurs/${r.model.id}`} className="bg-panel border border-line rounded-2xl p-5 hover:border-accent"><div className="font-mono text-[10px] text-accent">{bm.get(r.model.brand_id)?.name || r.model.brand_id}</div><h3 className="font-display font-semibold mt-1">{r.model.name}</h3><div className="mt-3 font-display font-bold">{price(r.model.price)}</div><div className="mt-3 text-[10px] font-mono text-dim">{n(r.model.weight_g) != null ? `${n(r.model.weight_g)}g` : 'Weight —'} · {r.model.anc ? 'ANC' : 'No ANC'}</div></Link>)}</div></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-4">{fr ? 'Poids et confort pendant le sommeil' : 'Weight and sleep comfort'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr ? 'Un écouteur léger peut réduire la pression, mais le poids seul ne permet pas de prédire le confort. La forme du boîtier, sa profondeur et votre position de sommeil peuvent être déterminantes.' : 'A lighter earbud may reduce pressure, but weight alone cannot predict comfort. Housing shape, depth and sleeping position can be decisive.'}</p></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-4">{fr ? 'ANC pour dormir' : 'ANC for sleeping'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr ? 'L’ANC peut réduire certains bruits ambiants continus, mais son utilité dépend de votre environnement. Il ne faut pas considérer l’ANC comme une garantie d’isolation totale.' : 'ANC can reduce some continuous ambient sounds, but its usefulness depends on your environment. ANC should not be treated as a guarantee of total isolation.'}</p></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-4">{fr ? 'Méthodologie' : 'Methodology'}</h2><p className="text-dim text-sm leading-7 max-w-3xl">{fr ? 'Le score Sleep combine poids, autonomie et ANC lorsqu’ils sont disponibles. Les données manquantes ne sont pas inventées et le score ne mesure pas le confort réel, la qualité du sommeil ni la sécurité d’une utilisation nocturne.' : 'The Sleep score combines available weight, battery life and ANC data. Missing data is not invented, and the score does not measure real-world comfort, sleep quality or the safety of overnight use.'}</p></section><section className="mt-14 grid md:grid-cols-2 gap-4"><div className="border border-line rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr ? 'Guides associés' : 'Related guides'}</h2><div className="mt-4 space-y-2 text-sm"><Link className="block hover:text-accent" href={guide('best-noise-cancelling-earbuds')}>→ Best Noise Cancelling Earbuds</Link><Link className="block hover:text-accent" href={guide('best-earbuds-for-working')}>→ Best Earbuds for Working</Link><Link className="block hover:text-accent" href={guide('best-earbuds-for-sport')}>→ Best Earbuds for Sport</Link></div></div><div className="border border-accent/30 rounded-2xl p-6 bg-panel"><h2 className="font-display font-semibold text-xl">{fr ? 'Explorer le catalogue' : 'Explore the catalog'}</h2><Link className="inline-block mt-4 text-accent font-mono text-xs uppercase" href={`/${locale}/ecouteurs`}>{fr ? 'Voir le catalogue →' : 'Browse catalog →'}</Link></div></section><section className="mt-14"><h2 className="font-display font-semibold text-[25px] mb-5">FAQ</h2><div className="divide-y divide-line border-y border-line">{(fr ? [['Quels sont les meilleurs écouteurs pour dormir ?','Le confort dépend fortement de la forme de l’écouteur et de votre position de sommeil. Les modèles légers peuvent être plus faciles à supporter, mais le classement reste indicatif.'],['Peut-on dormir avec des écouteurs ANC ?','L’ANC peut être utile pour certains bruits, mais il ne garantit pas une isolation totale et le confort nocturne varie selon les personnes.'],['Le poids est-il important pour dormir avec des écouteurs ?','Oui, il peut contribuer au confort, mais la forme et la profondeur du boîtier sont également importantes.']] : [['What are the best earbuds for sleeping?','Comfort depends heavily on earbud shape and sleeping position. Lighter models may be easier to wear, but the ranking remains indicative.'],['Can you sleep with ANC earbuds?','ANC may help with some noises, but it does not guarantee total isolation and overnight comfort varies.'],['Does earbud weight matter for sleeping?','Yes, it can affect comfort, but housing shape and depth also matter.']]).map(([q,a]) => <details key={q} className="py-4"><summary className="cursor-pointer font-display font-medium">{q}</summary><p className="text-dim text-sm leading-7 mt-3 max-w-3xl">{a}</p></details>)}</div></section></article><AdSlot variant="native" zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY} invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN} label={locale === 'en' ? 'Advertisement' : 'Publicité'} /><Footer /></>;
+diff --git a/app/[locale]/guides/best-earbuds-for-small-ears/page.js b/app/[locale]/guides/best-earbuds-for-small-ears/page.js
+index 55dd46d..ad3d4c0 100644
+--- a/app/[locale]/guides/best-earbuds-for-small-ears/page.js
++++ b/app/[locale]/guides/best-earbuds-for-small-ears/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -34,7 +34,7 @@ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour petites oreilles en 2026' : 'Best Earbuds for Small Ears in 2026';
+   const description = locale === 'fr' ? 'Découvrez les meilleurs écouteurs pour petites oreilles selon le poids et les caractéristiques disponibles dans le catalogue EarbudsTimeline.' : 'Find the best earbuds for small ears using weight and available specifications from the EarbudsTimeline catalog.';
+-  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-earbuds-for-small-ears`) };
++  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-earbuds-for-small-ears`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-small-ears`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function BestEarbudsForSmallEarsPage({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-sport/page.js b/app/[locale]/guides/best-earbuds-for-sport/page.js
+index 8e9cd4b..dc2faeb 100644
+--- a/app/[locale]/guides/best-earbuds-for-sport/page.js
++++ b/app/[locale]/guides/best-earbuds-for-sport/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -37,7 +37,7 @@ function Card({ row, brand, locale }) {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour le sport en 2026' : 'Best Sport Earbuds in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour le sport selon la résistance à l’eau, le poids, l’autonomie et les données disponibles.' : 'Compare the best sport earbuds using water resistance, weight, battery life and available specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-sport`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour le sport selon la résistance à l’eau, le poids, l’autonomie et les données disponibles.' : 'Compare the best sport earbuds using water resistance, weight, battery life and available specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-sport`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-sport`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-students/page.js b/app/[locale]/guides/best-earbuds-for-students/page.js
+index b3d75c0..78853f3 100644
+--- a/app/[locale]/guides/best-earbuds-for-students/page.js
++++ b/app/[locale]/guides/best-earbuds-for-students/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -20,7 +20,7 @@ const score = (m) => {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour étudiants en 2026' : 'Best Earbuds for Students in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour étudiants selon prix, autonomie, ANC, poids et fonctions disponibles.' : 'Compare the best earbuds for students using price, battery life, ANC, weight and available features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-students`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour étudiants selon prix, autonomie, ANC, poids et fonctions disponibles.' : 'Compare the best earbuds for students using price, battery life, ANC, weight and available features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-students`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-students`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-travel/page.js b/app/[locale]/guides/best-earbuds-for-travel/page.js
+index 90ce44f..290c834 100644
+--- a/app/[locale]/guides/best-earbuds-for-travel/page.js
++++ b/app/[locale]/guides/best-earbuds-for-travel/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -18,7 +18,7 @@ const travelScore = (m) => {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour voyager en 2026' : 'Best Earbuds for Travel in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour voyager selon ANC, autonomie, poids et mode transparence.' : 'Compare the best earbuds for travel using ANC, battery life, weight and transparency mode.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-travel`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour voyager selon ANC, autonomie, poids et mode transparence.' : 'Compare the best earbuds for travel using ANC, battery life, weight and transparency mode.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-travel`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-travel`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ export default async function Page({ params }) {
+   const { locale } = params; const fr = locale === 'fr';
+diff --git a/app/[locale]/guides/best-earbuds-for-walking/page.js b/app/[locale]/guides/best-earbuds-for-walking/page.js
+index 0071d26..8e001a9 100644
+--- a/app/[locale]/guides/best-earbuds-for-walking/page.js
++++ b/app/[locale]/guides/best-earbuds-for-walking/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -13,7 +13,7 @@ const score = (m) => Math.min(100, 50 + (m.transparency_mode || m.transparency ?
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour marcher en 2026' : 'Best Earbuds for Walking in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour la marche selon confort, autonomie, transparence et résistance disponibles.' : 'Compare earbuds for walking using available comfort, battery, transparency and resistance factors.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-walking`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour la marche selon confort, autonomie, transparence et résistance disponibles.' : 'Compare earbuds for walking using available comfort, battery, transparency and resistance factors.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-walking`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-walking`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-for-working/page.js b/app/[locale]/guides/best-earbuds-for-working/page.js
+index 1a8a966..9d5f434 100644
+--- a/app/[locale]/guides/best-earbuds-for-working/page.js
++++ b/app/[locale]/guides/best-earbuds-for-working/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -20,7 +20,7 @@ const score = (m) => {
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs pour travailler en 2026' : 'Best Earbuds for Working in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour travailler selon ANC, autonomie, poids et fonctions disponibles.' : 'Compare the best earbuds for working using ANC, battery life, weight and available features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-working`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour travailler selon ANC, autonomie, poids et fonctions disponibles.' : 'Compare the best earbuds for working using ANC, battery life, weight and available features.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-working`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-for-working`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-under-100/page.js b/app/[locale]/guides/best-earbuds-under-100/page.js
+index f36742f..6808b1f 100644
+--- a/app/[locale]/guides/best-earbuds-under-100/page.js
++++ b/app/[locale]/guides/best-earbuds-under-100/page.js
+@@ -1,7 +1,7 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
+ import { rankByValuePerDollar } from '@/lib/budgetValue';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -16,7 +16,7 @@ export async function generateMetadata({ params }) {
+   const description = locale === 'fr'
+     ? 'Comparez les meilleurs écouteurs sans fil à moins de 100 $ selon les fonctionnalités, l’ANC, l’autonomie, le confort et le rapport qualité-prix.'
+     : 'Compare the best wireless earbuds under $100 for features, ANC, battery life, comfort and value.';
+-  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-earbuds-under-100`) };
++  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-earbuds-under-100`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-under-100`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ function Card({ row, brand, fr }) {
+diff --git a/app/[locale]/guides/best-earbuds-under-150/page.js b/app/[locale]/guides/best-earbuds-under-150/page.js
+index 87b8b63..14a00ac 100644
+--- a/app/[locale]/guides/best-earbuds-under-150/page.js
++++ b/app/[locale]/guides/best-earbuds-under-150/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -12,7 +12,7 @@ const score = m => Math.min(100, 45 + (m.anc ? 15 : 0) + ((n(m.battery_bud_h) ||
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs à moins de 150 $ en 2026' : 'Best Earbuds Under $150 in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs sans fil à moins de 150 $ selon prix, ANC, autonomie et fonctionnalités.' : 'Compare the best wireless earbuds under $150 by price, ANC, battery life and features.', ...canonicalFor(`/${locale}/guides/best-earbuds-under-150`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs sans fil à moins de 150 $ selon prix, ANC, autonomie et fonctionnalités.' : 'Compare the best wireless earbuds under $150 by price, ANC, battery life and features.', ...canonicalFor(`/${locale}/guides/best-earbuds-under-150`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-under-150`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-under-200/page.js b/app/[locale]/guides/best-earbuds-under-200/page.js
+index c133e11..96d6ac4 100644
+--- a/app/[locale]/guides/best-earbuds-under-200/page.js
++++ b/app/[locale]/guides/best-earbuds-under-200/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -12,7 +12,7 @@ const score = m => Math.min(100, 45 + (m.anc ? 15 : 0) + ((n(m.battery_bud_h) ||
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs à moins de 200 $ en 2026' : 'Best Earbuds Under $200 in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs sans fil à moins de 200 $ selon leurs fonctionnalités et caractéristiques.' : 'Compare the best wireless earbuds under $200 using available features and specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-under-200`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs sans fil à moins de 200 $ selon leurs fonctionnalités et caractéristiques.' : 'Compare the best wireless earbuds under $200 using available features and specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-under-200`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-under-200`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-earbuds-under-50/page.js b/app/[locale]/guides/best-earbuds-under-50/page.js
+index cba9d3b..51c1556 100644
+--- a/app/[locale]/guides/best-earbuds-under-50/page.js
++++ b/app/[locale]/guides/best-earbuds-under-50/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -26,7 +26,7 @@ export async function generateMetadata({ params }) {
+     description: locale === 'fr'
+       ? 'Les meilleurs écouteurs sans fil à moins de 50 $, comparés selon prix, autonomie et fonctionnalités.'
+       : 'The best wireless earbuds under $50, compared by price, battery life and features.',
+-    ...canonicalFor(`/${locale}/guides/best-earbuds-under-50`)
++    ...canonicalFor(`/${locale}/guides/best-earbuds-under-50`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-under-50`, locale), title, description, images: ['/og-image.png'] }
+   };
+ }
+ 
+diff --git a/app/[locale]/guides/best-earbuds-under-75/page.js b/app/[locale]/guides/best-earbuds-under-75/page.js
+index 94729a2..c2e9b47 100644
+--- a/app/[locale]/guides/best-earbuds-under-75/page.js
++++ b/app/[locale]/guides/best-earbuds-under-75/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -12,7 +12,7 @@ const score = (m) => Math.min(100, 45 + (n(m.price) <= 50 ? 18 : 8) + (m.anc ? 1
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const title = locale === 'fr' ? 'Meilleurs écouteurs à moins de 75 $ en 2026' : 'Best Earbuds Under $75 in 2026';
+-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs sans fil à moins de 75 $ selon prix, autonomie et fonctionnalités.' : 'Compare the best wireless earbuds under $75 for price, battery life and features.', ...canonicalFor(`/${locale}/guides/best-earbuds-under-75`) };
++  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs sans fil à moins de 75 $ selon prix, autonomie et fonctionnalités.' : 'Compare the best wireless earbuds under $75 for price, battery life and features.', ...canonicalFor(`/${locale}/guides/best-earbuds-under-75`), openGraph: { ...ogDefaults(`/${locale}/guides/best-earbuds-under-75`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function Page({ params }) {
+diff --git a/app/[locale]/guides/best-noise-cancelling-earbuds/page.js b/app/[locale]/guides/best-noise-cancelling-earbuds/page.js
+index 42e08ee..23428b7 100644
+--- a/app/[locale]/guides/best-noise-cancelling-earbuds/page.js
++++ b/app/[locale]/guides/best-noise-cancelling-earbuds/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -41,7 +41,7 @@ export async function generateMetadata({ params }) {
+   const description = locale === 'fr'
+     ? 'Comparez les meilleurs écouteurs ANC en 2026 selon les données de réduction de bruit, les environnements, l’autonomie, le poids et le prix.'
+     : 'Compare the best noise cancelling earbuds in 2026 using ANC intelligence, environment scores, battery life, weight and price.';
+-  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-noise-cancelling-earbuds`) };
++  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-noise-cancelling-earbuds`), openGraph: { ...ogDefaults(`/${locale}/guides/best-noise-cancelling-earbuds`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function BestNoiseCancellingEarbudsPage({ params }) {
+diff --git a/app/[locale]/guides/best-wireless-earbuds/page.js b/app/[locale]/guides/best-wireless-earbuds/page.js
+index 079a3d1..8388634 100644
+--- a/app/[locale]/guides/best-wireless-earbuds/page.js
++++ b/app/[locale]/guides/best-wireless-earbuds/page.js
+@@ -1,6 +1,6 @@
+ import Link from 'next/link';
+ import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { Footer } from '@/components/UI';
+ import AdSlot from '@/components/AdSlot';
+ 
+@@ -76,7 +76,7 @@ export async function generateMetadata({ params }) {
+   const description = locale === 'fr'
+     ? 'Comparez les meilleurs écouteurs sans fil en 2026 selon l’ANC, l’autonomie, le poids, la résistance à l’eau, les fonctionnalités et le prix.'
+     : 'Discover the best wireless earbuds in 2026, compared for ANC, battery life, weight, water resistance, features and price.';
+-  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-wireless-earbuds`) };
++  return { title: `${title} | EarbudsTimeline`, description, ...canonicalFor(`/${locale}/guides/best-wireless-earbuds`), openGraph: { ...ogDefaults(`/${locale}/guides/best-wireless-earbuds`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function BestWirelessEarbudsPage({ params }) {
+diff --git a/app/[locale]/guides/page.js b/app/[locale]/guides/page.js
+index 2f8d3c5..8e0e8fc 100644
+--- a/app/[locale]/guides/page.js
++++ b/app/[locale]/guides/page.js
+@@ -1,5 +1,5 @@
+ import Link from 'next/link';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import { GUIDE_PAGES } from '@/lib/guidePages';
+ import AdSlot from '@/components/AdSlot';
+ import { Footer } from '@/components/UI';
+@@ -111,7 +111,7 @@ export async function generateMetadata({ params }) {
+   return {
+     title: `${title} | EarbudsTimeline`,
+     description: locale === 'fr' ? 'Tous nos guides pour trouver les meilleurs écouteurs sans fil selon votre budget, vos appareils et votre usage.' : 'All our guides for finding the best wireless earbuds by budget, device and use case.',
+-    ...canonicalFor(`/${locale}/guides`),
++    ...canonicalFor(`/${locale}/guides`), openGraph: { ...ogDefaults(`/${locale}/guides`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/layout.js b/app/[locale]/layout.js
+index d873a6f..52533ba 100644
+--- a/app/[locale]/layout.js
++++ b/app/[locale]/layout.js
+@@ -8,7 +8,7 @@ import Header from '@/components/Header';
+ import MicrosoftClarity from '@/components/MicrosoftClarity';
+ import GoogleAnalytics from '@/components/GoogleAnalytics';
+ import SocialBar from '@/components/SocialBar';
+-import { SITE_URL } from '@/lib/seo';
++import { SITE_URL, ogDefaults } from '@/lib/seo';
+ 
+ export function generateStaticParams() {
+   return routing.locales.map((locale) => ({ locale }));
+@@ -31,6 +31,7 @@ export async function generateMetadata({ params }) {
+       languages: { en: '/en', fr: '/fr' },
+     },
+     openGraph: {
++      ...ogDefaults(`/${locale}`, locale),
+       title: 'EarbudsTimeline',
+       description: isEn
+         ? 'The complete history of wireless earbuds, brand by brand.'
+diff --git a/app/[locale]/marques/[brand]/[gamme]/page.js b/app/[locale]/marques/[brand]/[gamme]/page.js
+index 710e6cf..dbf5199 100644
+--- a/app/[locale]/marques/[brand]/[gamme]/page.js
++++ b/app/[locale]/marques/[brand]/[gamme]/page.js
+@@ -11,7 +11,7 @@ import { findRelatedArticles } from '@/lib/relatedArticles';
+ import RelatedArticles from '@/components/RelatedArticles';
+ import { fmtDate, fmtMoney, yearOf, pct } from '@/lib/format';
+ import { slugify } from '@/lib/slug';
+-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, JsonLd, canonicalFor } from '@/lib/seo';
++import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, JsonLd, canonicalFor, ogDefaults } from '@/lib/seo';
+ import BrandBadge from '@/components/BrandBadge';
+ import EarbudsIcon from '@/components/EarbudsIcon';
+ import StatTile from '@/components/StatTile';
+@@ -56,9 +56,10 @@ export async function generateMetadata({ params }) {
+     description,
+     ...canonicalFor(`/${locale}/marques/${brandId}/${gammeSlug}`),
+     openGraph: {
++      ...ogDefaults(`/${locale}/marques/${brandId}/${gammeSlug}`, locale),
+       title: `${brand.name} ${gammeName} — EarbudsTimeline`,
+       description: `${models.length} model${models.length > 1 ? 's' : ''} tracked, from ${period}.`,
+-      images: first.image_url ? [first.image_url] : undefined,
++      images: [first.image_url || '/og-image.png'],
+     },
+   };
+ }
+diff --git a/app/[locale]/marques/[brand]/page.js b/app/[locale]/marques/[brand]/page.js
+index 0198454..c7d354c 100644
+--- a/app/[locale]/marques/[brand]/page.js
++++ b/app/[locale]/marques/[brand]/page.js
+@@ -6,7 +6,7 @@ import { getBrandById, getEarbudsByBrand, getBrands } from '@/lib/queries';
+ import { computeStats } from '@/lib/stats';
+ import { slugify } from '@/lib/slug';
+ import { yearOf } from '@/lib/format';
+-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
++import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, ogDefaults, JsonLd } from '@/lib/seo';
+ import ModelCard from '@/components/ModelCard';
+ import BrandBadge from '@/components/BrandBadge';
+ import StatTile from '@/components/StatTile';
+@@ -47,9 +47,10 @@ export async function generateMetadata({ params }) {
+     description,
+     ...canonicalFor(`/${locale}/marques/${brand.id}`),
+     openGraph: {
++      ...ogDefaults(`/${locale}/marques/${brand.id}`, locale),
+       title: `${brand.name} — EarbudsTimeline`,
+       description: `${models.length} ${brand.name} earbuds tracked, from ${period}.`,
+-      images: brand.image_url ? [brand.image_url] : undefined,
++      images: [brand.image_url || '/og-image.png'],
+     },
+   };
+ }
+diff --git a/app/[locale]/marques/page.js b/app/[locale]/marques/page.js
+index 891eccf..94ef252 100644
+--- a/app/[locale]/marques/page.js
++++ b/app/[locale]/marques/page.js
+@@ -1,6 +1,6 @@
+ import { Link } from '@/i18n/navigation';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
++import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import BrandBadge from '@/components/BrandBadge';
+ import AdSlot from '@/components/AdSlot';
+ import { Footer } from '@/components/UI';
+@@ -15,7 +15,7 @@ export async function generateMetadata({ params }) {
+       locale === 'en'
+         ? 'Every wireless earbuds brand tracked on EarbudsTimeline, from the biggest names to niche makers.'
+         : "Toutes les marques d'écouteurs sans fil référencées sur EarbudsTimeline, des plus grandes aux plus confidentielles.",
+-    ...canonicalFor(`/${locale}/marques`),
++    ...canonicalFor(`/${locale}/marques`), openGraph: { ...ogDefaults(`/${locale}/marques`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/technologies/anc/page.js b/app/[locale]/technologies/anc/page.js
+index d9ba39a..5c5e8ae 100644
+--- a/app/[locale]/technologies/anc/page.js
++++ b/app/[locale]/technologies/anc/page.js
+@@ -1,7 +1,7 @@
+ import { getTranslations } from 'next-intl/server';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+ import TechHubPage from '@/components/TechHubPage';
+-import { canonicalFor } from '@/lib/seo';
++import { canonicalFor, ogDefaults } from '@/lib/seo';
+ 
+ export const revalidate = 3600;
+ 
+@@ -10,10 +10,13 @@ export async function generateMetadata({ params }) {
+   const models = await getAllEarbuds();
+   const count = models.filter((m) => m.anc).length;
+   const t = await getTranslations({ locale, namespace: 'tech' });
++  const title = `${t('ancTitle')} — ${count} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`;
++  const description = t('ancIntro', { count, brandCount: new Set(models.filter((m) => m.anc).map((m) => m.brand_id)).size });
+   return {
++    title,
++    description,
+     ...canonicalFor(`/${locale}/technologies/anc`),
+-    title: `${t('ancTitle')} — ${count} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`,
+-    description: t('ancIntro', { count, brandCount: new Set(models.filter((m) => m.anc).map((m) => m.brand_id)).size }),
++    openGraph: { ...ogDefaults(`/${locale}/technologies/anc`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/technologies/bluetooth/[version]/page.js b/app/[locale]/technologies/bluetooth/[version]/page.js
+index 17bd168..6fc9eff 100644
+--- a/app/[locale]/technologies/bluetooth/[version]/page.js
++++ b/app/[locale]/technologies/bluetooth/[version]/page.js
+@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+ import { getBluetoothVersionList } from '@/lib/tech';
+ import TechHubPage from '@/components/TechHubPage';
+-import { canonicalFor } from '@/lib/seo';
++import { canonicalFor, ogDefaults } from '@/lib/seo';
+ 
+ export const revalidate = 3600;
+ 
+@@ -25,10 +25,13 @@ export async function generateMetadata({ params }) {
+   const t = await getTranslations({ locale, namespace: 'tech' });
+   const brandCount = new Set(models.filter((m) => m.bluetooth === version).map((m) => m.brand_id)).size;
+ 
++  const title = `${t('bluetoothTitle', { version })} — ${count} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`;
++  const description = t('bluetoothIntro', { version, count, brandCount });
+   return {
+-    title: `${t('bluetoothTitle', { version })} — ${count} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`,
+-    description: t('bluetoothIntro', { version, count, brandCount }),
++    title,
++    description,
+     ...canonicalFor(`/${locale}/technologies/bluetooth/${version}`),
++    openGraph: { ...ogDefaults(`/${locale}/technologies/bluetooth/${version}`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/technologies/codecs/[codec]/page.js b/app/[locale]/technologies/codecs/[codec]/page.js
+index e907aea..1b6222e 100644
+--- a/app/[locale]/technologies/codecs/[codec]/page.js
++++ b/app/[locale]/technologies/codecs/[codec]/page.js
+@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+ import { getCodecList, modelHasCodec } from '@/lib/tech';
+ import TechHubPage from '@/components/TechHubPage';
+-import { canonicalFor } from '@/lib/seo';
++import { canonicalFor, ogDefaults } from '@/lib/seo';
+ 
+ export const revalidate = 3600;
+ 
+@@ -34,10 +34,13 @@ export async function generateMetadata({ params }) {
+   const t = await getTranslations({ locale, namespace: 'tech' });
+   const brandCount = new Set(models.map((m) => m.brand_id)).size;
+ 
++  const title = `${t('codecTitle', { name })} — ${models.length} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`;
++  const description = t('codecIntro', { name, count: models.length, brandCount });
+   return {
+-    title: `${t('codecTitle', { name })} — ${models.length} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`,
+-    description: t('codecIntro', { name, count: models.length, brandCount }),
++    title,
++    description,
+     ...canonicalFor(`/${locale}/technologies/codecs/${codec}`),
++    openGraph: { ...ogDefaults(`/${locale}/technologies/codecs/${codec}`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/technologies/multipoint/page.js b/app/[locale]/technologies/multipoint/page.js
+index 65b0d7f..3565e30 100644
+--- a/app/[locale]/technologies/multipoint/page.js
++++ b/app/[locale]/technologies/multipoint/page.js
+@@ -1,7 +1,7 @@
+ import { getTranslations } from 'next-intl/server';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+ import TechHubPage from '@/components/TechHubPage';
+-import { canonicalFor } from '@/lib/seo';
++import { canonicalFor, ogDefaults } from '@/lib/seo';
+ 
+ export const revalidate = 3600;
+ 
+@@ -10,10 +10,13 @@ export async function generateMetadata({ params }) {
+   const models = await getAllEarbuds();
+   const count = models.filter((m) => m.multipoint).length;
+   const t = await getTranslations({ locale, namespace: 'tech' });
++  const title = `${t('multipointTitle')} — ${count} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`;
++  const description = t('multipointIntro', { count, brandCount: new Set(models.filter((m) => m.multipoint).map((m) => m.brand_id)).size });
+   return {
+     ...canonicalFor(`/${locale}/technologies/multipoint`),
+-    title: `${t('multipointTitle')} — ${count} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`,
+-    description: t('multipointIntro', { count, brandCount: new Set(models.filter((m) => m.multipoint).map((m) => m.brand_id)).size }),
++    title,
++    description,
++    openGraph: { ...ogDefaults(`/${locale}/technologies/multipoint`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/technologies/page.js b/app/[locale]/technologies/page.js
+index 4296db6..2fc8a1a 100644
+--- a/app/[locale]/technologies/page.js
++++ b/app/[locale]/technologies/page.js
+@@ -2,7 +2,7 @@ import { Link } from '@/i18n/navigation';
+ import { getTranslations } from 'next-intl/server';
+ import { getAllEarbuds } from '@/lib/queries';
+ import { getBluetoothVersionList, getCodecList } from '@/lib/tech';
+-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
++import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import AdSlot from '@/components/AdSlot';
+ import { Footer } from '@/components/UI';
+ 
+@@ -11,10 +11,13 @@ export const revalidate = 3600;
+ export async function generateMetadata({ params }) {
+   const { locale } = params;
+   const t = await getTranslations({ locale, namespace: 'tech' });
++  const title = `${t('hubTitle')} — ANC, Bluetooth, USB-C, codecs | EarbudsTimeline`;
++  const description = t('hubIntro');
+   return {
+-    title: `${t('hubTitle')} — ANC, Bluetooth, USB-C, codecs | EarbudsTimeline`,
+-    description: t('hubIntro'),
++    title,
++    description,
+     ...canonicalFor(`/${locale}/technologies`),
++    openGraph: { ...ogDefaults(`/${locale}/technologies`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/technologies/usb-c/page.js b/app/[locale]/technologies/usb-c/page.js
+index c557aeb..39dbcda 100644
+--- a/app/[locale]/technologies/usb-c/page.js
++++ b/app/[locale]/technologies/usb-c/page.js
+@@ -1,7 +1,7 @@
+ import { getTranslations } from 'next-intl/server';
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+ import TechHubPage from '@/components/TechHubPage';
+-import { canonicalFor } from '@/lib/seo';
++import { canonicalFor, ogDefaults } from '@/lib/seo';
+ 
+ export const revalidate = 3600;
+ 
+@@ -10,10 +10,13 @@ export async function generateMetadata({ params }) {
+   const models = await getAllEarbuds();
+   const count = models.filter((m) => m.usb_c).length;
+   const t = await getTranslations({ locale, namespace: 'tech' });
++  const title = `${t('usbCTitle')} — ${count} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`;
++  const description = t('usbCIntro', { count, brandCount: new Set(models.filter((m) => m.usb_c).map((m) => m.brand_id)).size });
+   return {
++    title,
++    description,
+     ...canonicalFor(`/${locale}/technologies/usb-c`),
+-    title: `${t('usbCTitle')} — ${count} ${locale === 'en' ? 'models' : 'modèles'} | EarbudsTimeline`,
+-    description: t('usbCIntro', { count, brandCount: new Set(models.filter((m) => m.usb_c).map((m) => m.brand_id)).size }),
++    openGraph: { ...ogDefaults(`/${locale}/technologies/usb-c`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/timeline/page.js b/app/[locale]/timeline/page.js
+index fe8d7d3..555278e 100644
+--- a/app/[locale]/timeline/page.js
++++ b/app/[locale]/timeline/page.js
+@@ -1,5 +1,5 @@
+ import { getAllEarbuds, getBrands } from '@/lib/queries';
+-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
++import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd, ogDefaults } from '@/lib/seo';
+ import InteractiveTimeline from '@/components/InteractiveTimeline';
+ import EvolutionExplorer from '@/components/EvolutionExplorer';
+ import BrandComparisonChart from '@/components/BrandComparisonChart';
+@@ -15,7 +15,7 @@ export async function generateMetadata({ params }) {
+       locale === 'en'
+         ? 'The full interactive history of wireless earbuds, filterable by brand, ANC and Bluetooth version, plus how battery life, weight and price evolved over time.'
+         : "L'historique interactif complet des écouteurs sans fil, filtrable par marque, ANC et version Bluetooth, avec l'évolution de l'autonomie, du poids et du prix dans le temps.",
+-    ...canonicalFor(`/${locale}/timeline`),
++    ...canonicalFor(`/${locale}/timeline`), openGraph: { ...ogDefaults(`/${locale}/timeline`, locale), title, description, images: ['/og-image.png'] },
+   };
+ }
+ 
+diff --git a/app/[locale]/trouver-mes-ecouteurs/page.js b/app/[locale]/trouver-mes-ecouteurs/page.js
+index 22d7425..57b9614 100644
+--- a/app/[locale]/trouver-mes-ecouteurs/page.js
++++ b/app/[locale]/trouver-mes-ecouteurs/page.js
+@@ -1,6 +1,6 @@
+ import { getTranslations } from 'next-intl/server';
+ import { getAllEarbuds, getBrands, getAncScores } from '@/lib/queries';
+-import { canonicalFor, JsonLd } from '@/lib/seo';
++import { canonicalFor, ogDefaults, JsonLd } from '@/lib/seo';
+ import TimelineIntelligenceFinder from '@/components/TimelineIntelligenceFinder';
+ import { Footer } from '@/components/UI';
+ 
+@@ -15,7 +15,7 @@ export async function generateMetadata({ params }) {
+   const description = isEn
+     ? 'Find the best wireless earbuds for your budget and priorities, with evidence-based ANC scores for Travel, Office, Traffic and Voices.'
+     : 'Trouvez les meilleurs écouteurs sans fil selon votre budget et vos priorités, avec des scores ANC fondés sur les preuves pour Voyage, Bureau, Trafic et Voix.';
+-  return { title, description, ...canonicalFor(`/${locale}/trouver-mes-ecouteurs`), openGraph: { title, description } };
++  return { title, description, ...canonicalFor(`/${locale}/trouver-mes-ecouteurs`), openGraph: { ...ogDefaults(`/${locale}/trouver-mes-ecouteurs`, locale), title, description, images: ['/og-image.png'] } };
+ }
+ 
+ export default async function FinderPage({ params }) {
+diff --git a/components/Header.js b/components/Header.js
+index 5e73251..69a65e5 100644
+--- a/components/Header.js
++++ b/components/Header.js
+@@ -22,7 +22,7 @@ export default function Header({ models = [], brands = [] }) {
+     <header className="py-3 sm:py-5 mb-6 sm:mb-8 sticky top-0 bg-page/95 backdrop-blur z-20 border-b border-line/40 flex flex-col gap-2.5">
+       <div className="flex items-center justify-between gap-3 sm:gap-6">
+         <Link href="/" className="flex items-center gap-2.5 shrink-0">
+-          <Image src="/logo-icon.png" alt="" width={28} height={28} priority />
++          <Image src="/logo-icon.png" alt="EarbudsTimeline" width={28} height={28} priority />
+           <span className="font-display font-bold text-lg hidden xs:inline">EarbudsTimeline</span>
+           <span className="sr-only xs:hidden">EarbudsTimeline</span>
+         </Link>
+diff --git a/lib/seo.js b/lib/seo.js
+index a51b671..f506164 100644
+--- a/lib/seo.js
++++ b/lib/seo.js
+@@ -25,6 +25,20 @@ export function canonicalFor(localizedPath) {
+   };
+ }
+ 
++// Champs Open Graph communs à toute page (url/type/siteName/locale) — Ahrefs signale
++// "Open Graph tags incomplete" dès qu'un de ces champs manque, et aucune page ne les
++// posait jusqu'ici (seuls title/description/images étaient définis au cas par cas).
++// `localizedPath` inclut déjà le préfixe de langue, comme pour canonicalFor.
++export function ogDefaults(localizedPath, locale, type = 'website') {
++  const cleanPath = localizedPath.startsWith('/') ? localizedPath : `/${localizedPath}`;
++  return {
++    url: `${SITE_URL}${cleanPath}`,
++    type,
++    siteName: 'EarbudsTimeline',
++    locale: locale === 'fr' ? 'fr_FR' : 'en_US',
++  };
++}
++
+ export function buildBreadcrumbJsonLd(items, locale) {
+   return {
+     '@context': 'https://schema.org',

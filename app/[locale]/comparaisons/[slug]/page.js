@@ -6,27 +6,13 @@ import { ShoppingCart, ExternalLink } from 'lucide-react';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { fmtH, fmtG, fmtMoney, yearOf } from '@/lib/format';
 import { parseComparisonSlug, buildComparisonSlug, isCanonicalSlug } from '@/lib/compareSlug';
-import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
-import { routing } from '@/i18n/routing';
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, ogDefaults, JsonLd } from '@/lib/seo';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import EntityGraph from '@/components/EntityGraph';
 import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
-
-// Mêmes paires que celles listées dans app/sitemap.js (getGenerationalPairs +
-// getRivalPairs, plafonné à 40) — pré-générées au build au lieu d'un rendu à
-// la demande. C'est la plus grosse famille de pages du site (~470 paires ×
-// 2 langues), et ce sont exactement les pages sur lesquelles le trafic SEO
-// long-tail atterrit directement.
-export async function generateStaticParams() {
-  const [models] = await Promise.all([getAllEarbuds()]);
-  const pairs = [...getGenerationalPairs(models), ...getRivalPairs(models, 40)];
-  const slugs = new Set(pairs.map(({ a, b }) => buildComparisonSlug(a.id, b.id)));
-  return routing.locales.flatMap((locale) => [...slugs].map((slug) => ({ locale, slug })));
-}
 
 async function loadPair(slug) {
   const parsed = parseComparisonSlug(slug);
@@ -71,8 +57,10 @@ export async function generateMetadata({ params }) {
     description,
     ...canonicalFor(`/${locale}/comparaisons/${buildComparisonSlug(a.id, b.id)}`),
     openGraph: {
+      ...ogDefaults(`/${locale}/comparaisons/${buildComparisonSlug(a.id, b.id)}`, locale),
       title: `${a.name} vs ${b.name}`,
       description: locale === 'en' ? `Full comparison between the ${a.name} and the ${b.name}.` : `Comparatif complet entre le ${a.name} et le ${b.name}.`,
+      images: [a.image_url || b.image_url || '/og-image.png'],
     },
   };
 }
