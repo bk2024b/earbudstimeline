@@ -71,7 +71,7 @@ export default function NavDropdown({ label, items, className = '' }) {
         <div
           id={menuId}
           role="menu"
-          className="absolute left-0 top-full mt-2 min-w-[180px] rounded-base border border-line bg-panel py-1.5 shadow-glow z-30"
+          className="absolute left-0 top-full mt-2.5 min-w-[200px] rounded-base border border-line bg-panel/95 backdrop-blur-xl py-1.5 shadow-2xl z-50 animate-fadeIn"
         >
           {items.map(({ href, label: itemLabel, description }) => {
             const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -80,12 +80,13 @@ export default function NavDropdown({ label, items, className = '' }) {
                 key={href}
                 href={href}
                 role="menuitem"
-                className={`block px-3.5 py-2 text-sm transition-colors ${
-                  active ? 'text-accent' : 'text-dim hover:text-fg'
+                onClick={() => setOpen(false)}
+                className={`block px-4 py-2.5 text-xs uppercase tracking-wider font-display transition-colors ${
+                  active ? 'text-accent font-semibold bg-accent/5' : 'text-dim hover:text-fg hover:bg-panel2/60'
                 }`}
               >
-                <span className="block font-medium">{itemLabel}</span>
-                {description && <span className="block text-xs text-dim mt-0.5">{description}</span>}
+                <span className="block">{itemLabel}</span>
+                {description && <span className="block text-[10px] text-dim normal-case font-normal mt-0.5">{description}</span>}
               </Link>
             );
           })}

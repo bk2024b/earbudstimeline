@@ -39,7 +39,7 @@ export default function Header() {
           <span className="sr-only xs:hidden">EarbudsTimeline</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-2 lg:gap-5 text-xs uppercase tracking-wider font-display text-dim min-w-0 flex-1 justify-center overflow-x-auto py-1 no-scrollbar">
+        <nav className="hidden md:flex items-center gap-2 lg:gap-5 text-xs uppercase tracking-wider font-display text-dim min-w-0 flex-1 justify-center py-1">
           <Link href="/trouver-mes-ecouteurs" className={`transition-all flex items-center gap-1.5 px-3 py-1.5 shrink-0 rounded-base ${isNavActive('/trouver-mes-ecouteurs') ? 'bg-accent text-ink font-semibold shadow-glow' : 'text-accent hover:text-fg bg-accent/10 border border-accent/30'}`}>
             <Sparkles className="w-3.5 h-3.5" />
             <span>{t('finder')}</span>
