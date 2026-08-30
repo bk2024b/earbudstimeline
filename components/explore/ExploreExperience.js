@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } from 'react';
-import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight, Play, Pause, RefreshCw, LayoutGrid } from 'lucide-react';
 import { generateStory, getBrandStateAtYear, buildCompareData } from '@/lib/brandJourney';
 import './explore.css';
 
@@ -14,6 +15,46 @@ const MODES = [
 ];
 
 const SLIDE_DURATION_MS = 5200;
+
+// Card footprint — must match the width/height/margin set in explore.css
+// for .brand-card, since the spacing math below is computed from these.
+const CARD_WIDTH = 180;
+const CARD_HEIGHT = 245;
+const CARD_GAP = 64; // minimum breathing room between two card edges
+
+/**
+ * Rotational mode: cards sit on a full 360° ring. The radius has to grow
+ * with the brand count, or a fixed radius makes cards overlap once there
+ * are more than ~8-10 of them (real production has ~22 active brands).
+ * Solves for the radius that guarantees a minimum chord distance between
+ * adjacent card centers.
+ */
+function ringRadius(count) {
+  if (count <= 1) return 420;
+  const desiredChord = CARD_WIDTH + CARD_GAP;
+  const raw = desiredChord / (2 * Math.sin(Math.PI / count));
+  return Math.max(420, Math.min(1100, raw));
+}
+
+function rotationalTransform(offset, count) {
+  const angle = offset * (360 / count);
+  const radius = ringRadius(count);
+  return `rotateY(${angle}deg) translateZ(${radius}px)`;
+}
+
+/**
+ * Cover-flow mode: a genuinely different layout, not the same ring with a
+ * smaller angle. Cards translate flat along X with a fixed step and tilt,
+ * completely independent of how many brands there are — so it never
+ * crowds regardless of catalog size.
+ */
+function coverTransform(offset) {
+  if (offset === 0) return 'translateX(0px) translateZ(60px) rotateY(0deg)';
+  const dir = offset > 0 ? 1 : -1;
+  const mag = Math.min(Math.abs(offset), 6);
+  const step = CARD_WIDTH + CARD_GAP * 0.7;
+  return `translateX(${dir * mag * step}px) translateZ(-160px) rotateY(${-dir * 34}deg)`;
+}
 
 // -----------------------------------------------------------------------
 // Small presentational bits
@@ -335,13 +376,13 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
               if (offset > count / 2) offset -= count;
               if (offset < -count / 2) offset += count;
 
-              const isRotational = universeSubMode === 'rotational';
-              const angle = isRotational ? offset * (360 / count) : offset * 22;
-              const radius = isRotational ? 380 : 320;
               const abs = Math.abs(offset);
               const scale = abs === 0 ? 1 : abs === 1 ? 0.82 : abs === 2 ? 0.68 : 0.55;
-              const opacity = abs === 0 ? 1 : abs === 1 ? 0.55 : abs === 2 ? 0.28 : 0.1;
+              const opacity = abs === 0 ? 1 : abs === 1 ? 0.6 : abs === 2 ? 0.32 : 0.12;
               const blur = abs === 0 ? 0 : abs === 1 ? 1 : 2;
+              const baseTransform = universeSubMode === 'rotational'
+                ? rotationalTransform(offset, count)
+                : coverTransform(offset);
 
               return (
                 <div
@@ -350,18 +391,22 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
                   role="option"
                   aria-selected={offset === 0}
                   style={{
-                    '--angle': `${angle}deg`,
-                    '--radius': `${radius}px`,
-                    '--scale': scale,
+                    transform: `${baseTransform} scale(${scale})`,
                     '--opacity': opacity,
                     '--blur': `${blur}px`,
                     '--z': 100 - abs,
                   }}
                   onClick={() => (offset === 0 ? openHistory(i) : goToBrand(i))}
                 >
-                  <div className="bc-swatch" style={{ background: `${journey.color}22`, border: `1px solid ${journey.color}55`, color: journey.color }}>
-                    {journey.name.slice(0, 2).toUpperCase()}
-                  </div>
+                  {journey.imageUrl ? (
+                    <div className="bc-logo-wrap">
+                      <Image src={journey.imageUrl} alt={journey.name} fill sizes="44px" className="bc-logo-img" />
+                    </div>
+                  ) : (
+                    <div className="bc-swatch" style={{ background: `${journey.color}22`, border: `1px solid ${journey.color}55`, color: journey.color }}>
+                      {journey.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
                   <div className="bc-name">{journey.name}</div>
                   <div className="bc-meta">
                     {journey.totalCount} {fr ? 'modèles' : 'models'} · {journey.periodStart}–{journey.periodEnd}
@@ -377,12 +422,12 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
             <ChevronLeft size={16} />
           </button>
           <button
-            className="nav-circle"
+            className="mode-toggle-btn"
             onClick={() => setUniverseSubMode((s) => (s === 'rotational' ? 'cover' : 'rotational'))}
-            aria-label={fr ? 'Changer de vue' : 'Switch view'}
-            title={universeSubMode === 'rotational' ? 'Rotational' : 'Cover flow'}
+            aria-label={fr ? 'Changer de mode de défilement' : 'Switch scrolling mode'}
           >
-            {universeSubMode === 'rotational' ? '◎' : '▭'}
+            {universeSubMode === 'rotational' ? <RefreshCw size={13} /> : <LayoutGrid size={13} />}
+            <span>{universeSubMode === 'rotational' ? (fr ? 'Rotatif' : 'Rotational') : (fr ? 'Défilement' : 'Cover flow')}</span>
           </button>
           <button className="open-journey-btn" onClick={() => openHistory()}>
             {fr ? "Voir l'histoire" : 'See the story'}

@@ -90,17 +90,16 @@
 
 .brand-card {
   position: absolute; left: 50%; top: 50%;
-  width: 200px; height: 270px; margin: -135px 0 0 -100px;
+  width: 180px; height: 245px; margin: -122px 0 0 -90px;
   border-radius: 22px; overflow: hidden;
   background: linear-gradient(150deg, #141416, #0A0A0B 80%);
   border: 1px solid #27272A;
   box-shadow: 0 30px 60px rgba(0,0,0,.5);
   backface-visibility: hidden;
-  transform: rotateY(var(--angle, 0deg)) translateZ(var(--radius, 380px)) scale(var(--scale, .82));
   opacity: var(--opacity, .5);
   filter: blur(var(--blur, 1px));
   z-index: var(--z, 1);
-  transition: opacity .3s ease, filter .3s ease, border-color .3s ease, box-shadow .3s ease;
+  transition: transform .55s cubic-bezier(.22,1,.36,1), opacity .4s ease, filter .4s ease, border-color .3s ease, box-shadow .3s ease;
 }
 .brand-card.active {
   border-color: rgba(34,208,122,.55);
@@ -111,12 +110,23 @@
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display); font-weight: 700; font-size: 15px;
 }
-.brand-card .bc-name { position: absolute; left: 22px; right: 22px; bottom: 52px; font-family: var(--font-display); font-weight: 600; font-size: 21px; letter-spacing: -.6px; }
-.brand-card .bc-meta { position: absolute; left: 22px; right: 22px; bottom: 24px; font-family: var(--font-mono); font-size: 9px; color: #9A9AA3; letter-spacing: .8px; }
+.brand-card .bc-logo-wrap {
+  position: absolute; left: 22px; top: 22px; width: 44px; height: 44px; border-radius: 13px;
+  background: #1C1C1F; border: 1px solid #27272A; padding: 7px;
+}
+.brand-card .bc-logo-img { object-fit: contain; }
+.brand-card .bc-name { position: absolute; left: 22px; right: 22px; bottom: 52px; font-family: var(--font-display); font-weight: 600; font-size: 19px; letter-spacing: -.6px; }
+.brand-card .bc-meta { position: absolute; left: 22px; right: 22px; bottom: 24px; font-family: var(--font-mono); font-size: 8.5px; color: #9A9AA3; letter-spacing: .8px; }
 
-.universe-controls { position: absolute; bottom: 12%; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 20px; }
+.universe-controls { position: absolute; bottom: 12%; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
 .nav-circle { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #27272A; display: flex; align-items: center; justify-content: center; color: #9A9AA3; transition: .2s; }
 .nav-circle:hover { border-color: #22D07A; color: #22D07A; }
+.mode-toggle-btn {
+  display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px; border-radius: 20px;
+  border: 1px solid #27272A; color: #9A9AA3; transition: .2s;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+}
+.mode-toggle-btn:hover { border-color: #22D07A; color: #22D07A; }
 .open-journey-btn {
   font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase;
   background: #22D07A; color: #06130C; font-weight: 600; padding: 12px 26px; border-radius: 30px; transition: .2s;
