@@ -122,35 +122,22 @@ function GlobalSearchModal() {
       {/* Overlay plein écran par-dessus la page actuelle (reste sur l'URL
           courante, se ferme au clic/Esc — pas de navigation vers une page
           séparée, voir décision produit). */}
+      {/* Overlay modal palette — z-[100], positionné plus bas sous le header */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex flex-col bg-page/97 backdrop-blur-md animate-fadeIn overflow-y-auto"
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex justify-center items-start pt-16 sm:pt-24 px-4 overflow-y-auto animate-fadeIn"
           onClick={() => setIsOpen(false)}
         >
-          <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-14" onClick={(e) => e.stopPropagation()}>
-            {/* Barre du haut : logo + fermer */}
-            <div className="flex items-center justify-between mb-10 sm:mb-14">
-              <span className="font-display font-bold text-base sm:text-lg">EarbudsTimeline</span>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-1.5 text-dim hover:text-fg text-xs sm:text-sm transition-colors"
-              >
-                <X className="w-4 h-4" />
-                <span className="path-indicator">ESC</span>
-              </button>
-            </div>
-
-            {/* Headline + champ de recherche */}
-            <h1 className="font-display font-bold text-[2rem] sm:text-[3.5rem] leading-[1.05] mb-6 sm:mb-8">
-              {t('overlayTitle')}
-            </h1>
-
-            <div className="flex items-center gap-3 border-b border-line pb-3.5 mb-8 sm:mb-12">
+          <div
+            className="hardware-card bg-panel/95 border border-line/80 shadow-2xl w-full max-w-2xl p-5 sm:p-6 mb-12"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Barre de recherche dans le panneau flottant */}
+            <div className="flex items-center gap-3 border-b border-line pb-3.5 mb-4">
               {isLoading ? (
-                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-accent shrink-0 animate-spin" />
+                <Loader2 className="w-5 h-5 text-accent shrink-0 animate-spin" />
               ) : (
-                <Search className="w-5 h-5 sm:w-6 sm:h-6 text-accent shrink-0" />
+                <Search className="w-5 h-5 text-accent shrink-0" />
               )}
               <input
                 ref={inputRef}
@@ -158,35 +145,39 @@ function GlobalSearchModal() {
                 onChange={(e) => setQ(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={t('placeholder')}
-                className="flex-1 bg-transparent text-lg sm:text-2xl font-display text-fg placeholder:text-dim outline-none focus-visible:ring-0"
+                className="flex-1 bg-transparent text-base sm:text-lg font-display text-fg placeholder:text-dim outline-none focus-visible:ring-0"
               />
               {q && (
                 <button type="button" onClick={() => setQ('')} className="text-dim hover:text-fg p-1 shrink-0">
                   <X className="w-4 h-4" />
                 </button>
               )}
-              <kbd className="hidden sm:inline-block font-mono text-[10px] bg-panel border border-line px-2 py-0.5 rounded text-dim shrink-0">
-                ⌘K
-              </kbd>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-1 text-dim hover:text-fg text-xs font-mono px-2 py-1 rounded-base bg-panel2 border border-line transition-colors shrink-0"
+              >
+                <span>ESC</span>
+              </button>
             </div>
 
-            {/* Résultats */}
+            {/* Résultats ou suggestions */}
             {q.trim() && !isLoading && results.length === 0 && (
-              <div className="text-dim text-sm py-8">
+              <div className="text-dim text-xs sm:text-sm py-8 text-center font-mono">
                 Aucun écouteur trouvé pour « {q} ».
               </div>
             )}
 
             {!q.trim() && (
-              <div className="text-dim text-sm py-4">
+              <div className="text-dim text-xs py-4">
                 Tapez le nom d&apos;un modèle (ex : <i>AirPods Pro, WF-1000XM5, Galaxy Buds</i>) ou d&apos;une marque…
               </div>
             )}
 
             {results.length > 0 && (
-              <div>
-                <div className="path-indicator text-dim mb-4">Earbuds</div>
-                <div className="flex flex-col divide-y divide-line">
+              <div className="max-h-[55vh] overflow-y-auto pr-1">
+                <div className="path-indicator text-accent text-[11px] mb-2">Résultats ({results.length})</div>
+                <div className="flex flex-col divide-y divide-line/40">
                   {results.map((m, idx) => {
                     const isSelected = idx === selectedIndex;
                     return (
@@ -194,8 +185,8 @@ function GlobalSearchModal() {
                         key={m.id}
                         onClick={() => handleSelect(m)}
                         onMouseEnter={() => setSelectedIndex(idx)}
-                        className={`flex items-center justify-between gap-3 py-3.5 sm:py-4 cursor-pointer rounded-base transition-colors ${
-                          isSelected ? 'bg-panel border-accent/60 px-3.5 -mx-3.5' : 'hover:bg-panel/60 px-3.5 -mx-3.5'
+                        className={`flex items-center justify-between gap-3 py-3 px-3 cursor-pointer rounded-base transition-colors ${
+                          isSelected ? 'bg-panel2/80 text-fg' : 'hover:bg-panel2/50 text-dim'
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
@@ -203,23 +194,23 @@ function GlobalSearchModal() {
                             <BrandBadge brand={{ id: m.brand_id, name: m.brand_name, color: m.brand_color, image_url: m.brand_image_url }} size={28} />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-sm sm:text-base font-semibold text-fg truncate flex items-center gap-2">
+                            <div className="text-sm font-semibold text-fg truncate flex items-center gap-2">
                               <span>{m.name}</span>
                               {m.anc && (
-                                <span className="text-[10px] bg-panel2 border border-line text-accent px-1.5 py-0.2 rounded font-normal shrink-0">
+                                <span className="text-[10px] bg-accent/10 border border-accent/30 text-accent px-1.5 py-0.2 rounded-base font-mono shrink-0">
                                   ANC
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-dim truncate">
-                              {m.brand_name} • {m.gamme} • {m.release_date?.slice(0, 4)}
+                            <div className="text-xs text-dim truncate font-mono">
+                              {m.brand_name} · {m.gamme} · {m.release_date?.slice(0, 4)}
                             </div>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0 ml-3">
-                          {m.price && <span className="font-display text-sm font-bold text-fg">{m.price} $</span>}
-                          <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-accent' : 'text-dim/40'}`} />
+                          {m.price && <span className="font-mono text-xs font-semibold text-fg">{m.price} $</span>}
+                          <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-accent translate-x-0.5' : 'text-dim/40'} transition-transform`} />
                         </div>
                       </div>
                     );
@@ -228,7 +219,7 @@ function GlobalSearchModal() {
               </div>
             )}
 
-            <div className="mt-10 pt-4 border-t border-line text-[11px] text-dim flex items-center justify-between">
+            <div className="mt-4 pt-3 border-t border-line text-[11px] text-dim flex items-center justify-between font-mono">
               <span>↑↓ pour naviguer</span>
               <span>Entrée pour ouvrir</span>
             </div>
