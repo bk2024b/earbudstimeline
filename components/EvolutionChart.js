@@ -38,8 +38,8 @@ export default function EvolutionChart({ models }) {
 
   if (series.length < 2) {
     return (
-      <div className="bg-panel border border-line rounded-2xl p-5">
-        <h2 className="text-[15px] m-0 mb-1">{t('title')}</h2>
+      <div className="hardware-card bg-panel p-5 sm:p-6">
+        <h2 className="font-display font-bold text-base m-0 mb-1">{t('title')}</h2>
         <p className="text-dim text-xs">{t('notEnough')}</p>
       </div>
     );
@@ -60,17 +60,20 @@ export default function EvolutionChart({ models }) {
   const gridLines = 4;
 
   return (
-    <div className="bg-panel border border-line rounded-base p-5">
-      <h2 className="text-[15px] m-0 mb-3.5">{t('title')}</h2>
+    <div className="hardware-card bg-panel p-5 sm:p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display font-bold text-base text-fg m-0">{t('title')}</h2>
+        <span className="path-indicator text-accent text-[11px]">{metricLabel}</span>
+      </div>
 
-      <div className="flex gap-1.5 mb-4 flex-wrap">
+      <div className="flex gap-1.5 mb-5 flex-wrap">
         {TABS.map((tab_) => (
           <button
             key={tab_.id}
             type="button"
             onClick={() => setTab(tab_.id)}
-            className={`px-2.5 py-1.5 rounded-md text-xs font-medium border ${
-              tab === tab_.id ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-fg'
+            className={`px-3 py-1.5 rounded-base text-xs font-medium border transition-colors ${
+              tab === tab_.id ? 'bg-accent text-ink border-accent font-semibold' : 'bg-panel2 text-dim border-line hover:text-fg'
             }`}
           >
             {tab_.label}

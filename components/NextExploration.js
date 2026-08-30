@@ -34,22 +34,30 @@ export default function NextExploration({ continueItem, deeperItem, sidewaysItem
 
   return (
     <div className="mb-12">
-      <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">
-        {en ? "Where to next?" : 'Et ensuite ?'}
-      </h2>
+      <div className="flex items-center gap-2 mb-4">
+        <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+        <h2 className="text-xs uppercase tracking-[0.12em] font-display font-semibold text-dim">
+          {en ? "Where to next?" : 'Et ensuite ?'}
+        </h2>
+      </div>
       <div className={`grid grid-cols-1 ${gridClass} gap-4`}>
         {columns.map((col) => (
           <Link
             key={col.href}
             href={col.href}
-            className="group bg-panel border border-line rounded-base p-5 glow-accent-hover transition-shadow flex flex-col justify-between"
+            className="group hardware-card bg-panel p-5 flex flex-col justify-between"
           >
             <div>
-              <div className="path-indicator text-accent mb-2">{col.eyebrow}</div>
-              <div className="text-sm font-semibold text-fg mb-1 leading-snug">{col.title}</div>
+              <div className="path-indicator text-accent mb-2.5 text-[11px]">{col.eyebrow}</div>
+              <div className="text-sm sm:text-base font-display font-semibold text-fg mb-1.5 leading-snug group-hover:text-accent transition-colors">
+                {col.title}
+              </div>
               {col.subtitle && <div className="text-xs text-dim leading-relaxed">{col.subtitle}</div>}
             </div>
-            <ArrowRight className="w-4 h-4 text-dim/50 group-hover:text-accent transition-colors mt-4" />
+            <div className="flex items-center gap-1.5 text-xs text-accent font-display font-medium mt-4 group-hover:translate-x-1 transition-transform">
+              <span>{en ? 'Explore' : 'Explorer'}</span>
+              <ArrowRight className="w-3.5 h-3.5 text-accent" />
+            </div>
           </Link>
         ))}
       </div>

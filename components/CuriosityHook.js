@@ -10,13 +10,15 @@ export default function CuriosityHook({ insight }) {
   if (!insight) return null;
 
   return (
-    <div className="flex items-start gap-3 border-l-2 border-accent/50 pl-4 py-1 mb-8">
-      <Sparkles className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+    <div className="flex items-start gap-3.5 border-l-2 border-accent bg-accent/[0.03] pl-4 pr-4 py-3 mb-8 rounded-r-base border-y border-r border-line/40">
+      <div className="p-1 rounded-base bg-accent/10 shrink-0 mt-0.5">
+        <Sparkles className="w-3.5 h-3.5 text-accent" />
+      </div>
       <p className="text-[13.5px] text-dim leading-relaxed m-0">
-        <span className="text-fg font-medium">{insight.eyebrow}</span>
+        <span className="text-fg font-semibold signal-glow">{insight.eyebrow}</span>
         {' — '}
         {insight.text}{' '}
-        <Link href={insight.href} className="text-accent hover:underline whitespace-nowrap">
+        <Link href={insight.href} className="text-accent hover:underline font-medium inline-flex items-center gap-1 whitespace-nowrap ml-1">
           {insight.cta}
         </Link>
       </p>

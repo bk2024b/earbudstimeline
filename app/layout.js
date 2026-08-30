@@ -1,8 +1,9 @@
 import './globals.css';
-import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google';
+import { Space_Grotesk, Inter, IBM_Plex_Mono } from 'next/font/google';
 import { getLocale } from 'next-intl/server';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import Script from 'next/script';
 import { SITE_URL } from '@/lib/seo';
 
 const display = Space_Grotesk({
@@ -10,7 +11,7 @@ const display = Space_Grotesk({
   weight: ['500', '600', '700'],
   variable: '--font-display',
 });
-const body = IBM_Plex_Sans({
+const body = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
   variable: '--font-body',

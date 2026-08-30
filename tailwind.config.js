@@ -18,6 +18,18 @@ module.exports = {
         fg: 'var(--color-fg)',
         accent: 'var(--color-accent)',
         amber: 'var(--color-amber)',
+        'surface-high': 'var(--color-surface-high)',
+      },
+      fontSize: {
+        'display-hero': ['clamp(3.5rem, 8vw, 7.5rem)', { lineHeight: '0.95', letterSpacing: '-0.04em', fontWeight: '700' }],
+        'display-lg':   ['clamp(2.5rem, 5vw, 4rem)', { lineHeight: '1.1',  letterSpacing: '-0.02em', fontWeight: '600' }],
+        'h1':           ['clamp(2rem, 4vw, 3rem)', { lineHeight: '1.15',  letterSpacing: '-0.01em', fontWeight: '600' }],
+        'h2':           ['clamp(1.5rem, 3vw, 2.25rem)', { lineHeight: '1.2', fontWeight: '600' }],
+        'h3':           ['1.75rem', { lineHeight: '2.25rem', fontWeight: '600' }],
+        'h4':           ['1.25rem', { lineHeight: '1.75rem', fontWeight: '600' }],
+        'label':        ['0.875rem', { lineHeight: '1rem', letterSpacing: '0.08em', fontWeight: '600' }],
+        'body-lg':      ['1.125rem', { lineHeight: '1.75rem' }],
+        'caption':      ['0.75rem', { lineHeight: '1rem' }],
       },
       fontFamily: {
         display: ['var(--font-display)', 'sans-serif'],
@@ -25,10 +37,7 @@ module.exports = {
         mono: ['var(--font-mono)', 'monospace'],
       },
       borderRadius: {
-        // Theme-aware : 1rem en dark (Sonic Chronology), 4px en light
-        // (Obsidian Archive Light "Soft-Technical"). Utilitaire `rounded-base`
-        // pour les NOUVEAUX composants (hooks) — n'affecte aucune classe
-        // rounded-xl/rounded-2xl déjà posée ailleurs dans le site.
+        // Theme-aware : 0px en dark (Sonic Chronology), 4px en light (Obsidian Archive Light)
         base: 'var(--radius-base)',
       },
       boxShadow: {

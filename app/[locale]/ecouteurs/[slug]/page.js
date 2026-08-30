@@ -22,6 +22,9 @@ import SameYearHook from '@/components/SameYearHook';
 import NextExploration from '@/components/NextExploration';
 import ExploreThisStory from '@/components/ExploreThisStory';
 import CuriosityHook from '@/components/CuriosityHook';
+import EvolutionHook from '@/components/EvolutionHook';
+import DataHook from '@/components/DataHook';
+import TechnologyHook from '@/components/TechnologyHook';
 import AdSlot from '@/components/AdSlot';
 import { Badge, Footer } from '@/components/UI';
 
@@ -163,27 +166,29 @@ export default async function ModelPage({ params }) {
           ← {t('allOf', { brand: brand?.name || m.brand_id })}
         </Link>
 
-        <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-6 mb-8">
-          <div className="relative bg-panel2 border border-line rounded-2xl aspect-square flex items-center justify-center overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-6 mb-8 items-center">
+          <div className="relative group bg-panel2 border border-line rounded-base aspect-square flex items-center justify-center overflow-hidden p-4">
+            <div className="absolute inset-0 bg-radial from-accent/10 to-transparent pointer-events-none" />
             {m.image_url ? (
               <Image
                 src={m.image_url}
                 alt={m.name}
                 fill
                 priority
-                sizes="(max-width: 640px) 100vw, 180px"
-                className="object-contain"
+                sizes="(max-width: 640px) 100vw, 200px"
+                className="object-contain p-4 floating-hardware"
               />
             ) : (
-              <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-20 h-20" />
+              <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-24 h-24" />
             )}
           </div>
           <div>
-            <div className="font-mono text-xs text-dim mb-2">
-              {brand?.name || m.brand_id} · {m.gamme}
+            <div className="font-mono text-xs text-accent uppercase tracking-wider mb-2 font-semibold flex items-center gap-2">
+              <span>{brand?.name || m.brand_id}</span>
+              {m.gamme && <span className="text-dim">/ {m.gamme}</span>}
             </div>
-            <h1 className="font-display font-bold text-[clamp(24px,3.4vw,34px)] mb-2 leading-tight">{m.name}</h1>
-            <p className="text-accent text-[15px] mb-5">{displayTagline(m, locale)}</p>
+            <h1 className="font-display font-bold text-[clamp(26px,4vw,38px)] mb-2 leading-tight text-fg">{m.name}</h1>
+            <p className="text-dim text-[15px] mb-5 leading-relaxed">{displayTagline(m, locale)}</p>
             <div className="flex gap-2 flex-wrap">
               <Badge>{fmtDate(m.release_date, locale)}</Badge>
               {m.marquant && <Badge gold>{t('notableModel')}</Badge>}
@@ -199,7 +204,7 @@ export default async function ModelPage({ params }) {
                   href={m.buy_url}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="bg-accent text-ink font-bold rounded-xl px-5 py-2.5 text-sm inline-flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-accent/20"
+                  className="btn-primary"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   <span>{locale === 'en' ? 'Buy / Check Price' : "Acheter / Voir l'offre"}</span>
@@ -209,9 +214,9 @@ export default async function ModelPage({ params }) {
               {prev && (
                 <Link
                   href={`/comparaisons/${buildComparisonSlug(prev.id, m.id)}`}
-                  className="border border-line hover:border-accent text-dim hover:text-fg rounded-xl px-4 py-2.5 text-xs inline-flex items-center gap-1.5 transition-colors"
+                  className="btn-ghost text-xs"
                 >
-                  <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                  <TrendingUp className="w-3.5 h-3.5 text-accent" />
                   <span>{locale === 'en' ? `Compare vs ${prev.name}` : `Comparer vs ${prev.name}`}</span>
                 </Link>
               )}
@@ -219,7 +224,15 @@ export default async function ModelPage({ params }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-line border border-line rounded-xl overflow-hidden mb-12">
+        {/* ⏳ Evolution Hook (Before/After) */}
+        <EvolutionHook
+          prevModel={prev}
+          currentModel={m}
+          nextModel={next}
+          locale={locale}
+        />
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-line border border-line rounded-base overflow-hidden mb-10">
           <KeySpec icon={Battery} value={fmtH(m.battery_bud_h)} label={t('earbudOnly')} />
           <KeySpec icon={BatteryFull} value={fmtH(m.battery_case_h)} label={t('withCase')} />
           <KeySpec icon={Droplet} value={m.water_rating} label={t('resistance')} />
@@ -228,8 +241,39 @@ export default async function ModelPage({ params }) {
 
         <CuriosityHook insight={curiosityInsight} />
 
-        <div className="bg-panel border border-line rounded-2xl px-5 pt-5 pb-1 mb-12">
-          <h2 className="text-[15px] m-0 mb-1">{t('lineageTitle')}</h2>
+        {/* 📊 Data Hook for battery or notable stat */}
+        {Number(m.battery_bud_h) >= 8 && (
+          <DataHook
+            label={locale === 'en' ? 'Battery Benchmark' : "Repère d'autonomie"}
+            value={fmtH(m.battery_bud_h)}
+            comparisonText={
+              locale === 'en'
+                ? `Offering ${fmtH(m.battery_bud_h)} per charge placed this model well above the historical average of early generations (~4-5h).`
+                : `Avec ${fmtH(m.battery_bud_h)} par charge, ce modèle se situe nettement au-dessus de la moyenne des premières générations (~4-5h).`
+            }
+            href="/insights"
+            ctaText={locale === 'en' ? 'See battery evolution insights →' : "Voir l'évolution de l'autonomie →"}
+            locale={locale}
+          />
+        )}
+
+        {/* 🔬 Technology Hook for ANC if model features ANC */}
+        {m.anc && (
+          <TechnologyHook
+            techName={locale === 'en' ? 'Active Noise Cancellation (ANC)' : 'Réduction active du bruit (ANC)'}
+            description={
+              locale === 'en'
+                ? 'ANC became the defining battlefield of premium wireless earbuds starting in 2019.'
+                : "La réduction active du bruit s'est imposée dès 2019 comme le champ de bataille technologique majeur des écouteurs haut de gamme."
+            }
+            yearEra={`${releaseYear || '2019'} → 2026`}
+            href="/technologies/anc"
+            locale={locale}
+          />
+        )}
+
+        <div className="hardware-card bg-panel p-5 sm:p-6 mb-12">
+          <h2 className="text-base sm:text-lg font-display font-bold text-fg m-0 mb-1">{t('lineageTitle')}</h2>
           <p className="text-dim text-xs m-0 mb-4">
             {isFirst
               ? t('firstInLine', { gamme: m.gamme })

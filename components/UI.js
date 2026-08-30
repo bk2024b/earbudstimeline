@@ -4,9 +4,9 @@ import { getBrands, getAllEarbuds } from '@/lib/queries';
 
 export function Stat({ value, label }) {
   return (
-    <div>
-      <b className="block font-display font-bold text-[28px]">{value}</b>
-      <span className="text-dim text-[12.5px] uppercase tracking-[0.08em]">{label}</span>
+    <div className="flex flex-col">
+      <b className="block font-display font-bold text-3xl sm:text-4xl text-accent tracking-tight leading-none mb-1.5">{value}</b>
+      <span className="text-dim text-[11px] font-mono uppercase tracking-wider">{label}</span>
     </div>
   );
 }

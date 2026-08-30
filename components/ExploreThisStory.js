@@ -38,18 +38,24 @@ export default function ExploreThisStory({ lineup, currentId, brandId, brandName
   const period = first.id === last.id ? yearOf(first.release_date) : `${yearOf(first.release_date)} → ${yearOf(last.release_date)}`;
 
   return (
-    <div className="bg-panel border border-line rounded-base p-5 sm:p-6 mb-12">
-      <div className="path-indicator text-accent mb-1.5">
-        {en ? 'Explore this story' : "Explorer l'histoire complète"}
+    <div className="hardware-card bg-panel p-5 sm:p-6 mb-12 relative">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="path-indicator text-accent">
+          {en ? 'Explore this story' : "Explorer l'histoire complète"}
+        </div>
+        <span className="font-mono text-[11px] text-dim px-2 py-0.5 border border-line bg-panel2 rounded-base">
+          {lineup.length} {en ? (lineup.length > 1 ? 'generations' : 'generation') : (lineup.length > 1 ? 'générations' : 'génération')}
+        </span>
       </div>
-      <h2 className="font-display font-semibold text-lg mb-1">
+      
+      <h2 className="font-display font-bold text-lg sm:text-xl text-fg mb-1">
         {brandName} {gammeName}
       </h2>
-      <p className="text-dim text-xs mb-5">
-        {period} · {lineup.length} {en ? (lineup.length > 1 ? 'generations' : 'generation') : (lineup.length > 1 ? 'générations' : 'génération')}
+      <p className="text-dim text-xs mb-6">
+        {period}
       </p>
 
-      <div className="flex flex-col" data-orientation="vertical">
+      <div className="flex flex-col relative pl-2" data-orientation="vertical">
         {visible.map((item, i) => {
           const isCurrent = item.id === currentId;
           const isLast = i === visible.length - 1;
@@ -61,22 +67,27 @@ export default function ExploreThisStory({ lineup, currentId, brandId, brandName
                   <div className="w-2 flex justify-center shrink-0">
                     <span className="text-dim text-xs leading-none">···</span>
                   </div>
-                  <span className="text-dim text-[11px]">
+                  <span className="text-dim text-[11px] font-mono">
                     {en ? `${visibleIdx[i] - visibleIdx[i - 1] - 1} more` : `${visibleIdx[i] - visibleIdx[i - 1] - 1} de plus`}
                   </span>
                 </div>
               )}
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3.5">
                 <div className="flex flex-col items-center">
-                  <span className="timeline-line-point shrink-0 mt-1" data-active={isCurrent} />
-                  {!isLast && <span className="w-px flex-1 bg-line my-1" style={{ minHeight: 30 }} />}
+                  <span className="timeline-line-point shrink-0 mt-1.5" data-active={isCurrent} />
+                  {!isLast && <span className="w-px flex-1 bg-line my-1" style={{ minHeight: 32 }} />}
                 </div>
-                <div className={isLast ? 'pb-0' : 'pb-7'}>
-                  <div className={`font-mono text-[11px] mb-0.5 ${isCurrent ? 'text-accent' : 'text-dim'}`}>
+                <div className={isLast ? 'pb-0' : 'pb-6'}>
+                  <div className={`font-mono text-[11px] font-semibold mb-0.5 ${isCurrent ? 'text-accent' : 'text-dim'}`}>
                     {yearOf(item.release_date)}
                   </div>
                   {isCurrent ? (
-                    <div className="text-sm font-semibold text-fg">{item.name}</div>
+                    <div className="text-sm font-semibold text-fg flex items-center gap-2">
+                      <span>{item.name}</span>
+                      <span className="text-[10px] bg-accent/15 text-accent px-1.5 py-0.5 rounded-base font-mono uppercase tracking-wider font-semibold">
+                        {en ? 'Current' : 'Actuel'}
+                      </span>
+                    </div>
                   ) : (
                     <Link href={`/ecouteurs/${item.id}`} className="text-sm text-dim hover:text-fg transition-colors">
                       {item.name}
@@ -89,9 +100,11 @@ export default function ExploreThisStory({ lineup, currentId, brandId, brandName
         })}
       </div>
 
-      <Link href={`/marques/${brandId}/${gammeSlug}`} className="entity-bridge mt-2">
-        {en ? 'Explore the complete story →' : "Explorer l'histoire complète →"}
-      </Link>
+      <div className="pt-4 mt-2 border-t border-line/60 flex items-center justify-between">
+        <Link href={`/marques/${brandId}/${gammeSlug}`} className="entity-bridge">
+          {en ? 'Explore full lineage →' : "Explorer toute la lignée →"}
+        </Link>
+      </div>
     </div>
   );
 }

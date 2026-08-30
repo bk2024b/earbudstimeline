@@ -53,18 +53,20 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
   const filtersActive = ancFilter !== 'all' || minBt !== 'all' || maxPrice !== maxPriceInData;
 
   return (
-    <div className="bg-panel border border-line rounded-2xl p-5 mb-12">
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
-        <h2 className="text-[15px] m-0">{t('interactive')}</h2>
-        <p className="m-0 text-dim text-xs">{t('results', { count: filtered.length })}</p>
+    <div className="hardware-card bg-panel p-5 sm:p-6 mb-12">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-5 pb-4 border-b border-line/60">
+        <div className="path-indicator text-accent text-[11px]">{t('interactive')}</div>
+        <span className="font-mono text-xs text-accent/80 bg-accent/10 px-2.5 py-1 rounded-base font-semibold">
+          {t('results', { count: filtered.length })}
+        </span>
       </div>
 
       <div className="flex gap-1.5 flex-wrap mb-4">
         <button
           type="button"
           onClick={() => setBrandFilter('all')}
-          className={`px-3 py-1.5 rounded-md text-xs font-medium border ${
-            brandFilter === 'all' ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-fg'
+          className={`px-3 py-1.5 rounded-base text-xs font-medium border transition-colors ${
+            brandFilter === 'all' ? 'bg-accent text-ink border-accent font-semibold' : 'bg-panel2 text-dim border-line hover:text-fg'
           }`}
         >
           {t('all')}
@@ -74,9 +76,9 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
             key={b.id}
             type="button"
             onClick={() => setBrandFilter(b.id)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium border ${
+            className={`px-3 py-1.5 rounded-base text-xs font-medium border transition-colors ${
               brandFilter === b.id
-                ? 'bg-accent text-ink border-accent'
+                ? 'bg-accent text-ink border-accent font-semibold'
                 : 'bg-panel2 text-dim border-line hover:text-fg'
             }`}
           >
@@ -85,22 +87,22 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
         ))}
       </div>
 
-      <div className="bg-panel2 border border-line rounded-xl p-4 mb-5">
+      <div className="bg-panel2/60 border border-line rounded-base p-4 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <p className="m-0 text-xs text-dim uppercase tracking-[0.08em]">{t('advancedFilters')}</p>
+          <p className="m-0 text-xs text-accent font-mono uppercase tracking-[0.08em] font-semibold">{t('advancedFilters')}</p>
           {filtersActive && (
-            <button type="button" onClick={resetFilters} className="text-xs text-accent hover:underline">
+            <button type="button" onClick={resetFilters} className="text-xs text-accent hover:underline font-mono">
               {t('reset')}
             </button>
           )}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
           <label className="flex flex-col gap-1.5 text-xs">
-            <span className="text-dim">{t('ancFilter')}</span>
+            <span className="text-dim font-medium">{t('ancFilter')}</span>
             <select
               value={ancFilter}
               onChange={(e) => setAncFilter(e.target.value)}
-              className="bg-panel border border-line rounded-lg px-2.5 py-2 text-[13px]"
+              className="bg-panel border border-line rounded-base px-3 py-2 text-xs text-fg focus:border-accent outline-none"
             >
               <option value="all">{t('ancAll')}</option>
               <option value="yes">{t('ancWith')}</option>
@@ -109,11 +111,11 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
           </label>
 
           <label className="flex flex-col gap-1.5 text-xs">
-            <span className="text-dim">{t('minBluetooth')}</span>
+            <span className="text-dim font-medium">{t('minBluetooth')}</span>
             <select
               value={minBt}
               onChange={(e) => setMinBt(e.target.value)}
-              className="bg-panel border border-line rounded-lg px-2.5 py-2 text-[13px]"
+              className="bg-panel border border-line rounded-base px-3 py-2 text-xs text-fg focus:border-accent outline-none"
             >
               <option value="all">{t('allVersions')}</option>
               {BT_OPTIONS.map((v) => (
@@ -125,8 +127,8 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
           </label>
 
           <label className="flex flex-col gap-1.5 text-xs">
-            <span className="text-dim">
-              {t('maxPrice')} : <span className="font-mono text-fg">{maxPrice} $</span>
+            <span className="text-dim font-medium">
+              {t('maxPrice')} : <span className="font-mono text-accent font-semibold">{maxPrice} $</span>
             </span>
             <input
               type="range"
@@ -134,7 +136,7 @@ export default function InteractiveTimeline({ models, brands, initialAnc = 'all'
               max={maxPriceInData}
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="accent-accent"
+              className="accent-accent cursor-pointer"
             />
           </label>
         </div>

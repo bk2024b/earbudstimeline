@@ -55,9 +55,9 @@ export default async function ComparaisonsPage({ params }) {
         })}
       />
 
-      <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{t('title')}</div>
-      <h1 className="font-display font-bold text-[32px] mb-2">{t('title')}</h1>
-      <p className="text-dim text-[13.5px] mb-8">{t('intro')}</p>
+      <div className="path-indicator text-accent mb-2">{t('title')}</div>
+      <h1 className="font-display font-bold text-3xl sm:text-4xl text-fg mb-2">{t('title')}</h1>
+      <p className="text-dim text-sm mb-8 leading-relaxed max-w-2xl">{t('intro')}</p>
 
       <div className="mb-12">
         <CompareSelectors brands={brands} models={models} a={undefined} b={undefined} />
@@ -82,24 +82,24 @@ export default async function ComparaisonsPage({ params }) {
 function Section({ title, pairs, brandOf, vs }) {
   return (
     <div className="mb-12">
-      <h2 className="text-[15px] mb-4">{title}</h2>
+      <div className="path-indicator text-accent text-[11px] mb-3">{title}</div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
         {pairs.map(({ a, b }) => (
           <Link
             key={`${a.id}-${b.id}`}
             href={`/comparaisons/${buildComparisonSlug(a.id, b.id)}`}
-            className="bg-panel border border-line rounded-xl p-4 hover:border-accent transition-colors flex flex-col gap-2.5"
+            className="hardware-card group bg-panel p-4 flex flex-col justify-between gap-2.5"
           >
-            <div className="flex items-center gap-2 text-[13.5px]">
-              <EarbudsIcon color={brandOf(a.brand_id)?.color || '#9A9AA3'} className="w-6 h-6 shrink-0" />
-              <span className="truncate">{a.name}</span>
-              <span className="text-dim shrink-0">{vs}</span>
-              <span className="truncate">{b.name}</span>
-              <EarbudsIcon color={brandOf(b.brand_id)?.color || '#9A9AA3'} className="w-6 h-6 shrink-0" />
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <EarbudsIcon color={brandOf(a.brand_id)?.color || '#9A9AA3'} className="w-5 h-5 shrink-0" />
+              <span className="truncate text-fg group-hover:text-accent transition-colors">{a.name}</span>
+              <span className="text-accent font-mono text-xs px-1.5 py-0.5 bg-accent/10 rounded-base shrink-0">{vs}</span>
+              <span className="truncate text-fg group-hover:text-accent transition-colors">{b.name}</span>
+              <EarbudsIcon color={brandOf(b.brand_id)?.color || '#9A9AA3'} className="w-5 h-5 shrink-0" />
             </div>
-            <p className="m-0 text-dim text-[11px]">
-              {brandOf(a.brand_id)?.name || a.brand_id} {yearOf(a.release_date)} · {brandOf(b.brand_id)?.name || b.brand_id}{' '}
-              {yearOf(b.release_date)}
+            <p className="m-0 text-dim text-[11px] font-mono">
+              {brandOf(a.brand_id)?.name || a.brand_id} ({yearOf(a.release_date)}) · {brandOf(b.brand_id)?.name || b.brand_id}{' '}
+              ({yearOf(b.release_date)})
             </p>
           </Link>
         ))}

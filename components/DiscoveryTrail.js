@@ -102,35 +102,38 @@ export default function DiscoveryTrail({ locale }) {
   if (trail.length === 0) return null;
 
   return (
-    <div ref={panelRef} className="fixed bottom-5 right-5 z-30">
+    <div ref={panelRef} className="fixed bottom-5 right-5 z-40">
       {open && (
-        <div className="mb-3 w-[280px] sm:w-[320px] bg-panel border border-line rounded-base shadow-glow overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-line">
-            <span className="path-indicator text-accent">
-              {en ? 'Discovery trail' : 'Fil de découverte'}
-            </span>
+        <div className="mb-3 w-[300px] sm:w-[340px] glass-panel bg-panel/95 border border-line/80 shadow-2xl overflow-hidden animate-fadeIn">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-line bg-panel2/50">
+            <div className="flex items-center gap-2">
+              <Compass className="w-4 h-4 text-accent" />
+              <span className="path-indicator text-accent text-[11px]">
+                {en ? 'Discovery trail' : 'Fil de découverte'}
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="text-dim hover:text-fg"
+              className="text-dim hover:text-fg p-1 rounded hover:bg-panel"
               aria-label={en ? 'Close' : 'Fermer'}
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="max-h-[280px] overflow-y-auto py-1.5">
+          <div className="max-h-[280px] overflow-y-auto py-2 divide-y divide-line/30">
             {trail.map((entry, i) => (
               <Link
                 key={entry.href}
                 href={entry.href}
                 onClick={() => setOpen(false)}
-                className="flex items-start gap-2.5 px-4 py-2 hover:bg-panel2 transition-colors"
+                className="flex items-start gap-2.5 px-4 py-2.5 hover:bg-panel2/70 transition-colors group"
               >
-                <span className="font-mono text-[10px] text-dim mt-0.5 shrink-0">
+                <span className="font-mono text-[10px] text-accent/80 mt-0.5 shrink-0 bg-accent/10 px-1 rounded">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <span className="text-xs text-fg leading-snug">{entry.title}</span>
+                <span className="text-xs text-fg group-hover:text-accent transition-colors leading-snug">{entry.title}</span>
               </Link>
             ))}
           </div>
@@ -138,9 +141,9 @@ export default function DiscoveryTrail({ locale }) {
           <button
             type="button"
             onClick={clearTrail}
-            className="w-full flex items-center gap-1.5 justify-center px-4 py-2.5 border-t border-line text-[11px] text-dim hover:text-fg transition-colors"
+            className="w-full flex items-center gap-1.5 justify-center px-4 py-2.5 border-t border-line/60 bg-panel2/30 text-[11px] text-dim hover:text-fg transition-colors"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-3.5 h-3.5" />
             {en ? 'Clear trail' : 'Effacer le fil'}
           </button>
         </div>
@@ -149,11 +152,11 @@ export default function DiscoveryTrail({ locale }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 bg-panel border border-line hover:border-accent/40 rounded-full pl-3 pr-4 py-2 shadow-glow text-xs text-dim hover:text-fg transition-colors"
+        className="flex items-center gap-2.5 glass-panel bg-panel/90 hover:border-accent/50 px-3.5 py-2 shadow-lg text-xs font-display font-medium text-dim hover:text-fg transition-all hover:scale-105"
       >
-        <Compass className="w-3.5 h-3.5 text-accent" />
+        <Compass className="w-4 h-4 text-accent animate-pulse" />
         <span>
-          {en ? 'Your trail' : 'Votre fil'} · {trail.length} {en ? 'discoveries' : 'découvertes'}
+          {en ? 'Your trail' : 'Votre fil'} ({trail.length})
         </span>
       </button>
     </div>

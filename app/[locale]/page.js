@@ -72,67 +72,70 @@ export default async function HomePage({ params }) {
 
   return (
     <>
-      {/* Hero — centrée, fidèle à la maquette Stitch (titre géant, plage
-          d'années réelle en accent, sous-titre) tout en gardant la copie
-          traduite existante (fonctionnalité/i18n). */}
-      <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-20">
-        <div className="inline-block font-mono text-xs text-accent uppercase tracking-[0.1em] bg-accent/10 border border-accent/30 rounded-full px-3 py-1 mb-5">
-          {t('badge')}
+      {/* Hero — Sonic Chronology Design */}
+      <div className="relative text-center max-w-3xl mx-auto mb-16 sm:mb-24 pt-4 sm:pt-8">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[550px] h-[250px] bg-accent/5 rounded-full blur-3xl pointer-events-none -z-10" />
+
+        <div className="inline-flex items-center gap-2 font-mono text-xs text-accent uppercase tracking-[0.14em] bg-accent/10 border border-accent/30 rounded-base px-3.5 py-1 mb-6 font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+          <span>{t('badge')}</span>
         </div>
-        <h1 className="font-display font-bold leading-[1.05] text-[clamp(32px,6vw,56px)] mb-3">
-          {t('titleLine1')} <span className="text-accent">{t('titleAccent')}</span>
+
+        <h1 className="font-display font-bold leading-[1.02] text-4xl sm:text-6xl lg:text-7xl mb-4 tracking-tight">
+          <span className="text-brand-gradient block sm:inline">{t('titleLine1')}</span>{' '}
+          <span className="text-accent">{t('titleAccent')}</span>
         </h1>
-        <div className="flex items-center justify-center gap-2.5 font-display font-semibold text-2xl sm:text-3xl text-accent mb-4">
+
+        <div className="flex items-center justify-center gap-3 font-display font-bold text-2xl sm:text-4xl text-accent mb-6 signal-glow">
           <span>{yearsAvailable[0]}</span>
-          <span className="text-dim text-lg">→</span>
+          <span className="text-dim/60 text-lg sm:text-2xl font-mono">→</span>
           <span>{yearsAvailable[yearsAvailable.length - 1]}</span>
         </div>
-        <p className="text-dim max-w-[480px] mx-auto mb-7 text-[15.5px]">{t('subtitle')}</p>
 
-        <div className="mb-4 max-w-md mx-auto">
+        <p className="text-dim max-w-xl mx-auto mb-8 text-base sm:text-lg leading-relaxed">{t('subtitle')}</p>
+
+        <div className="mb-5 max-w-md mx-auto">
           <SearchBar
             models={models.map(({ id, name, brand_id, gamme }) => ({ id, name, brand_id, gamme }))}
             brands={brands}
           />
         </div>
 
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-8">
           <PopularTags topModels={topRecentMarquant} commonBt={stats.commonBt} locale={locale} />
         </div>
 
-        <div className="flex gap-3 flex-wrap justify-center">
+        <div className="flex gap-4 flex-wrap justify-center items-center">
           <Link
             href="/trouver-mes-ecouteurs"
-            className="bg-accent text-ink font-semibold rounded-lg px-5 py-2.5 text-sm hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md shadow-accent/20"
+            className="btn-primary"
           >
             <span>✨</span>
             <span>{locale === 'en' ? 'Find for My Budget' : 'Trouver selon mon budget'}</span>
           </Link>
           <Link
             href="/comparaisons"
-            className="border border-line rounded-lg px-5 py-2.5 text-sm text-dim hover:text-fg hover:border-accent transition-colors"
+            className="btn-ghost"
           >
             {t('seeComparisons')}
           </Link>
         </div>
       </div>
 
-      {/* Timeline Experience — le composant signature de la maquette :
-          zigzag, années géantes, ligne centrale. Preview de modèles
-          marquants réels répartis sur toute la période, pas un mockup. */}
+      {/* Timeline Experience */}
       <div id="timeline">
         <HomeStoryTimeline entries={previewEntries} colorById={colorById} locale={locale} />
-        <div className="flex flex-wrap justify-center gap-3 -mt-10 mb-12">
+        <div className="flex flex-wrap justify-center gap-3 -mt-10 mb-16">
           <Link
             href="/timeline"
-            className="bg-accent text-ink font-bold rounded-xl px-6 py-3 text-sm inline-flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg"
+            className="btn-primary px-6 py-3 text-sm"
           >
             <span>{t('exploreTimeline')}</span>
             <span>→</span>
           </Link>
           <Link
             href="/insights"
-            className="border border-accent/40 text-accent rounded-xl px-6 py-3 text-sm inline-flex items-center justify-center gap-2 hover:bg-accent/10 transition-all"
+            className="btn-ghost px-6 py-3 text-sm"
           >
             <span>{locale === 'en' ? 'See insights' : 'Voir les insights'}</span>
             <span>→</span>
@@ -141,7 +144,7 @@ export default async function HomePage({ params }) {
       </div>
 
       {/* Stats bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 bg-panel border border-line rounded-base px-6 py-6 mb-12">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 hardware-card bg-panel p-6 sm:p-8 mb-16">
         <Stat value={models.length} label={t('statEarbuds')} />
         <Stat value={brands.length} label={t('statBrands')} />
         <Stat value={yearsCovered} label={t('statYears')} />
@@ -150,14 +153,14 @@ export default async function HomePage({ params }) {
       </div>
 
       {/* Timeline Intelligence Magnet Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-panel2 via-panel to-ink border border-accent/30 rounded-2xl p-6 sm:p-8 mb-12 shadow-xl">
+      <div className="hardware-card relative overflow-hidden bg-gradient-to-br from-panel2 via-panel to-page border border-accent/40 p-6 sm:p-8 mb-16 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="max-w-xl">
-            <div className="inline-flex items-center gap-1.5 font-mono text-xs text-accent uppercase tracking-wider bg-accent/10 border border-accent/30 rounded-full px-3 py-0.5 mb-3">
+            <div className="inline-flex items-center gap-1.5 font-mono text-xs text-accent uppercase tracking-wider bg-accent/10 border border-accent/30 rounded-base px-3 py-1 mb-3.5 font-semibold">
               <span>✨</span>
               <span>Timeline Intelligence</span>
             </div>
-            <h2 className="font-display font-bold text-2xl text-fg mb-2">
+            <h2 className="font-display font-bold text-2xl sm:text-3xl text-fg mb-2.5 leading-tight">
               {locale === 'en'
                 ? 'Looking for the best earbuds for your budget?'
                 : 'Quel écouteur sans fil acheter selon votre budget ?'}
@@ -172,7 +175,7 @@ export default async function HomePage({ params }) {
           <div className="shrink-0">
             <Link
               href="/trouver-mes-ecouteurs"
-              className="bg-white text-ink font-bold rounded-xl px-6 py-3 text-sm inline-flex items-center gap-2 hover:bg-white/90 transition-all shadow-lg hover:translate-x-0.5"
+              className="btn-primary px-6 py-3.5"
             >
               <span>{locale === 'en' ? 'Launch Intelligence Engine' : 'Trouver mes écouteurs'}</span>
               <span>→</span>
@@ -181,33 +184,37 @@ export default async function HomePage({ params }) {
         </div>
       </div>
 
-      {/* Parcourir par marque — seulement les plus représentées ici, la liste
-          complète vit sur /marques pour ne pas alourdir la homepage. */}
-      <div className="mb-12">
-        <div className="flex items-center justify-between mb-4">
-          <h2 id="marques" className="text-xs uppercase tracking-[0.1em] text-dim m-0">
+      {/* Parcourir par marque */}
+      <div className="mb-16">
+        <div className="flex items-center justify-between mb-5">
+          <div className="path-indicator text-accent text-[11px] m-0">
             {t('browseByBrand')}
-          </h2>
-          <Link href="/marques" className="text-xs text-accent hover:underline shrink-0">
+          </div>
+          <Link href="/marques" className="text-xs text-accent hover:underline font-mono shrink-0">
             {locale === 'en' ? 'See all brands →' : 'Voir toutes les marques →'}
           </Link>
         </div>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3.5">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
           {topBrands.map((b) => {
             const bModels = models.filter((m) => m.brand_id === b.id);
             const years = bModels.map((m) => Number(m.release_date.slice(0, 4)));
+            const minYear = years.length > 0 ? Math.min(...years) : 2016;
+            const maxYear = years.length > 0 ? Math.max(...years) : 2026;
             return (
               <Link
                 key={b.id}
                 href={`/marques/${b.id}`}
-                className="bg-panel border border-line rounded-2xl p-5 hover:border-accent hover:-translate-y-0.5 transition-all"
+                className="hardware-card group bg-panel p-5"
               >
-                <div className="mb-3.5">
-                  <BrandBadge brand={b} size={28} />
+                <div className="mb-4 flex items-center justify-between">
+                  <BrandBadge brand={b} size={30} />
+                  <span className="font-mono text-[11px] text-accent/80 bg-accent/10 px-2 py-0.5 rounded-base font-semibold">
+                    {b.count}
+                  </span>
                 </div>
-                <h3 className="m-0 mb-1 text-[17px]">{b.name}</h3>
-                <p className="m-0 text-dim text-xs">
-                  {Math.min(...years)} → {Math.max(...years)} · {t('modelsRange', { count: bModels.length })}
+                <h3 className="m-0 mb-1 font-display font-bold text-lg text-fg group-hover:text-accent transition-colors">{b.name}</h3>
+                <p className="m-0 text-dim text-xs font-mono">
+                  {minYear} → {maxYear} · {t('modelsRange', { count: bModels.length })}
                 </p>
               </Link>
             );

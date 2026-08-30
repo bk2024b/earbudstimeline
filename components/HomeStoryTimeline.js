@@ -3,16 +3,17 @@ import { Link } from '@/i18n/navigation';
 import { fmtH } from '@/lib/format';
 import EarbudsIcon from './EarbudsIcon';
 
-// entries: [{ year, model }] — model est null sur la dernière entrée
-// ("Next Gen...", placeholder éditorial fidèle à la maquette).
+/**
+ * HomeStoryTimeline — Composant signature Sonic Chronology
+ * Timeline zigzag sur desktop avec années géantes et cards hardware.
+ */
 export default function HomeStoryTimeline({ entries, colorById, locale }) {
   if (!entries || entries.length === 0) return null;
   const en = locale === 'en';
 
   return (
     <div className="w-full mb-16 sm:mb-24">
-      {/* Desktop/tablette : zigzag fidèle à la maquette (années géantes en
-          fondu de chaque côté d'une ligne centrale). */}
+      {/* Desktop/tablette : zigzag */}
       <div className="hidden md:block relative max-w-4xl mx-auto">
         <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 timeline-line" />
         {entries.map((entry, i) => {
@@ -26,7 +27,7 @@ export default function HomeStoryTimeline({ entries, colorById, locale }) {
               }`}
             >
               <div className={`w-5/12 ${reverse ? 'text-left pl-8' : 'text-right pr-8'}`}>
-                <div className="font-display font-bold text-5xl lg:text-6xl text-fg opacity-20 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="font-display font-bold text-5xl lg:text-6xl text-fg opacity-25 group-hover:opacity-100 group-hover:text-accent transition-all duration-500">
                   {entry.year}
                 </div>
               </div>
@@ -38,37 +39,42 @@ export default function HomeStoryTimeline({ entries, colorById, locale }) {
                 {entry.model ? (
                   <Link
                     href={`/ecouteurs/${entry.model.id}`}
-                    className="flex gap-4 items-center bg-panel border border-line rounded-base p-4 lg:p-5 hover:border-accent/50 hover:shadow-glow transition-all"
+                    className="hardware-card flex gap-4 items-center bg-panel p-4 lg:p-5"
                   >
-                    <div className="relative w-16 h-16 lg:w-20 lg:h-20 rounded-lg bg-panel2 shrink-0 overflow-hidden flex items-center justify-center">
+                    <div className="relative w-16 h-16 lg:w-20 lg:h-20 bg-panel2 shrink-0 overflow-hidden flex items-center justify-center rounded-base">
                       {entry.model.image_url ? (
                         <Image
                           src={entry.model.image_url}
                           alt={entry.model.name}
                           fill
                           sizes="80px"
-                          className="object-contain"
+                          className="object-contain p-1 floating-hardware"
                         />
                       ) : (
                         <EarbudsIcon color={colorById?.[entry.model.brand_id] || '#9A9AA3'} className="w-9 h-9" />
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-display font-semibold text-base lg:text-lg mb-0.5 truncate">
+                      <div className="font-mono text-[11px] text-accent font-semibold mb-0.5">
+                        {entry.model.brand_id}
+                      </div>
+                      <h3 className="font-display font-bold text-base lg:text-lg mb-0.5 truncate text-fg group-hover:text-accent transition-colors">
                         {entry.model.name}
                       </h3>
                       <p className="text-dim text-xs mb-1.5 truncate">{entry.model.gamme}</p>
-                      <span className="inline-flex items-center gap-1 font-mono text-[11px] text-accent">
-                        {fmtH(entry.model.battery_case_h)} {en ? 'battery' : "d'autonomie"}
-                      </span>
+                      {entry.model.battery_case_h && (
+                        <span className="inline-flex items-center gap-1 font-mono text-[11px] text-accent">
+                          {fmtH(entry.model.battery_case_h)} {en ? 'battery' : "d'autonomie"}
+                        </span>
+                      )}
                     </div>
                   </Link>
                 ) : (
                   <div className={reverse ? '' : 'text-right'}>
-                    <h3 className="font-display font-semibold text-2xl text-dim mb-1">
+                    <h3 className="font-display font-bold text-2xl text-dim mb-1">
                       {en ? 'Next Gen…' : 'Prochaine génération…'}
                     </h3>
-                    <p className="text-dim/50 text-sm">{en ? 'The future of audio.' : "L'avenir de l'audio."}</p>
+                    <p className="text-dim/50 text-sm font-mono">{en ? 'The future of sound.' : "L'avenir du son."}</p>
                   </div>
                 )}
               </div>
@@ -77,9 +83,7 @@ export default function HomeStoryTimeline({ entries, colorById, locale }) {
         })}
       </div>
 
-      {/* Mobile : le zigzag ne tient pas sur petit écran — rail simple à
-          gauche, même vocabulaire visuel (.timeline-line-point) que
-          TimelinePosition/ExploreThisStory ailleurs sur le site. */}
+      {/* Mobile : timeline verticale */}
       <div className="md:hidden flex flex-col max-w-md mx-auto" data-orientation="vertical">
         {entries.map((entry, i) => {
           const isLast = i === entries.length - 1;
@@ -90,13 +94,13 @@ export default function HomeStoryTimeline({ entries, colorById, locale }) {
                 {!isLast && <span className="w-px flex-1 bg-line my-1" style={{ minHeight: 24 }} />}
               </div>
               <div className={isLast ? 'pb-0' : 'pb-7'}>
-                <div className="font-mono text-[11px] text-accent mb-1">{entry.year}</div>
+                <div className="font-mono text-[11px] font-bold text-accent mb-1">{entry.year}</div>
                 {entry.model ? (
                   <Link
                     href={`/ecouteurs/${entry.model.id}`}
-                    className="flex gap-3 items-center bg-panel border border-line rounded-base p-3.5"
+                    className="hardware-card flex gap-3 items-center bg-panel p-3.5"
                   >
-                    <div className="relative w-12 h-12 rounded-lg bg-panel2 shrink-0 overflow-hidden flex items-center justify-center">
+                    <div className="relative w-12 h-12 rounded-base bg-panel2 shrink-0 overflow-hidden flex items-center justify-center">
                       {entry.model.image_url ? (
                         <Image src={entry.model.image_url} alt={entry.model.name} fill sizes="48px" className="object-contain" />
                       ) : (
@@ -111,7 +115,7 @@ export default function HomeStoryTimeline({ entries, colorById, locale }) {
                 ) : (
                   <div>
                     <div className="text-sm font-semibold text-dim">{en ? 'Next Gen…' : 'Prochaine génération…'}</div>
-                    <div className="text-xs text-dim/50">{en ? 'The future of audio.' : "L'avenir de l'audio."}</div>
+                    <div className="text-xs text-dim/50">{en ? 'The future of sound.' : "L'avenir du son."}</div>
                   </div>
                 )}
               </div>
