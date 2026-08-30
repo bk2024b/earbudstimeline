@@ -54,9 +54,13 @@ export async function Footer({ locale }) {
         </FooterCol>
       </div>
 
-      <p className="text-dim text-xs text-center pt-5 border-t border-line">
-        {t('copyright')}{' '}
-        <span className="mx-1">·</span>
+      <p className="text-dim text-xs text-center pt-5 border-t border-line flex items-center justify-center gap-3 flex-wrap">
+        <span>{t('copyright')}</span>
+        <span>·</span>
+        <Link href="/about" className="hover:text-accent transition-colors">
+          {t('about') || (locale === 'en' ? 'About' : 'À propos')}
+        </Link>
+        <span>·</span>
         <Link href="/confidentialite" className="hover:text-accent transition-colors">
           {t('privacy')}
         </Link>
