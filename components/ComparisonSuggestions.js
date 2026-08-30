@@ -12,7 +12,7 @@ export default async function ComparisonSuggestions({ model, suggestions, bullet
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
-      <div className="bg-panel border border-line rounded-2xl p-5">
+      <div className="bg-panel border border-line rounded-base p-5 glow-accent-hover transition-shadow">
         <h2 className="text-[15px] m-0 mb-3.5">
           {t.rich('comparedTo', {
             name: primary.model.name,
@@ -45,7 +45,7 @@ export default async function ComparisonSuggestions({ model, suggestions, bullet
         </Link>
       </div>
 
-      <div className="bg-panel border border-line rounded-2xl p-5">
+      <div className="bg-panel border border-line rounded-base p-5 glow-accent-hover transition-shadow">
         <h2 className="text-[15px] m-0 mb-3.5">{t('popular')}</h2>
         <div className="flex flex-col gap-2">
           {suggestions.map(({ model: other, reason }) => {

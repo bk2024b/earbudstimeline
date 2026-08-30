@@ -12,21 +12,17 @@ export default async function TimelinePosition({ prev, current, next, gammeName,
   ].filter(Boolean);
 
   return (
-    <div className="bg-panel border border-line rounded-2xl p-5">
+    <div className="bg-panel border border-line rounded-base p-5">
       <h2 className="text-sm font-semibold mb-1">{t('title')}</h2>
       <p className="text-dim text-xs mb-5">{gammeName}</p>
-      <div className="flex flex-col">
+      <div className="flex flex-col" data-orientation="vertical">
         {items.map((item, i) => {
           const isCurrent = item.state === 'current';
           const isLast = i === items.length - 1;
           const inner = (
             <div className="flex items-start gap-3">
               <div className="flex flex-col items-center">
-                <span
-                  className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${
-                    isCurrent ? 'bg-accent shadow-[0_0_8px_#22D07A]' : 'bg-panel2 border border-dim'
-                  }`}
-                />
+                <span className="timeline-line-point shrink-0 mt-1" data-active={isCurrent} />
                 {!isLast && <span className="w-px flex-1 bg-line my-1" style={{ minHeight: 26 }} />}
               </div>
               <div className={isLast ? 'pb-0' : 'pb-6'}>

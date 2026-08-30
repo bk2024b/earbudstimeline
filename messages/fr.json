@@ -1,5 +1,8 @@
 {
   "nav": {
+    "database": "Database",
+    "explore": "Explorer",
+    "insights": "Insights",
     "finder": "Trouver mes écouteurs",
     "brands": "Marques",
     "years": "Années",
@@ -335,7 +338,8 @@
   },
   "searchBar": {
     "placeholder": "Rechercher un écouteur, une marque...",
-    "ariaLabel": "Rechercher"
+    "ariaLabel": "Rechercher",
+    "overlayTitle": "Que recherchez-vous ?"
   },
   "techHub": {
     "models": "Modèles",

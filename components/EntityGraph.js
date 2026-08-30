@@ -15,7 +15,7 @@ function Node({ href, eyebrow, label, active, icon: Icon, className = '' }) {
     <div
       className={`flex flex-col items-center text-center gap-1 rounded-xl border px-3.5 py-3 min-w-[92px] transition-colors ${
         active
-          ? 'bg-accent/10 border-accent text-fg'
+          ? 'bg-accent/10 border-accent text-fg glow-accent'
           : 'bg-panel2 border-line text-dim hover:border-accent hover:text-fg'
       } ${className}`}
     >
@@ -28,6 +28,19 @@ function Node({ href, eyebrow, label, active, icon: Icon, className = '' }) {
   return (
     <Link href={href} className="focus-visible:ring-2 focus-visible:ring-accent/60 rounded-xl">
       {content}
+    </Link>
+  );
+}
+
+// Branche techno = "Entity Bridge" du design bible : lien inline en pilule,
+// pas une carte encadrée — distingue visuellement "vers une autre entité du
+// même produit" (Node, encadré) de "vers une couche de metadata plus
+// profonde" (Bridge, pilule).
+function TechBridge({ href, label, icon: Icon }) {
+  return (
+    <Link href={href} className="entity-bridge">
+      {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
+      {label}
     </Link>
   );
 }
@@ -46,7 +59,7 @@ export default function EntityGraph({ model: m, brand, prev, next, locale }) {
   ].filter(Boolean);
 
   return (
-    <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-12">
+    <div className="bg-panel border border-line rounded-base p-5 sm:p-6 mb-12">
       <div className="flex items-center gap-2 mb-5">
         <GitBranch className="w-4 h-4 text-accent" />
         <h2 className="text-[15px] m-0">{t('Entity graph', "Graphe d'entités")}</h2>
@@ -88,9 +101,9 @@ export default function EntityGraph({ model: m, brand, prev, next, locale }) {
       {/* Branches techno : chaque caractéristique clé du modèle, reliée à son hub */}
       {techNodes.length > 0 && (
         <div className="border-t border-line pt-4">
-          <div className="flex flex-wrap gap-2.5 justify-center">
+          <div className="flex flex-wrap gap-2 justify-center">
             {techNodes.map((node) => (
-              <Node key={node.href} href={node.href} label={node.label} icon={node.icon} />
+              <TechBridge key={node.href} href={node.href} label={node.label} icon={node.icon} />
             ))}
           </div>
         </div>

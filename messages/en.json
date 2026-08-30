@@ -1,5 +1,8 @@
 {
   "nav": {
+    "database": "Database",
+    "explore": "Explore",
+    "insights": "Insights",
     "finder": "Find Earbuds",
     "brands": "Brands",
     "years": "Years",
@@ -335,7 +338,8 @@
   },
   "searchBar": {
     "placeholder": "Search an earbud, a brand...",
-    "ariaLabel": "Search"
+    "ariaLabel": "Search",
+    "overlayTitle": "What are you looking for?"
   },
   "techHub": {
     "models": "Models",

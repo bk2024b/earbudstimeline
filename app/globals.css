@@ -2,54 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Thème sombre par défaut (valeurs historiques du site, inchangées) */
+/* Thème sombre par défaut — recalibré sur le design bible "Sonic Chronology".
+   --color-accent reste #22D07A (déjà la valeur historique du site, aucun
+   changement de marque) ; ce qui bouge, c'est l'échelle de surfaces vers le
+   "Void and Signal" quasi noir du design bible. */
 :root {
-  --color-page: #0A0A0B;
-  --color-panel: #141416;
-  --color-panel2: #1C1C1F;
-  --color-line: #27272A;
+  --color-page: #131313;
+  --color-panel: #1C1B1B;
+  --color-panel2: #201F1F;
+  --color-line: rgba(255, 255, 255, 0.08);
   --color-dim: #9A9AA3;
-  --color-fg: #FFFFFF;
+  --color-fg: #E5E2E1;
   --color-fg-muted: #E4E4E7;
   --color-table-border: #1F2430;
   --color-table-head-bg: #141822;
   --color-table-hover: rgba(255, 255, 255, 0.02);
-  /* Valeurs historiques, calibrées pour le fond sombre (contraste ~9.8:1 / ~11.2:1) */
   --color-accent: #22D07A;
   --color-amber: #FFB454;
+  /* Nouveaux tokens transverses (design bible dark) */
+  --color-glow: rgba(34, 208, 122, 0.1);
+  --color-bridge-bg: rgba(34, 208, 122, 0.1);
+  --radius-base: 1rem;
 }
 
+/* Thème clair — recalibré sur le design bible "Obsidian Archive Light"
+   (pendant clair officiel de Sonic Chronology, pas un thème improvisé).
+   L'accent #1DB96B est la valeur donnée par ce design bible, déjà calibrée
+   par lui pour l'accessibilité sur fond clair. */
 html.light {
-  --color-page: #FFFFFF;
-  --color-panel: #F7F7F8;
-  --color-panel2: #EFEFF1;
-  --color-line: #E4E4E7;
-  --color-dim: #6B6B76;
-  --color-fg: #111113;
-  --color-fg-muted: #3F3F46;
+  --color-page: #F5F7F6;
+  --color-panel: #FFFFFF;
+  --color-panel2: #EEF1F0;
+  --color-line: rgba(0, 0, 0, 0.08);
+  --color-dim: #535C57;
+  --color-fg: #050505;
+  --color-fg-muted: #3D4A3F;
   --color-table-border: #E4E4E7;
   --color-table-head-bg: #F4F4F5;
   --color-table-hover: rgba(0, 0, 0, 0.02);
-  /* Teintes assombries : les valeurs sombres (#22D07A / #FFB454) tombent à
-     ~2:1 et ~1.76:1 sur fond blanc, très sous le seuil AA (4.5:1). Ces
-     variantes gardent la même teinte mais atteignent ~5.5:1 / ~5.0:1. */
-  --color-accent: #047857;
+  --color-accent: #1DB96B;
   --color-amber: #B45309;
+  --color-glow: rgba(29, 185, 107, 0.12);
+  --color-bridge-bg: rgba(29, 185, 107, 0.1);
+  --radius-base: 0.25rem;
 }
 
 .force-dark {
-  --color-page: #0A0A0B;
-  --color-panel: #141416;
-  --color-panel2: #1C1C1F;
-  --color-line: #27272A;
+  --color-page: #131313;
+  --color-panel: #1C1B1B;
+  --color-panel2: #201F1F;
+  --color-line: rgba(255, 255, 255, 0.08);
   --color-dim: #9A9AA3;
-  --color-fg: #FFFFFF;
+  --color-fg: #E5E2E1;
   --color-fg-muted: #E4E4E7;
   --color-table-border: #1F2430;
   --color-table-head-bg: #141822;
   --color-table-hover: rgba(255, 255, 255, 0.02);
   --color-accent: #22D07A;
   --color-amber: #FFB454;
+  --color-glow: rgba(34, 208, 122, 0.1);
+  --color-bridge-bg: rgba(34, 208, 122, 0.1);
+  --radius-base: 1rem;
 }
 
 html { background: var(--color-page); }
@@ -57,6 +70,92 @@ html { background: var(--color-page); }
 body { font-family: var(--font-body), system-ui, sans-serif; }
 
 ::selection { background: rgba(70, 224, 200, 0.25); }
+
+/* ==========================================================================
+   Design bible — utilitaires transverses (Sonic Chronology / Obsidian
+   Archive Light). Réutilisés par les hooks d'exploration (Evolution,
+   Explore This Story, Same Year...) et par le restyling des composants
+   existants — aucun composant n'est modifié dans cette passe, seuls les
+   tokens/utilitaires sont posés.
+   ========================================================================== */
+
+/* Timeline Line — trait 1px + points, motif central du design (home,
+   fiche produit, Explore This Story, Global Search). */
+.timeline-line {
+  position: relative;
+}
+.timeline-line::before {
+  content: '';
+  position: absolute;
+  background: var(--color-line);
+}
+.timeline-line[data-orientation='vertical']::before {
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  transform: translateX(-50%);
+}
+.timeline-line[data-orientation='horizontal']::before {
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  transform: translateY(-50%);
+}
+.timeline-line-point {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-dim);
+  background: var(--color-page);
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.timeline-line-point[data-active='true'] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-glow);
+}
+
+/* Glow — halo vert subtil pour les états actifs/hover des cards signature */
+.glow-accent {
+  box-shadow: 0 0 20px var(--color-glow);
+}
+.glow-accent-hover:hover {
+  box-shadow: 0 0 20px var(--color-glow);
+}
+
+/* Entity Bridge — lien contextuel inline en pilule (concept du design bible
+   clair, réutilisé aussi en dark) pour les hooks type Curiosity/Technology. */
+.entity-bridge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--color-bridge-bg);
+  color: var(--color-accent);
+  border-radius: 9999px;
+  padding: 0.125rem 0.625rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+.entity-bridge:hover {
+  background: var(--color-glow);
+}
+
+/* Path Indicator — style "Journey Tracker" du design bible clair (labels
+   d'étapes/breadcrumb techniques) : Space Grotesk, majuscules, tracking large. */
+.path-indicator {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
 
 .skip-link {
   position: absolute;

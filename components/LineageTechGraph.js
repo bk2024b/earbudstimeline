@@ -9,23 +9,17 @@ import { slugify } from '@/lib/slug';
 // modèle. "Cette gamme a eu du Bluetooth 5.0 puis 5.3" en un coup d'œil,
 // chaque valeur cliquant vers son hub technologique.
 
-function Chip({ href, label, icon: Icon, tone = 'default' }) {
-  const toneClass =
-    tone === 'accent'
-      ? 'bg-accent/10 border-accent text-fg'
-      : 'bg-panel2 border-line text-dim hover:border-accent hover:text-fg';
+// Technologies de la lignée = "Entity Bridges" du design bible (liens
+// inline en pilule vers une couche de metadata plus profonde).
+function Chip({ href, label, icon: Icon }) {
   const content = (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-colors ${toneClass}`}>
+    <span className="entity-bridge">
       {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
       {label}
     </span>
   );
   if (!href) return content;
-  return (
-    <Link href={href} className="focus-visible:ring-2 focus-visible:ring-accent/60 rounded-full">
-      {content}
-    </Link>
-  );
+  return <Link href={href}>{content}</Link>;
 }
 
 export default function LineageTechGraph({ brand, brandId, gammeName, gammeSlug, models, locale }) {
@@ -46,7 +40,7 @@ export default function LineageTechGraph({ brand, brandId, gammeName, gammeSlug,
   ].filter(Boolean);
 
   return (
-    <div className="bg-panel border border-line rounded-2xl p-5 sm:p-6 mb-12">
+    <div className="bg-panel border border-line rounded-base p-5 sm:p-6 mb-12">
       <div className="flex items-center gap-2 mb-5">
         <GitBranch className="w-4 h-4 text-accent" />
         <h2 className="text-[15px] m-0">{t('Entity graph', "Graphe d'entités")}</h2>

@@ -5,11 +5,11 @@ import { NextIntlClientProvider } from 'next-intl';
 import { routing } from '@/i18n/routing';
 import { display, body, mono } from '@/lib/fonts';
 import Header from '@/components/Header';
+import DiscoveryTrail from '@/components/DiscoveryTrail';
 import MicrosoftClarity from '@/components/MicrosoftClarity';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
-import CookieConsent from '@/components/CookieConsent';
 import SocialBar from '@/components/SocialBar';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, ogDefaults } from '@/lib/seo';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -32,6 +32,7 @@ export async function generateMetadata({ params }) {
       languages: { en: '/en', fr: '/fr' },
     },
     openGraph: {
+      ...ogDefaults(`/${locale}`, locale),
       title: 'EarbudsTimeline',
       description: isEn
         ? 'The complete history of wireless earbuds, brand by brand.'
@@ -41,11 +42,20 @@ export async function generateMetadata({ params }) {
   };
 }
 
+import { getSearchCatalog, getBrands } from '@/lib/queries';
+
 export default async function LocaleLayout({ children, params }) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
 
-  const messages = (await import(`../../messages/${locale}.json`)).default;
+  // Le Header (composant client, présent sur toutes les pages) n'a besoin que
+  // des champs de recherche — getSearchCatalog() évite d'envoyer le catalogue
+  // complet (select('*')) au client sur chaque navigation. Voir GlobalSearchModal.
+  const [messages, models, brands] = await Promise.all([
+    (await import(`../../messages/${locale}.json`)).default,
+    getSearchCatalog().catch(() => []),
+    getBrands().catch(() => []),
+  ]);
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
@@ -56,9 +66,10 @@ export default async function LocaleLayout({ children, params }) {
         {locale === 'en' ? 'Skip to content' : 'Aller au contenu'}
       </a>
       <div className="max-w-[1280px] mx-auto px-5 pb-20">
-        <Header />
+        <Header models={models} brands={brands} />
         <main id="main-content">{children}</main>
       </div>
+      <DiscoveryTrail locale={locale} />
       {/* Chargé ici (routes publiques [locale] uniquement) et pas dans le
           layout racine : Clarity fait de l'enregistrement de session, GA
           mesure du trafic réel — dans les deux cas on évite de compter
@@ -66,7 +77,6 @@ export default async function LocaleLayout({ children, params }) {
       <MicrosoftClarity />
       <GoogleAnalytics />
       <SocialBar />
-      <CookieConsent />
     </NextIntlClientProvider>
   );
 }

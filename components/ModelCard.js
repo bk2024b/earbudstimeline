@@ -10,7 +10,7 @@ export default async function ModelCard({ m, color, locale }) {
   return (
     <Link
       href={`/ecouteurs/${m.id}`}
-      className="block bg-panel border border-line rounded-xl p-4 hover:border-accent hover:-translate-y-0.5 transition-all"
+      className="block bg-panel border border-line rounded-base p-4 hover:border-accent hover:-translate-y-0.5 hover:shadow-glow transition-all"
     >
       <div className="relative w-full aspect-[4/3] rounded-lg bg-panel2 flex items-center justify-center mb-3 overflow-hidden">
         {m.image_url ? (

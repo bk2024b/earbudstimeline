@@ -109,7 +109,7 @@ function GlobalSearchModal() {
   return (
     <>
       {/* Bouton déclencheur dans le Header — icône seule (desktop + mobile),
-          le champ complet n'apparaît que dans la modale au clic/raccourci. */}
+          le champ complet n'apparaît que dans l'overlay au clic/raccourci. */}
       <button
         type="button"
         onClick={() => setIsOpen(true)}
@@ -119,22 +119,38 @@ function GlobalSearchModal() {
         <Search className="w-4 h-4" />
       </button>
 
-      {/* Modale plein écran */}
+      {/* Overlay plein écran par-dessus la page actuelle (reste sur l'URL
+          courante, se ferme au clic/Esc — pas de navigation vers une page
+          séparée, voir décision produit). */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 sm:pt-28 px-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          {/* Overlay clic pour fermer */}
-          <div className="fixed inset-0" onClick={() => setIsOpen(false)} />
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-page/97 backdrop-blur-md animate-fadeIn overflow-y-auto"
+          onClick={() => setIsOpen(false)}
+        >
+          <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-14" onClick={(e) => e.stopPropagation()}>
+            {/* Barre du haut : logo + fermer */}
+            <div className="flex items-center justify-between mb-10 sm:mb-14">
+              <span className="font-display font-bold text-base sm:text-lg">EarbudsTimeline</span>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-1.5 text-dim hover:text-fg text-xs sm:text-sm transition-colors"
+              >
+                <X className="w-4 h-4" />
+                <span className="path-indicator">ESC</span>
+              </button>
+            </div>
 
-          <div
-            className="relative w-full max-w-xl bg-panel border border-line rounded-2xl shadow-2xl overflow-hidden z-10 flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Champ de recherche */}
-            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-line bg-panel2/50">
+            {/* Headline + champ de recherche */}
+            <h1 className="font-display font-bold text-[2rem] sm:text-[3.5rem] leading-[1.05] mb-6 sm:mb-8">
+              {t('overlayTitle')}
+            </h1>
+
+            <div className="flex items-center gap-3 border-b border-line pb-3.5 mb-8 sm:mb-12">
               {isLoading ? (
-                <Loader2 className="w-5 h-5 text-accent shrink-0 animate-spin" />
+                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-accent shrink-0 animate-spin" />
               ) : (
-                <Search className="w-5 h-5 text-accent shrink-0" />
+                <Search className="w-5 h-5 sm:w-6 sm:h-6 text-accent shrink-0" />
               )}
               <input
                 ref={inputRef}
@@ -142,81 +158,77 @@ function GlobalSearchModal() {
                 onChange={(e) => setQ(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={t('placeholder')}
-                className="flex-1 bg-transparent text-sm sm:text-base text-fg placeholder:text-dim outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
+                className="flex-1 bg-transparent text-lg sm:text-2xl font-display text-fg placeholder:text-dim outline-none focus-visible:ring-0"
               />
               {q && (
-                <button
-                  type="button"
-                  onClick={() => setQ('')}
-                  className="text-dim hover:text-fg p-1"
-                >
+                <button type="button" onClick={() => setQ('')} className="text-dim hover:text-fg p-1 shrink-0">
                   <X className="w-4 h-4" />
                 </button>
               )}
-              <kbd className="font-mono text-[10px] bg-panel border border-line px-2 py-0.5 rounded text-dim shrink-0">
-                ESC
+              <kbd className="hidden sm:inline-block font-mono text-[10px] bg-panel border border-line px-2 py-0.5 rounded text-dim shrink-0">
+                ⌘K
               </kbd>
             </div>
 
-            {/* Liste des résultats */}
-            <div className="max-h-[60vh] overflow-y-auto divide-y divide-line/40">
-              {q.trim() && !isLoading && results.length === 0 && (
-                <div className="p-8 text-center text-dim text-sm">
-                  Aucun écouteur trouvé pour &laquo; {q} &raquo;.
-                </div>
-              )}
+            {/* Résultats */}
+            {q.trim() && !isLoading && results.length === 0 && (
+              <div className="text-dim text-sm py-8">
+                Aucun écouteur trouvé pour « {q} ».
+              </div>
+            )}
 
-              {!q.trim() && (
-                <div className="p-6 text-center text-xs text-dim">
-                  Tapez le nom d&apos;un modèle (ex: <i>AirPods Pro, WF-1000XM5, Galaxy Buds</i>) ou d&apos;une marque...
-                </div>
-              )}
+            {!q.trim() && (
+              <div className="text-dim text-sm py-4">
+                Tapez le nom d&apos;un modèle (ex : <i>AirPods Pro, WF-1000XM5, Galaxy Buds</i>) ou d&apos;une marque…
+              </div>
+            )}
 
-              {results.map((m, idx) => {
-                const isSelected = idx === selectedIndex;
-                return (
-                  <div
-                    key={m.id}
-                    onClick={() => handleSelect(m)}
-                    onMouseEnter={() => setSelectedIndex(idx)}
-                    className={`flex items-center justify-between p-3.5 sm:px-4 cursor-pointer transition-colors ${
-                      isSelected ? 'bg-accent/15 text-fg' : 'hover:bg-panel2 text-dim'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="shrink-0">
-                        <BrandBadge brand={{ id: m.brand_id, name: m.brand_name, color: m.brand_color, image_url: m.brand_image_url }} size={24} />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-fg truncate flex items-center gap-2">
-                          <span>{m.name}</span>
-                          {m.anc && (
-                            <span className="text-[10px] bg-panel border border-line text-emerald-400 px-1.5 py-0.2 rounded font-normal shrink-0">
-                              ANC
-                            </span>
-                          )}
+            {results.length > 0 && (
+              <div>
+                <div className="path-indicator text-dim mb-4">Earbuds</div>
+                <div className="flex flex-col divide-y divide-line">
+                  {results.map((m, idx) => {
+                    const isSelected = idx === selectedIndex;
+                    return (
+                      <div
+                        key={m.id}
+                        onClick={() => handleSelect(m)}
+                        onMouseEnter={() => setSelectedIndex(idx)}
+                        className={`flex items-center justify-between gap-3 py-3.5 sm:py-4 cursor-pointer rounded-base transition-colors ${
+                          isSelected ? 'bg-panel border-accent/60 px-3.5 -mx-3.5' : 'hover:bg-panel/60 px-3.5 -mx-3.5'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="shrink-0">
+                            <BrandBadge brand={{ id: m.brand_id, name: m.brand_name, color: m.brand_color, image_url: m.brand_image_url }} size={28} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm sm:text-base font-semibold text-fg truncate flex items-center gap-2">
+                              <span>{m.name}</span>
+                              {m.anc && (
+                                <span className="text-[10px] bg-panel2 border border-line text-accent px-1.5 py-0.2 rounded font-normal shrink-0">
+                                  ANC
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-dim truncate">
+                              {m.brand_name} • {m.gamme} • {m.release_date?.slice(0, 4)}
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-xs text-dim truncate">
-                          {m.brand_name} • {m.gamme} • {m.release_date?.slice(0, 4)}
+
+                        <div className="flex items-center gap-3 shrink-0 ml-3">
+                          {m.price && <span className="font-display text-sm font-bold text-fg">{m.price} $</span>}
+                          <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-accent' : 'text-dim/40'}`} />
                         </div>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-                    <div className="flex items-center gap-3 shrink-0 ml-3">
-                      {m.price && (
-                        <span className="font-display text-sm font-bold text-fg">
-                          {m.price} $
-                        </span>
-                      )}
-                      <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-accent' : 'text-dim/40'}`} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Pied de la modale */}
-            <div className="p-2.5 bg-panel2 border-t border-line text-[11px] text-dim flex items-center justify-between px-4">
+            <div className="mt-10 pt-4 border-t border-line text-[11px] text-dim flex items-center justify-between">
               <span>↑↓ pour naviguer</span>
               <span>Entrée pour ouvrir</span>
             </div>

@@ -10,7 +10,7 @@ export default function ArticleProductCard({ model, brand, locale = 'fr' }) {
   const isEn = locale === 'en';
 
   return (
-    <div className="my-8 rounded-2xl border border-line bg-panel p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-accent/50 transition-all">
+    <div className="my-8 rounded-base border border-line bg-panel p-5 sm:p-6 shadow-xl relative overflow-hidden group hover:border-accent/50 hover:shadow-glow transition-all">
       {/* Halo lumineux subtil */}
       <div className="absolute top-0 right-0 w-48 h-48 bg-accent/5 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
 

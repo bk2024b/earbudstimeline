@@ -7,6 +7,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ThemeToggle from '@/components/ThemeToggle';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
 import MobileNav from '@/components/MobileNav';
+import NavDropdown from '@/components/NavDropdown';
 import { Sparkles } from 'lucide-react';
 
 export default function Header() {
@@ -18,11 +19,17 @@ export default function Header() {
     return pathname.startsWith(path);
   };
 
+  const databaseItems = [
+    { href: '/ecouteurs', label: t('explore') },
+    { href: '/timeline', label: 'Timeline' },
+    { href: '/insights', label: t('insights') },
+  ];
+
   return (
     <header className="py-3 sm:py-5 mb-6 sm:mb-8 sticky top-0 bg-page/95 backdrop-blur z-20 border-b border-line/40 flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-3 sm:gap-6">
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <Image src="/logo-icon.png" alt="" width={28} height={28} priority />
+          <Image src="/logo-icon.png" alt="EarbudsTimeline" width={28} height={28} priority />
           <span className="font-display font-bold text-lg hidden xs:inline">EarbudsTimeline</span>
           <span className="sr-only xs:hidden">EarbudsTimeline</span>
         </Link>
@@ -33,7 +40,7 @@ export default function Header() {
             <span>{t('finder')}</span>
           </Link>
           <Link href="/marques" className={`transition-colors shrink-0 ${isNavActive('/marques') ? 'text-fg font-semibold' : 'hover:text-fg'}`}>{t('brands')}</Link>
-          <Link href="/timeline" className={`transition-colors shrink-0 ${isNavActive('/timeline') ? 'text-fg font-semibold' : 'hover:text-fg'}`}>Timeline</Link>
+          <NavDropdown label={t('database')} items={databaseItems} />
           <Link href="/annees" className={`transition-colors shrink-0 ${isNavActive('/annees') ? 'text-fg font-semibold' : 'hover:text-fg'}`}>{t('years')}</Link>
           <Link href="/technologies" className={`transition-colors shrink-0 ${isNavActive('/technologies') ? 'text-fg font-semibold' : 'hover:text-fg'}`}>{t('technologies')}</Link>
           <Link href="/comparaisons" className={`transition-colors shrink-0 ${isNavActive('/comparaisons') || isNavActive('/comparer') ? 'text-fg font-semibold' : 'hover:text-fg'}`}>{t('comparisons')}</Link>
@@ -51,7 +58,9 @@ export default function Header() {
       <div className="flex md:hidden items-center gap-2 overflow-x-auto no-scrollbar w-full pt-1 pb-0.5">
         <Link href="/trouver-mes-ecouteurs" className={`transition-all text-xs font-medium flex items-center gap-1 rounded-full px-3 py-1 shrink-0 ${isNavActive('/trouver-mes-ecouteurs') ? 'bg-accent text-ink font-semibold shadow-sm' : 'text-accent bg-accent/10 border border-accent/30'}`}><Sparkles className="w-3 h-3" /><span>{t('finder')}</span></Link>
         <Link href="/marques" className={`transition-colors text-xs px-3 py-1 rounded-full border border-line shrink-0 ${isNavActive('/marques') ? 'bg-panel2 text-accent font-semibold border-accent/40' : 'text-dim hover:text-fg'}`}>{t('brands')}</Link>
+        <Link href="/ecouteurs" className={`transition-colors text-xs px-3 py-1 rounded-full border border-line shrink-0 ${isNavActive('/ecouteurs') ? 'bg-panel2 text-accent font-semibold border-accent/40' : 'text-dim hover:text-fg'}`}>{t('explore')}</Link>
         <Link href="/timeline" className={`transition-colors text-xs px-3 py-1 rounded-full border border-line shrink-0 ${isNavActive('/timeline') ? 'bg-panel2 text-accent font-semibold border-accent/40' : 'text-dim hover:text-fg'}`}>Timeline</Link>
+        <Link href="/insights" className={`transition-colors text-xs px-3 py-1 rounded-full border border-line shrink-0 ${isNavActive('/insights') ? 'bg-panel2 text-accent font-semibold border-accent/40' : 'text-dim hover:text-fg'}`}>{t('insights')}</Link>
         <Link href="/comparaisons" className={`transition-colors text-xs px-3 py-1 rounded-full border border-line shrink-0 ${isNavActive('/comparaisons') ? 'bg-panel2 text-accent font-semibold border-accent/40' : 'text-dim hover:text-fg'}`}>{t('comparisons')}</Link>
         <Link href="/technologies" className={`transition-colors text-xs px-3 py-1 rounded-full border border-line shrink-0 ${isNavActive('/technologies') ? 'bg-panel2 text-accent font-semibold border-accent/40' : 'text-dim hover:text-fg'}`}>{t('technologies')}</Link>
         <Link href="/guides" className={`transition-colors text-xs px-3 py-1 rounded-full border border-line shrink-0 ${isNavActive('/guides') ? 'bg-panel2 text-accent font-semibold border-accent/40' : 'text-dim hover:text-fg'}`}>{t('guides') || 'Guides'}</Link>

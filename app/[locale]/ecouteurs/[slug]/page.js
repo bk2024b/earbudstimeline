@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { Battery, BatteryFull, Droplet, Bluetooth, ShoppingCart, ExternalLink, TrendingUp } from 'lucide-react';
 import { getEarbudBySlug, getGammeModels, getBrands, getAllEarbuds, getPublishedArticles } from '@/lib/queries';
 import { findRelatedArticles } from '@/lib/relatedArticles';
+import { getModelsByYear } from '@/lib/sameYear';
+import { buildCuriosityInsight } from '@/lib/curiosity';
 import { fmtDate, fmtH, fmtG, fmtMoney, yearOf, pct, displayTagline } from '@/lib/format';
 import { getComparisonSuggestions, buildDiffBullets } from '@/lib/compare';
 import { slugify } from '@/lib/slug';
@@ -16,6 +18,10 @@ import RelatedArticles from '@/components/RelatedArticles';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import TimelinePosition from '@/components/TimelinePosition';
 import EntityGraph from '@/components/EntityGraph';
+import SameYearHook from '@/components/SameYearHook';
+import NextExploration from '@/components/NextExploration';
+import ExploreThisStory from '@/components/ExploreThisStory';
+import CuriosityHook from '@/components/CuriosityHook';
 import AdSlot from '@/components/AdSlot';
 import { Badge, Footer } from '@/components/UI';
 
@@ -89,6 +95,26 @@ export default async function ModelPage({ params }) {
   const comparisonBullets = comparisonSuggestions.length > 0 ? buildDiffBullets(m, comparisonSuggestions[0].model, tDiff) : [];
   const relatedArticles = findRelatedArticles(articles || [], [brand?.name || m.brand_id, m.gamme, m.name]);
   const homeLabel = locale === 'en' ? 'Home' : 'Accueil';
+  const releaseYear = yearOf(m.release_date);
+  const sameYearModels = getModelsByYear(allModels, releaseYear, m.id);
+  const curiosityInsight = buildCuriosityInsight(m, prev, { locale });
+  const rival = comparisonSuggestions.find((s) => s.reason === tComp('reasonRival')) || comparisonSuggestions[0];
+
+  // Next Exploration : composition pure de liens déjà calculés ci-dessus,
+  // aucune nouvelle donnée. "Continue" suit la lignée chronologique, "Deeper"
+  // va vers la marque, "Sideways" vers le rival déjà identifié par
+  // getComparisonSuggestions.
+  const continueItem = next
+    ? { title: next.name, subtitle: locale === 'en' ? 'Next generation' : 'Génération suivante', href: `/ecouteurs/${next.id}` }
+    : { title: locale === 'en' ? 'Explore the full timeline' : 'Explorer la timeline complète', href: '/timeline' };
+  const deeperItem = {
+    title: brand?.name || m.brand_id,
+    subtitle: locale === 'en' ? `All ${brand?.name || m.brand_id} earbuds` : `Tous les écouteurs ${brand?.name || m.brand_id}`,
+    href: `/marques/${m.brand_id}`,
+  };
+  const sidewaysItem = rival
+    ? { title: rival.model.name, subtitle: rival.reason, href: `/comparaisons/${buildComparisonSlug(m.id, rival.model.id)}` }
+    : { title: locale === 'en' ? 'Browse comparisons' : 'Parcourir les comparaisons', href: '/comparaisons' };
 
   function metric(label, key, higherIsBetter, fmt) {
     const cur = Number(m[key]) || 0;
@@ -200,6 +226,8 @@ export default async function ModelPage({ params }) {
           <KeySpec icon={Bluetooth} value={m.bluetooth} label={t('bluetooth')} />
         </div>
 
+        <CuriosityHook insight={curiosityInsight} />
+
         <div className="bg-panel border border-line rounded-2xl px-5 pt-5 pb-1 mb-12">
           <h2 className="text-[15px] m-0 mb-1">{t('lineageTitle')}</h2>
           <p className="text-dim text-xs m-0 mb-4">
@@ -220,6 +248,16 @@ export default async function ModelPage({ params }) {
         </div>
 
         <EntityGraph model={m} brand={brand} prev={prev} next={next} locale={locale} />
+
+        <ExploreThisStory
+          lineup={lineup}
+          currentId={m.id}
+          brandId={m.brand_id}
+          brandName={brand?.name || m.brand_id}
+          gammeName={m.gamme}
+          gammeSlug={slugify(m.gamme)}
+          locale={locale}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
           <SpecGroup title={t('audioGroup')}>
@@ -250,10 +288,6 @@ export default async function ModelPage({ params }) {
           </SpecGroup>
         </div>
 
-        <Link href={`/annees/${yearOf(m.release_date)}`} className="inline-block text-accent text-xs hover:underline mb-8">
-          {t('seeReleasedIn', { year: yearOf(m.release_date) })}
-        </Link>
-
         <AdSlot
           variant="native"
           zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
@@ -269,12 +303,16 @@ export default async function ModelPage({ params }) {
           locale={locale}
         />
 
+        <SameYearHook year={releaseYear} models={sameYearModels} brandOf={brandOf} locale={locale} />
+
         <RelatedArticles articles={relatedArticles} locale={locale} />
 
         <div className="bg-panel border border-dashed border-line rounded-xl p-5 flex items-center justify-between gap-4 flex-wrap mb-5">
           <p className="m-0 text-[13.5px] text-dim">{t('ownAlready')}</p>
           <QuickCompareSelect currentId={m.id} brands={brands} allModels={allModels} placeholder={t('chooseModel')} />
         </div>
+
+        <NextExploration continueItem={continueItem} deeperItem={deeperItem} sidewaysItem={sidewaysItem} locale={locale} />
       </div>
 
       <aside className="flex flex-col gap-5">

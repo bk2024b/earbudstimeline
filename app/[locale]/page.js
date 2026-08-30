@@ -179,7 +179,8 @@ export default async function HomePage({ params }) {
       />
 
       {/* Teaser Timeline — la timeline interactive complète (filtres marque/ANC/BT)
-          vit désormais sur sa propre page /timeline, avec les graphes d'évolution. */}
+          vit sur sa propre page /timeline ; les graphes d'évolution
+          (autonomie/poids/prix) vivent sur /insights. */}
       <div id="timeline" className="bg-panel border border-line rounded-2xl p-6 sm:p-8 mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="max-w-xl">
           <h2 className="font-display font-bold text-2xl text-fg mb-2">
@@ -187,17 +188,26 @@ export default async function HomePage({ params }) {
           </h2>
           <p className="text-xs sm:text-sm text-dim leading-relaxed">
             {locale === 'en'
-              ? `Every model, filterable by brand, ANC and Bluetooth version — plus how battery life, weight and price evolved across ${yearsCovered} years.`
-              : `Tous les modèles, filtrables par marque, ANC et version Bluetooth — et l'évolution de l'autonomie, du poids et du prix sur ${yearsCovered} ans.`}
+              ? `Every model, filterable by brand, ANC and Bluetooth version. Or see how battery life, weight and price evolved across ${yearsCovered} years in Insights.`
+              : `Tous les modèles, filtrables par marque, ANC et version Bluetooth. Ou explorez l'évolution de l'autonomie, du poids et du prix sur ${yearsCovered} ans dans Insights.`}
           </p>
         </div>
-        <Link
-          href="/timeline"
-          className="shrink-0 bg-accent text-ink font-bold rounded-xl px-6 py-3 text-sm inline-flex items-center gap-2 hover:opacity-90 transition-all shadow-lg"
-        >
-          <span>{locale === 'en' ? 'Open the timeline' : 'Ouvrir la timeline'}</span>
-          <span>→</span>
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-2.5 shrink-0">
+          <Link
+            href="/timeline"
+            className="bg-accent text-ink font-bold rounded-xl px-6 py-3 text-sm inline-flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg"
+          >
+            <span>{locale === 'en' ? 'Open the timeline' : 'Ouvrir la timeline'}</span>
+            <span>→</span>
+          </Link>
+          <Link
+            href="/insights"
+            className="border border-accent/40 text-accent rounded-xl px-6 py-3 text-sm inline-flex items-center justify-center gap-2 hover:bg-accent/10 transition-all"
+          >
+            <span>{locale === 'en' ? 'See insights' : 'Voir les insights'}</span>
+            <span>→</span>
+          </Link>
+        </div>
       </div>
 
       {/* Comparaisons populaires + Articles à la une */}

@@ -24,6 +24,16 @@ module.exports = {
         body: ['var(--font-body)', 'sans-serif'],
         mono: ['var(--font-mono)', 'monospace'],
       },
+      borderRadius: {
+        // Theme-aware : 1rem en dark (Sonic Chronology), 4px en light
+        // (Obsidian Archive Light "Soft-Technical"). Utilitaire `rounded-base`
+        // pour les NOUVEAUX composants (hooks) — n'affecte aucune classe
+        // rounded-xl/rounded-2xl déjà posée ailleurs dans le site.
+        base: 'var(--radius-base)',
+      },
+      boxShadow: {
+        glow: '0 0 20px var(--color-glow)',
+      },
       typography: {
         // Configuré directement sur le variant par défaut (pas prose-invert) avec des
         // variables CSS, pour que la même classe "prose" s'adapte automatiquement au
