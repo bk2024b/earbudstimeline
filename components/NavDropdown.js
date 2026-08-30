@@ -71,7 +71,7 @@ export default function NavDropdown({ label, items, className = '' }) {
         <div
           id={menuId}
           role="menu"
-          className="absolute left-0 top-full mt-2.5 min-w-[200px] rounded-base border border-line bg-panel/95 backdrop-blur-xl py-1.5 shadow-2xl z-50 animate-fadeIn"
+          className="absolute left-0 top-full mt-2.5 min-w-[210px] rounded-base border border-line bg-[#111111] py-1 shadow-[0_12px_40px_rgba(0,0,0,0.85)] z-50 animate-fadeIn overflow-hidden"
         >
           {items.map(({ href, label: itemLabel, description }) => {
             const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -81,8 +81,10 @@ export default function NavDropdown({ label, items, className = '' }) {
                 href={href}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className={`block px-4 py-2.5 text-xs uppercase tracking-wider font-display transition-colors ${
-                  active ? 'text-accent font-semibold bg-accent/5' : 'text-dim hover:text-fg hover:bg-panel2/60'
+                className={`block px-4 py-3 text-xs uppercase tracking-wider font-display border-b border-line/40 last:border-b-0 transition-colors ${
+                  active
+                    ? 'bg-[#1a1a1a] text-accent font-semibold'
+                    : 'bg-[#111111] text-dim hover:text-fg hover:bg-[#181818]'
                 }`}
               >
                 <span className="block">{itemLabel}</span>

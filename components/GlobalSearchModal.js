@@ -122,18 +122,18 @@ function GlobalSearchModal() {
       {/* Overlay plein écran par-dessus la page actuelle (reste sur l'URL
           courante, se ferme au clic/Esc — pas de navigation vers une page
           séparée, voir décision produit). */}
-      {/* Overlay modal palette — z-[100], positionné plus bas sous le header */}
+      {/* Overlay modal palette — z-[100], fond 100% opaque sur la boîte de recherche */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex justify-center items-start pt-16 sm:pt-24 px-4 overflow-y-auto animate-fadeIn"
+          className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex justify-center items-start pt-12 sm:pt-20 px-4 overflow-y-auto animate-fadeIn"
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="hardware-card bg-panel/95 border border-line/80 shadow-2xl w-full max-w-2xl p-5 sm:p-6 mb-12"
+            className="bg-[#111111] border border-line shadow-[0_25px_60px_rgba(0,0,0,0.9)] w-full max-w-2xl rounded-base p-5 sm:p-6 mb-12 relative text-fg"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Barre de recherche dans le panneau flottant */}
-            <div className="flex items-center gap-3 border-b border-line pb-3.5 mb-4">
+            <div className="flex items-center gap-3 border-b border-line/80 pb-3.5 mb-4">
               {isLoading ? (
                 <Loader2 className="w-5 h-5 text-accent shrink-0 animate-spin" />
               ) : (
@@ -155,7 +155,7 @@ function GlobalSearchModal() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-1 text-dim hover:text-fg text-xs font-mono px-2 py-1 rounded-base bg-panel2 border border-line transition-colors shrink-0"
+                className="flex items-center gap-1 text-dim hover:text-fg text-xs font-mono px-2 py-1 rounded-base bg-[#181818] border border-line transition-colors shrink-0"
               >
                 <span>ESC</span>
               </button>
@@ -163,21 +163,37 @@ function GlobalSearchModal() {
 
             {/* Résultats ou suggestions */}
             {q.trim() && !isLoading && results.length === 0 && (
-              <div className="text-dim text-xs sm:text-sm py-8 text-center font-mono">
+              <div className="text-dim text-xs sm:text-sm py-8 text-center font-mono bg-[#151515] rounded-base border border-line/40 my-2">
                 Aucun écouteur trouvé pour « {q} ».
               </div>
             )}
 
             {!q.trim() && (
-              <div className="text-dim text-xs py-4">
-                Tapez le nom d&apos;un modèle (ex : <i>AirPods Pro, WF-1000XM5, Galaxy Buds</i>) ou d&apos;une marque…
+              <div className="py-3">
+                <div className="text-dim text-xs mb-3 font-mono">
+                  Recherches populaires :
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {['AirPods Pro 2', 'WF-1000XM5', 'QuietComfort Ultra', 'Galaxy Buds3 Pro', 'Ear (a)'].map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => setQ(term)}
+                      className="px-3 py-1.5 rounded-base text-xs font-mono bg-[#181818] border border-line hover:border-accent hover:text-accent text-dim transition-colors"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
             {results.length > 0 && (
-              <div className="max-h-[55vh] overflow-y-auto pr-1">
-                <div className="path-indicator text-accent text-[11px] mb-2">Résultats ({results.length})</div>
-                <div className="flex flex-col divide-y divide-line/40">
+              <div className="mt-3">
+                <div className="path-indicator text-accent text-[11px] mb-2.5">
+                  Résultats ({results.length})
+                </div>
+                <div className="max-h-[55vh] overflow-y-auto space-y-2 pr-1">
                   {results.map((m, idx) => {
                     const isSelected = idx === selectedIndex;
                     return (
@@ -185,8 +201,10 @@ function GlobalSearchModal() {
                         key={m.id}
                         onClick={() => handleSelect(m)}
                         onMouseEnter={() => setSelectedIndex(idx)}
-                        className={`flex items-center justify-between gap-3 py-3 px-3 cursor-pointer rounded-base transition-colors ${
-                          isSelected ? 'bg-panel2/80 text-fg' : 'hover:bg-panel2/50 text-dim'
+                        className={`flex items-center justify-between gap-3 p-3.5 cursor-pointer rounded-base border transition-colors ${
+                          isSelected
+                            ? 'bg-[#1e1e1e] border-accent text-fg'
+                            : 'bg-[#151515] border-line/50 hover:bg-[#1a1a1a] hover:border-line text-dim'
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
@@ -202,7 +220,7 @@ function GlobalSearchModal() {
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-dim truncate font-mono">
+                            <div className="text-xs text-dim truncate font-mono mt-0.5">
                               {m.brand_name} · {m.gamme} · {m.release_date?.slice(0, 4)}
                             </div>
                           </div>
@@ -219,7 +237,7 @@ function GlobalSearchModal() {
               </div>
             )}
 
-            <div className="mt-4 pt-3 border-t border-line text-[11px] text-dim flex items-center justify-between font-mono">
+            <div className="mt-4 pt-3 border-t border-line/70 text-[11px] text-dim flex items-center justify-between font-mono">
               <span>↑↓ pour naviguer</span>
               <span>Entrée pour ouvrir</span>
             </div>
