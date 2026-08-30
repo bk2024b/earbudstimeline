@@ -14,7 +14,7 @@ const MODES = [
   { id: 'compare', label: 'Comparer' },
 ];
 
-const SLIDE_DURATION_MS = 5200;
+const SLIDE_DURATION_MS = 6500;
 
 // Card footprint — must match the width/height/margin set in explore.css
 // for .brand-card, since the spacing math below is computed from these.
@@ -130,10 +130,13 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
   const [slidePct, setSlidePct] = useState(0);
   const [eraYear, setEraYear] = useState(null);
   const [dragging, setDragging] = useState(false);
+  const [dragProgress, setDragProgress] = useState(0);
 
   const ringRef = useRef(null);
   const galaxyRef = useRef(null);
   const [galaxyNodes, setGalaxyNodes] = useState([]);
+  const wheelAccumulator = useRef(0);
+  const wheelLock = useRef(false);
 
   useEffect(() => {
     reduceMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -162,31 +165,48 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
 
   useEffect(() => {
     if (mode !== 'universe' || !autoplay) return undefined;
-    const id = setInterval(() => goToBrand(activeBrandIndex + 1), 3200);
+    const id = setInterval(() => goToBrand(activeBrandIndex + 1), 4800);
     return () => clearInterval(id);
   }, [mode, autoplay, activeBrandIndex, goToBrand]);
 
-  // pointer drag on the orbit ring
+  // Smooth continuous pointer drag on the orbit ring
   const dragState = useRef({ startX: 0, startIndex: 0 });
   function handlePointerDown(e) {
     setDragging(true);
+    setDragProgress(0);
     dragState.current = { startX: e.clientX, startIndex: activeBrandIndex };
     ringRef.current?.setPointerCapture(e.pointerId);
   }
   function handlePointerMove(e) {
     if (!dragging) return;
     const delta = e.clientX - dragState.current.startX;
-    const step = Math.trunc(delta / 90);
-    if (step !== 0) {
-      goToBrand(dragState.current.startIndex - step);
-    }
+    // Fractional step for real-time smooth feedback (140px = 1 brand)
+    const fractional = delta / 140;
+    setDragProgress(fractional);
   }
-  function handlePointerUp() { setDragging(false); }
+  function handlePointerUp() {
+    if (!dragging) return;
+    setDragging(false);
+    const target = Math.round(dragState.current.startIndex - dragProgress);
+    goToBrand(target);
+    setDragProgress(0);
+  }
 
+  // Smooth momentum wheel handler
   function handleWheel(e) {
     e.preventDefault();
-    if (Math.abs(e.deltaY) < 6) return;
-    goToBrand(activeBrandIndex + (e.deltaY > 0 ? 1 : -1));
+    if (wheelLock.current) return;
+    wheelAccumulator.current += e.deltaY;
+    const THRESHOLD = 60;
+    if (Math.abs(wheelAccumulator.current) >= THRESHOLD) {
+      const dir = wheelAccumulator.current > 0 ? 1 : -1;
+      wheelAccumulator.current = 0;
+      wheelLock.current = true;
+      goToBrand(activeBrandIndex + dir);
+      setTimeout(() => {
+        wheelLock.current = false;
+      }, reduceMotion.current ? 80 : 360);
+    }
   }
 
   // ---- History: chapter navigation ----
@@ -207,18 +227,26 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
     setTimeout(() => {
       setActiveChapterIndex(clamped);
       setChanging(false);
-    }, reduceMotion.current ? 0 : 260);
+    }, reduceMotion.current ? 0 : 340);
   }, [currentJourney, activeChapterIndex]);
 
   useEffect(() => { setActiveChapterIndex(0); }, [activeBrandIndex]);
 
-  // history wheel/keys/touch
+  // history wheel with momentum protection
   const historyLock = useRef(false);
   function handleHistoryWheel(e) {
     if (historyLock.current) return;
-    historyLock.current = true;
-    showChapter(activeChapterIndex + (e.deltaY > 0 ? 1 : -1));
-    setTimeout(() => { historyLock.current = false; }, reduceMotion.current ? 60 : 420);
+    wheelAccumulator.current += e.deltaY;
+    const THRESHOLD = 70;
+    if (Math.abs(wheelAccumulator.current) >= THRESHOLD) {
+      const dir = wheelAccumulator.current > 0 ? 1 : -1;
+      wheelAccumulator.current = 0;
+      historyLock.current = true;
+      showChapter(activeChapterIndex + dir);
+      setTimeout(() => {
+        historyLock.current = false;
+      }, reduceMotion.current ? 80 : 450);
+    }
   }
 
   const touchStartX = useRef(null);
@@ -226,14 +254,14 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
   function handleTouchEnd(e) {
     if (touchStartX.current === null) return;
     const delta = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(delta) > 40) showChapter(activeChapterIndex + (delta < 0 ? 1 : -1));
+    if (Math.abs(delta) > 50) showChapter(activeChapterIndex + (delta < 0 ? 1 : -1));
     touchStartX.current = null;
   }
 
-  // slideshow autoplay for history chapters
+  // slideshow autoplay for history chapters (smooth 6.5s)
   useEffect(() => {
     if (mode !== 'history' || !autoplay || !currentJourney) return undefined;
-    const tick = 60;
+    const tick = 50;
     const id = setInterval(() => {
       setSlidePct((p) => {
         const next = p + (tick / SLIDE_DURATION_MS) * 100;
@@ -247,9 +275,14 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
     return () => clearInterval(id);
   }, [mode, autoplay, activeChapterIndex, currentJourney, showChapter]);
 
-  // global keyboard nav
+  // global keyboard nav with Space bar support
   useEffect(() => {
     function onKey(e) {
+      if (e.code === 'Space' && e.target === document.body) {
+        e.preventDefault();
+        setAutoplay((a) => !a);
+        return;
+      }
       if (mode === 'universe') {
         if (e.key === 'ArrowRight') goToBrand(activeBrandIndex + 1);
         else if (e.key === 'ArrowLeft') goToBrand(activeBrandIndex - 1);
@@ -338,6 +371,12 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
   return (
     <div className="explore" role="application" aria-label={fr ? "Explorer l'histoire des écouteurs" : 'Explore earbuds history'}>
       <div className="explore-stars" />
+      <div
+        className="explore-ambient-glow"
+        style={{
+          background: `radial-gradient(circle at 50% 45%, ${currentJourney?.color || '#22D07A'}18 0%, transparent 65%)`,
+        }}
+      />
 
       <div className="explore-topbar">
         <a className="explore-logo" href={`/${locale}`}>Earbuds<b>Timeline</b></a>
@@ -382,14 +421,16 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
           >
             {journeys.map((journey, i) => {
               const count = journeys.length;
-              let offset = i - activeBrandIndex;
+              const effectiveIndex = dragging ? activeBrandIndex - dragProgress : activeBrandIndex;
+              let offset = i - effectiveIndex;
               if (offset > count / 2) offset -= count;
               if (offset < -count / 2) offset += count;
 
               const abs = Math.abs(offset);
-              const scale = abs === 0 ? 1 : abs === 1 ? 0.82 : abs === 2 ? 0.68 : 0.55;
-              const opacity = abs === 0 ? 1 : abs === 1 ? 0.6 : abs === 2 ? 0.32 : 0.12;
-              const blur = abs === 0 ? 0 : abs === 1 ? 1 : 2;
+              const isCentered = abs < 0.45;
+              const scale = Math.max(0.46, 1 - abs * 0.16);
+              const opacity = Math.max(0.12, 1 - abs * 0.32);
+              const blur = Math.min(3, abs * 1.2);
               const baseTransform = universeSubMode === 'rotational'
                 ? rotationalTransform(offset, count)
                 : coverTransform(offset);
@@ -397,16 +438,16 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
               return (
                 <div
                   key={journey.id}
-                  className={`brand-card${offset === 0 ? ' active' : ''}`}
+                  className={`brand-card${isCentered ? ' active' : ''}${dragging ? ' dragging-card' : ''}`}
                   role="option"
-                  aria-selected={offset === 0}
+                  aria-selected={isCentered}
                   style={{
                     transform: `${baseTransform} scale(${scale})`,
                     '--opacity': opacity,
                     '--blur': `${blur}px`,
-                    '--z': 100 - abs,
+                    '--z': Math.round(100 - abs * 10),
                   }}
-                  onClick={() => (offset === 0 ? openHistory(i) : goToBrand(i))}
+                  onClick={() => (isCentered ? openHistory(i) : goToBrand(i))}
                 >
                   {journey.imageUrl ? (
                     <div className="bc-logo-wrap">
