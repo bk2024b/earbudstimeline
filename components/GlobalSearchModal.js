@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Search, X, ArrowRight, Loader2 } from 'lucide-react';
@@ -14,6 +15,7 @@ const DEBOUNCE_MS = 150;
 
 function GlobalSearchModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [q, setQ] = useState('');
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +25,10 @@ function GlobalSearchModal() {
   const requestIdRef = useRef(0);
   const router = useRouter();
   const t = useTranslations('searchBar');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Écouteur de raccourci clavier Cmd+K / Ctrl+K
   useEffect(() => {
@@ -108,8 +114,7 @@ function GlobalSearchModal() {
 
   return (
     <>
-      {/* Bouton déclencheur dans le Header — icône seule (desktop + mobile),
-          le champ complet n'apparaît que dans l'overlay au clic/raccourci. */}
+      {/* Bouton déclencheur dans le Header */}
       <button
         type="button"
         onClick={() => setIsOpen(true)}
@@ -119,17 +124,14 @@ function GlobalSearchModal() {
         <Search className="w-4 h-4" />
       </button>
 
-      {/* Overlay plein écran par-dessus la page actuelle (reste sur l'URL
-          courante, se ferme au clic/Esc — pas de navigation vers une page
-          séparée, voir décision produit). */}
-      {/* Overlay modal palette — z-[100], fond 100% opaque sur la boîte de recherche */}
-      {isOpen && (
+      {/* Overlay modal palette — monté via createPortal sur document.body */}
+      {isOpen && mounted && createPortal(
         <div
-          className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex justify-center items-start pt-12 sm:pt-20 px-4 overflow-y-auto animate-fadeIn"
+          className="fixed inset-0 z-[99999] bg-black/85 backdrop-blur-sm flex justify-center items-start pt-16 sm:pt-24 px-4 overflow-y-auto animate-fadeIn"
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="bg-[#111111] border border-line shadow-[0_25px_60px_rgba(0,0,0,0.9)] w-full max-w-2xl rounded-base p-5 sm:p-6 mb-12 relative text-fg"
+            className="bg-[#111111] border border-line shadow-[0_25px_60px_rgba(0,0,0,0.95)] w-full max-w-2xl rounded-base p-5 sm:p-6 mb-12 relative text-fg"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Barre de recherche dans le panneau flottant */}
@@ -242,7 +244,8 @@ function GlobalSearchModal() {
               <span>Entrée pour ouvrir</span>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
