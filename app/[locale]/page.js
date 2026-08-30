@@ -7,7 +7,7 @@ import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
 import ModelCard from '@/components/ModelCard';
 import SearchBar from '@/components/SearchBar';
 import PopularTags from '@/components/PopularTags';
-import HeroArcTimeline from '@/components/HeroArcTimeline';
+import HomeStoryTimeline from '@/components/HomeStoryTimeline';
 import BrandBadge from '@/components/BrandBadge';
 import StatTile from '@/components/StatTile';
 import HomeComparisons from '@/components/HomeComparisons';
@@ -48,56 +48,100 @@ export default async function HomePage({ params }) {
     .filter((m) => m.marquant)
     .sort((a, b) => b.release_date.localeCompare(a.release_date));
 
+  // Preview de la home — répartit des modèles marquants réels sur toute la
+  // période couverte (pas juste les plus récents), pour donner un vrai
+  // aperçu de "2016 → aujourd'hui" comme la maquette Stitch. Se termine par
+  // le placeholder éditorial "Next Gen..." (fidèle à la maquette).
+  const yearsAvailable = [...new Set(models.map((m) => Number(m.release_date.slice(0, 4))))].sort((a, b) => a - b);
+  const PREVIEW_COUNT = 4;
+  const previewYears =
+    yearsAvailable.length <= PREVIEW_COUNT
+      ? yearsAvailable
+      : Array.from({ length: PREVIEW_COUNT }, (_, i) => {
+          const idx = Math.round((i * (yearsAvailable.length - 1)) / (PREVIEW_COUNT - 1));
+          return yearsAvailable[idx];
+        }).filter((y, i, arr) => arr.indexOf(y) === i);
+  const previewEntries = previewYears
+    .map((year) => {
+      const yearModels = models.filter((m) => Number(m.release_date.slice(0, 4)) === year);
+      const flagship = yearModels.find((m) => m.marquant) || yearModels[0];
+      return flagship ? { year, model: flagship } : null;
+    })
+    .filter(Boolean);
+  previewEntries.push({ year: locale === 'en' ? 'Today' : "Aujourd'hui", model: null });
+
   return (
     <>
-      {/* Hero */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-8 items-center mb-10">
-        <div>
-          <div className="inline-block font-mono text-xs text-accent uppercase tracking-[0.1em] bg-accent/10 border border-accent/30 rounded-full px-3 py-1 mb-4">
-            {t('badge')}
-          </div>
-          <h1 className="font-display font-bold leading-[1.08] text-[clamp(30px,5vw,44px)] mb-3.5">
-            {t('titleLine1')} <span className="text-accent">{t('titleAccent')}</span>
-          </h1>
-          <p className="text-dim max-w-[520px] mb-6 text-[15.5px]">{t('subtitle')}</p>
+      {/* Hero — centrée, fidèle à la maquette Stitch (titre géant, plage
+          d'années réelle en accent, sous-titre) tout en gardant la copie
+          traduite existante (fonctionnalité/i18n). */}
+      <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-20">
+        <div className="inline-block font-mono text-xs text-accent uppercase tracking-[0.1em] bg-accent/10 border border-accent/30 rounded-full px-3 py-1 mb-5">
+          {t('badge')}
+        </div>
+        <h1 className="font-display font-bold leading-[1.05] text-[clamp(32px,6vw,56px)] mb-3">
+          {t('titleLine1')} <span className="text-accent">{t('titleAccent')}</span>
+        </h1>
+        <div className="flex items-center justify-center gap-2.5 font-display font-semibold text-2xl sm:text-3xl text-accent mb-4">
+          <span>{yearsAvailable[0]}</span>
+          <span className="text-dim text-lg">→</span>
+          <span>{yearsAvailable[yearsAvailable.length - 1]}</span>
+        </div>
+        <p className="text-dim max-w-[480px] mx-auto mb-7 text-[15.5px]">{t('subtitle')}</p>
 
-          <div className="mb-3">
-            <SearchBar
-              models={models.map(({ id, name, brand_id, gamme }) => ({ id, name, brand_id, gamme }))}
-              brands={brands}
-            />
-          </div>
-
-          <PopularTags topModels={topRecentMarquant} commonBt={stats.commonBt} locale={locale} />
-
-          <div className="flex gap-3 flex-wrap">
-            <Link
-              href="/trouver-mes-ecouteurs"
-              className="bg-accent text-ink font-semibold rounded-lg px-5 py-2.5 text-sm hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md shadow-accent/20"
-            >
-              <span>✨</span>
-              <span>{locale === 'en' ? 'Find for My Budget' : 'Trouver selon mon budget'}</span>
-            </Link>
-            <Link
-              href="#timeline"
-              className="border border-line rounded-lg px-5 py-2.5 text-sm text-dim hover:text-fg hover:border-accent transition-colors"
-            >
-              {t('exploreTimeline')}
-            </Link>
-            <Link
-              href="/comparaisons"
-              className="border border-line rounded-lg px-5 py-2.5 text-sm text-dim hover:text-fg hover:border-accent transition-colors"
-            >
-              {t('seeComparisons')}
-            </Link>
-          </div>
+        <div className="mb-4 max-w-md mx-auto">
+          <SearchBar
+            models={models.map(({ id, name, brand_id, gamme }) => ({ id, name, brand_id, gamme }))}
+            brands={brands}
+          />
         </div>
 
-        <HeroArcTimeline models={models} brands={brands} />
+        <div className="flex justify-center mb-6">
+          <PopularTags topModels={topRecentMarquant} commonBt={stats.commonBt} locale={locale} />
+        </div>
+
+        <div className="flex gap-3 flex-wrap justify-center">
+          <Link
+            href="/trouver-mes-ecouteurs"
+            className="bg-accent text-ink font-semibold rounded-lg px-5 py-2.5 text-sm hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md shadow-accent/20"
+          >
+            <span>✨</span>
+            <span>{locale === 'en' ? 'Find for My Budget' : 'Trouver selon mon budget'}</span>
+          </Link>
+          <Link
+            href="/comparaisons"
+            className="border border-line rounded-lg px-5 py-2.5 text-sm text-dim hover:text-fg hover:border-accent transition-colors"
+          >
+            {t('seeComparisons')}
+          </Link>
+        </div>
+      </div>
+
+      {/* Timeline Experience — le composant signature de la maquette :
+          zigzag, années géantes, ligne centrale. Preview de modèles
+          marquants réels répartis sur toute la période, pas un mockup. */}
+      <div id="timeline">
+        <HomeStoryTimeline entries={previewEntries} colorById={colorById} locale={locale} />
+        <div className="flex flex-wrap justify-center gap-3 -mt-10 mb-12">
+          <Link
+            href="/timeline"
+            className="bg-accent text-ink font-bold rounded-xl px-6 py-3 text-sm inline-flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg"
+          >
+            <span>{t('exploreTimeline')}</span>
+            <span>→</span>
+          </Link>
+          <Link
+            href="/insights"
+            className="border border-accent/40 text-accent rounded-xl px-6 py-3 text-sm inline-flex items-center justify-center gap-2 hover:bg-accent/10 transition-all"
+          >
+            <span>{locale === 'en' ? 'See insights' : 'Voir les insights'}</span>
+            <span>→</span>
+          </Link>
+        </div>
       </div>
 
       {/* Stats bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 bg-panel border border-line rounded-2xl px-6 py-6 mb-12">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 bg-panel border border-line rounded-base px-6 py-6 mb-12">
         <Stat value={models.length} label={t('statEarbuds')} />
         <Stat value={brands.length} label={t('statBrands')} />
         <Stat value={yearsCovered} label={t('statYears')} />
@@ -177,38 +221,6 @@ export default async function HomePage({ params }) {
         invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
         label={locale === 'en' ? 'Advertisement' : 'Publicité'}
       />
-
-      {/* Teaser Timeline — la timeline interactive complète (filtres marque/ANC/BT)
-          vit sur sa propre page /timeline ; les graphes d'évolution
-          (autonomie/poids/prix) vivent sur /insights. */}
-      <div id="timeline" className="bg-panel border border-line rounded-2xl p-6 sm:p-8 mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="max-w-xl">
-          <h2 className="font-display font-bold text-2xl text-fg mb-2">
-            {locale === 'en' ? 'Explore the full timeline' : 'Explorez la timeline complète'}
-          </h2>
-          <p className="text-xs sm:text-sm text-dim leading-relaxed">
-            {locale === 'en'
-              ? `Every model, filterable by brand, ANC and Bluetooth version. Or see how battery life, weight and price evolved across ${yearsCovered} years in Insights.`
-              : `Tous les modèles, filtrables par marque, ANC et version Bluetooth. Ou explorez l'évolution de l'autonomie, du poids et du prix sur ${yearsCovered} ans dans Insights.`}
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2.5 shrink-0">
-          <Link
-            href="/timeline"
-            className="bg-accent text-ink font-bold rounded-xl px-6 py-3 text-sm inline-flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg"
-          >
-            <span>{locale === 'en' ? 'Open the timeline' : 'Ouvrir la timeline'}</span>
-            <span>→</span>
-          </Link>
-          <Link
-            href="/insights"
-            className="border border-accent/40 text-accent rounded-xl px-6 py-3 text-sm inline-flex items-center justify-center gap-2 hover:bg-accent/10 transition-all"
-          >
-            <span>{locale === 'en' ? 'See insights' : 'Voir les insights'}</span>
-            <span>→</span>
-          </Link>
-        </div>
-      </div>
 
       {/* Comparaisons populaires + Articles à la une */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
