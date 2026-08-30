@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } fr
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Play, Pause, RefreshCw, LayoutGrid } from 'lucide-react';
 import { generateStory, getBrandStateAtYear, buildCompareData } from '@/lib/brandJourney';
+import Explore3DCanvas from './Explore3DCanvas';
 import './explore.css';
 
 const MODES = [
@@ -398,75 +399,22 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
         ))}
       </nav>
 
-      {/* ============ UNIVERSE ============ */}
+      {/* ============ UNIVERSE (Three.js WebGL 3D Scene) ============ */}
       <section className={`explore-screen${mode === 'universe' ? ' active' : ''}`} aria-hidden={mode !== 'universe'}>
         <div className="universe-hero">
-          <div className="universe-eyebrow">Earbuds Timeline · Explore</div>
+          <div className="universe-eyebrow">Earbuds Timeline · Explore 3D</div>
           <h1>{fr ? 'Choisissez une marque' : 'Choose a brand'}</h1>
           <p>{fr ? 'Glissez, tournez la molette, ou utilisez les flèches.' : 'Drag, scroll, or use the arrow keys.'}</p>
         </div>
 
-        <div className="carousel-stage" style={{ perspective: `${stagePerspective(universeSubMode, journeys.length)}px` }}>
-          <div
-            ref={ringRef}
-            className={`orbit-ring${dragging ? ' dragging' : ''}`}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            onWheel={handleWheel}
-            role="listbox"
-            aria-label={fr ? 'Marques' : 'Brands'}
-            tabIndex={0}
-          >
-            {journeys.map((journey, i) => {
-              const count = journeys.length;
-              const effectiveIndex = dragging ? activeBrandIndex - dragProgress : activeBrandIndex;
-              let offset = i - effectiveIndex;
-              if (offset > count / 2) offset -= count;
-              if (offset < -count / 2) offset += count;
-
-              const abs = Math.abs(offset);
-              const isCentered = abs < 0.45;
-              const scale = Math.max(0.46, 1 - abs * 0.16);
-              const opacity = Math.max(0.12, 1 - abs * 0.32);
-              const blur = Math.min(3, abs * 1.2);
-              const baseTransform = universeSubMode === 'rotational'
-                ? rotationalTransform(offset, count)
-                : coverTransform(offset);
-
-              return (
-                <div
-                  key={journey.id}
-                  className={`brand-card${isCentered ? ' active' : ''}${dragging ? ' dragging-card' : ''}`}
-                  role="option"
-                  aria-selected={isCentered}
-                  style={{
-                    transform: `${baseTransform} scale(${scale})`,
-                    '--opacity': opacity,
-                    '--blur': `${blur}px`,
-                    '--z': Math.round(100 - abs * 10),
-                  }}
-                  onClick={() => (isCentered ? openHistory(i) : goToBrand(i))}
-                >
-                  {journey.imageUrl ? (
-                    <div className="bc-logo-wrap">
-                      <Image src={journey.imageUrl} alt={journey.name} fill sizes="44px" className="bc-logo-img" />
-                    </div>
-                  ) : (
-                    <div className="bc-swatch" style={{ background: `${journey.color}22`, border: `1px solid ${journey.color}55`, color: journey.color }}>
-                      {journey.name.slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="bc-name">{journey.name}</div>
-                  <div className="bc-meta">
-                    {journey.totalCount} {fr ? 'modèles' : 'models'} · {journey.periodStart}–{journey.periodEnd}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <Explore3DCanvas
+          journeys={journeys}
+          activeIndex={activeBrandIndex}
+          onActiveIndexChange={goToBrand}
+          mode={mode}
+          onOpenHistory={openHistory}
+          locale={locale}
+        />
 
         <div className="universe-controls">
           <button className="nav-circle" onClick={() => goToBrand(activeBrandIndex - 1)} aria-label={fr ? 'Précédent' : 'Previous'}>
