@@ -30,10 +30,20 @@ const CARD_GAP = 64; // minimum breathing room between two card edges
  * adjacent card centers.
  */
 function ringRadius(count) {
-  if (count <= 1) return 420;
+  if (count <= 1) return 260;
   const desiredChord = CARD_WIDTH + CARD_GAP;
   const raw = desiredChord / (2 * Math.sin(Math.PI / count));
-  return Math.max(420, Math.min(1100, raw));
+  return Math.max(260, Math.min(1400, raw));
+}
+
+// perspective must scale WITH the radius, or a bigger radius (needed for
+// spacing on brand counts) pushes the front card too close to the camera
+// plane and it balloons in size — this is what caused the "overzoomed"
+// bug. Keeping z/perspective at a fixed ratio keeps the front card's
+// apparent size constant no matter how many brands there are.
+const PERSPECTIVE_RATIO = 0.22;
+function stagePerspective(mode, count) {
+  return mode === 'rotational' ? ringRadius(count) / PERSPECTIVE_RATIO : 1300;
 }
 
 function rotationalTransform(offset, count) {
@@ -357,7 +367,7 @@ export default function ExploreExperience({ journeys, locale = 'fr', onExit }) {
           <p>{fr ? 'Glissez, tournez la molette, ou utilisez les flèches.' : 'Drag, scroll, or use the arrow keys.'}</p>
         </div>
 
-        <div className="carousel-stage">
+        <div className="carousel-stage" style={{ perspective: `${stagePerspective(universeSubMode, journeys.length)}px` }}>
           <div
             ref={ringRef}
             className={`orbit-ring${dragging ? ' dragging' : ''}`}

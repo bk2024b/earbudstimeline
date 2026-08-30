@@ -56,8 +56,7 @@
   display: flex; gap: 2px; padding: 4px;
   border: 1px solid #27272A; background: rgba(255,255,255,.02);
   border-radius: 30px; z-index: 40;
-}
-.mode-btn {
+}.mode-btn {
   padding: 8px 14px; border-radius: 22px;
   font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
   color: #62695f; transition: .25s;
@@ -118,7 +117,7 @@
 .brand-card .bc-name { position: absolute; left: 22px; right: 22px; bottom: 52px; font-family: var(--font-display); font-weight: 600; font-size: 19px; letter-spacing: -.6px; }
 .brand-card .bc-meta { position: absolute; left: 22px; right: 22px; bottom: 24px; font-family: var(--font-mono); font-size: 8.5px; color: #9A9AA3; letter-spacing: .8px; }
 
-.universe-controls { position: absolute; bottom: 12%; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.universe-controls { position: absolute; bottom: 12%; left: 0; right: 0; z-index: 40; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
 .nav-circle { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #27272A; display: flex; align-items: center; justify-content: center; color: #9A9AA3; transition: .2s; }
 .nav-circle:hover { border-color: #22D07A; color: #22D07A; }
 .mode-toggle-btn {
