@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
-import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
+import { getAllEarbuds, getBrands, getAncIntelligence, getGuideBySlug, getPublishedGuideSlugs } from '@/lib/queries';
 import { canonicalFor, JsonLd } from '@/lib/seo';
-import { getGuide } from '@/lib/guidePages';
+import { applyFilter, applySort } from '@/lib/guideFilters';
 import { rankByValuePerDollar } from '@/lib/budgetValue';
 import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
@@ -10,14 +10,29 @@ import { Footer } from '@/components/UI';
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const { GUIDE_PAGES } = await import('@/lib/guidePages');
-  return GUIDE_PAGES.flatMap((guide) => ['en', 'fr'].map((locale) => ({ locale, slug: guide.slug })));
+  const slugs = await getPublishedGuideSlugs();
+  return slugs.flatMap((slug) => ['en', 'fr'].map((locale) => ({ locale, slug })));
+}
+
+// Normalizes a `guides` table row into the { en: {...}, fr: {...} } shape the
+// rest of this page expects, so the JSX below did not need to change when
+// guides moved from lib/guidePages.js into Supabase.
+function guideCopy(row) {
+  const build = (lang) => ({
+    title: row[`title_${lang}`],
+    description: row[`description_${lang}`],
+    intro: row[`intro_${lang}`],
+    sections: row[`sections_${lang}`] || [],
+    faq: row[`faq_${lang}`] || null,
+  });
+  return { en: build('en'), fr: build('fr') };
 }
 
 export async function generateMetadata({ params }) {
   const { locale, slug } = params;
-  const guide = getGuide(slug);
-  if (!guide) return {};
+  const row = await getGuideBySlug(slug);
+  if (!row) return {};
+  const guide = guideCopy(row);
   const copy = guide[locale] || guide.en;
   return { title: `${copy.title} | EarbudsTimeline`, description: copy.description, ...canonicalFor(`/${locale}/guides/${slug}`) };
 }
@@ -134,28 +149,28 @@ function FAQ({ items, title }) { return <section className="mt-14"><h2 className
 
 export default async function GuidePage({ params }) {
   const { locale, slug } = params;
-  const guide = getGuide(slug);
-  if (!guide) notFound();
+  const row = await getGuideBySlug(slug);
+  if (!row) notFound();
+  const guide = guideCopy(row);
   const copy = guide[locale] || guide.en;
-  const isANC = slug === 'best-noise-cancelling-earbuds';
-  const isBudget = slug === 'best-budget-earbuds';
+  const isANC = row.render_variant === 'anc';
+  const isBudget = row.render_variant === 'budget';
   const [models, brands, ancScores] = await Promise.all([getAllEarbuds(), getBrands(), isANC ? getAncIntelligence() : Promise.resolve([])]);
   const brandMap = new Map(brands.map((brand) => [brand.id, brand]));
   const enhanced = isANC ? ANC_CONTENT[locale] || ANC_CONTENT.en : isBudget ? BUDGET_CONTENT[locale] || BUDGET_CONTENT.en : null;
   const scoreMap = new Map(ancScores.map((item) => [item.earbud_id, item]));
 
-  let baseCandidates = models.filter((model) => !guide.filter || guide.filter(model));
-  if (guide.brand) baseCandidates = baseCandidates.filter((model) => model.brand_id === guide.brand);
+  const baseCandidates = applyFilter(models, row.filter);
 
   let candidates;
   if (isANC) {
     candidates = baseCandidates.map((model) => ({ model, intelligence: scoreMap.get(model.id) || null }));
     candidates.sort((a, b) => (scoreValue(b.intelligence?.anc_score) ?? -1) - (scoreValue(a.intelligence?.anc_score) ?? -1) || Number(b.intelligence?.source_count || 0) - Number(a.intelligence?.source_count || 0));
   } else if (isBudget) {
-    const ranked = rankByValuePerDollar(baseCandidates).filter((row) => row.value_per_dollar !== null);
-    candidates = ranked.sort((a, b) => b.value_per_dollar - a.value_per_dollar || b.utility_score - a.utility_score).slice(0, 12).map((row) => ({ model: { ...row.model, value_per_dollar: row.value_per_dollar, utility_score: row.utility_score }, intelligence: null }));
+    const ranked = rankByValuePerDollar(baseCandidates).filter((r) => r.value_per_dollar !== null);
+    candidates = ranked.sort((a, b) => b.value_per_dollar - a.value_per_dollar || b.utility_score - a.utility_score).slice(0, 12).map((r) => ({ model: { ...r.model, value_per_dollar: r.value_per_dollar, utility_score: r.utility_score }, intelligence: null }));
   } else {
-    candidates = guide.sort ? [...baseCandidates].sort(guide.sort) : [...baseCandidates];
+    candidates = applySort(baseCandidates, row.sort);
     candidates = candidates.slice(0, 12).map((model) => ({ model, intelligence: null }));
   }
 
