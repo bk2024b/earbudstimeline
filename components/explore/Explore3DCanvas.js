@@ -9,7 +9,6 @@ function createCardTexture(journey, isFr) {
   canvas.height = 700;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
-
   const grad = ctx.createLinearGradient(0, 0, 512, 700);
   grad.addColorStop(0, '#161618');
   grad.addColorStop(0.7, '#0E0E10');
@@ -44,7 +43,6 @@ function createCardTexture(journey, isFr) {
   ctx.fillStyle = journey.color || '#22D07A';
   ctx.font = 'bold 18px "IBM Plex Mono", monospace';
   ctx.fillText(isFr ? 'CHRONOLOGIE HARDWARE' : 'HARDWARE TIMELINE', 40, 635);
-
   const texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
@@ -53,19 +51,14 @@ function createCardTexture(journey, isFr) {
 
 export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexChange, onOpenHistory, locale = 'fr' }) {
   const containerRef = useRef(null);
-  const stateRef = useRef({
-    activeIndex,
-    targetAngle: 0,
-    currentAngle: 0,
-    isDragging: false,
-    startX: 0,
-    startAngle: 0,
-    pointerVelocity: 0,
-    lastX: 0,
-    lastTime: 0,
-  });
-
+  const stateRef = useRef({ activeIndex, targetAngle: 0, currentAngle: 0, isDragging: false, startX: 0, startAngle: 0, pointerVelocity: 0, lastX: 0, lastTime: 0 });
   stateRef.current.activeIndex = activeIndex;
+
+  // Keep the WebGL scene alive while React changes the selected brand.
+  useEffect(() => {
+    if (!journeys.length) return;
+    stateRef.current.targetAngle = -(activeIndex * (2 * Math.PI / journeys.length));
+  }, [activeIndex, journeys.length]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -81,7 +74,6 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
     container.appendChild(renderer.domElement);
-
     scene.add(new THREE.AmbientLight(0xffffff, 0.85));
     const greenSpot = new THREE.SpotLight(0x22d07a, 3.5, 12, Math.PI / 4, 0.4, 1.2);
     greenSpot.position.set(0, 2.5, 4);
@@ -100,10 +92,10 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
       starPositions[i3] = (Math.random() - 0.5) * 20;
       starPositions[i3 + 1] = (Math.random() - 0.5) * 14;
       starPositions[i3 + 2] = (Math.random() - 0.5) * 15 - 2;
-      const isGreen = Math.random() > 0.85;
-      starColors[i3] = isGreen ? 0.13 : 0.8;
-      starColors[i3 + 1] = isGreen ? 0.81 : 0.8;
-      starColors[i3 + 2] = isGreen ? 0.48 : 0.85;
+      const green = Math.random() > 0.85;
+      starColors[i3] = green ? 0.13 : 0.8;
+      starColors[i3 + 1] = green ? 0.81 : 0.8;
+      starColors[i3 + 2] = green ? 0.48 : 0.85;
     }
     starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
     starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
@@ -117,23 +109,19 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
     const cardHeight = 1.85;
     const radius = Math.max(2.4, (count * (cardWidth + 0.3)) / (2 * Math.PI));
     const cardGeometry = new THREE.PlaneGeometry(cardWidth, cardHeight);
-    const cardMeshes = [];
-
-    journeys.forEach((journey, i) => {
+    const cardMeshes = journeys.map((journey, i) => {
       const texture = createCardTexture(journey, isFr);
       const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide, roughness: 0.35, metalness: 0.25, transparent: true });
       const mesh = new THREE.Mesh(cardGeometry, material);
       mesh.userData = { index: i, journey };
       cardGroup.add(mesh);
-      cardMeshes.push(mesh);
+      return mesh;
     });
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const angleStep = (2 * Math.PI) / count;
-    const setTargetByActiveIndex = (idx) => { stateRef.current.targetAngle = -idx * angleStep; };
-    setTargetByActiveIndex(activeIndex);
-    stateRef.current.currentAngle = stateRef.current.targetAngle;
+    const normalize = (index) => ((index % count) + count) % count;
 
     function onPointerDown(e) {
       stateRef.current.isDragging = true;
@@ -162,7 +150,7 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
       stateRef.current.isDragging = false;
       const finalAngle = stateRef.current.targetAngle + stateRef.current.pointerVelocity * 0.12;
       const snappedIndex = Math.round(-finalAngle / angleStep);
-      const normalized = ((snappedIndex % count) + count) % count;
+      const normalized = normalize(snappedIndex);
       stateRef.current.targetAngle = -snappedIndex * angleStep;
       onActiveIndexChange?.(normalized);
       if (Math.abs(e.clientX - stateRef.current.startX) < 6) {
@@ -171,11 +159,10 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
         if (intersects.length) {
           const clickedIndex = intersects[0].object.userData.index;
           if (clickedIndex === stateRef.current.activeIndex) onOpenHistory?.(clickedIndex);
-          else { onActiveIndexChange?.(clickedIndex); setTargetByActiveIndex(clickedIndex); }
+          else { onActiveIndexChange?.(clickedIndex); stateRef.current.targetAngle = -clickedIndex * angleStep; }
         }
       }
     }
-
     let wheelAcc = 0;
     let wheelTimer = null;
     function onWheel(e) {
@@ -186,13 +173,11 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
       wheelAcc = 0;
       const currentIdx = Math.round(-stateRef.current.targetAngle / angleStep);
       const nextIdx = currentIdx + dir;
-      const normalized = ((nextIdx % count) + count) % count;
       stateRef.current.targetAngle = -nextIdx * angleStep;
-      onActiveIndexChange?.(normalized);
+      onActiveIndexChange?.(normalize(nextIdx));
       clearTimeout(wheelTimer);
       wheelTimer = setTimeout(() => { wheelAcc = 0; }, 250);
     }
-
     container.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
@@ -222,8 +207,7 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
         mesh.position.set(x, 0, z);
         mesh.rotation.y = cardAngle;
         const cosDist = Math.cos(cardAngle);
-        const isFront = cosDist > 0.88;
-        const scale = isFront ? 1.05 : Math.max(0.55, cosDist * 0.85);
+        const scale = cosDist > 0.88 ? 1.05 : Math.max(0.55, cosDist * 0.85);
         mesh.scale.set(scale, scale, scale);
         mesh.material.opacity = Math.max(0.2, (cosDist + 1) / 2);
       });
@@ -248,7 +232,7 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
       renderer.dispose();
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
     };
-  }, [journeys, locale, onActiveIndexChange, onOpenHistory, activeIndex]);
+  }, [journeys, locale, onActiveIndexChange, onOpenHistory]);
 
   return <div ref={containerRef} className="explore-3d-canvas" aria-label="3D brand selector" />;
 }
