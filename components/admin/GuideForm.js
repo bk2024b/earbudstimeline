@@ -47,6 +47,8 @@ export default function GuideForm({ action, defaults = {}, lockSlug = false, sub
   const [status, setStatus] = useState(defaults.status || 'draft');
   const [slug, setSlug] = useState(defaults.slug || '');
   const [priority, setPriority] = useState(defaults.priority ?? 0.75);
+  const [category, setCategory] = useState(defaults.category || '');
+  const [icon, setIcon] = useState(defaults.icon || '');
 
   const [titleEn, setTitleEn] = useState(defaults.title_en || '');
   const [descriptionEn, setDescriptionEn] = useState(defaults.description_en || '');
@@ -99,6 +101,25 @@ export default function GuideForm({ action, defaults = {}, lockSlug = false, sub
         value={priority}
         onChange={(e) => setPriority(e.target.value)}
       />
+
+      <div className="grid grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-dim text-xs">Catégorie (page /guides)</span>
+          <select name="category" value={category} onChange={(e) => setCategory(e.target.value)} className="bg-panel2 border border-line rounded-lg px-3 py-2.5 outline-none focus:border-accent text-white">
+            <option value="">— Auto (Features) —</option>
+            {['Price', 'Use case', 'Audio', 'Sport', 'Travel', 'Work', 'Features', 'Devices', 'Fit', 'Lifestyle', 'Brands', 'Comparisons', 'Basics', 'Entertainment'].map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </label>
+        <FormField
+          label="Icône emoji (optionnel, sinon photo produit auto)"
+          name="icon"
+          placeholder="🎧"
+          value={icon}
+          onChange={(e) => setIcon(e.target.value)}
+        />
+      </div>
 
       <div className="bg-panel border border-line rounded-xl p-4 flex flex-col gap-3">
         <p className="text-xs text-accent uppercase tracking-[0.08em]">🇬🇧 Contenu — Anglais</p>

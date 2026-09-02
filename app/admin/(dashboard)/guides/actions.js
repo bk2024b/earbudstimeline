@@ -19,6 +19,8 @@ function parseGuideForm(formData) {
   const priorityRaw = Number(formData.get('priority'));
   return {
     priority: Number.isFinite(priorityRaw) ? priorityRaw : 0.75,
+    category: formData.get('category')?.toString().trim() || null,
+    icon: formData.get('icon')?.toString().trim() || null,
     title_en: formData.get('title_en')?.toString().trim() || '',
     description_en: formData.get('description_en')?.toString().trim() || '',
     intro_en: formData.get('intro_en')?.toString().trim() || '',
