@@ -1,23 +1,40 @@
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
-import { getAllEarbuds, getBrands, getAncIntelligence } from '@/lib/queries';
+import { getAllEarbuds, getBrands, getAncIntelligence, getGuideBySlug, getPublishedGuideSlugs } from '@/lib/queries';
 import { canonicalFor, JsonLd } from '@/lib/seo';
-import { getGuide } from '@/lib/guidePages';
+import { applyFilter, applySort } from '@/lib/guideFilters';
 import { rankByValuePerDollar } from '@/lib/budgetValue';
+import EarbudsIcon from '@/components/EarbudsIcon';
 import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const { GUIDE_PAGES } = await import('@/lib/guidePages');
-  return GUIDE_PAGES.flatMap((guide) => ['en', 'fr'].map((locale) => ({ locale, slug: guide.slug })));
+  const slugs = await getPublishedGuideSlugs();
+  return slugs.flatMap((slug) => ['en', 'fr'].map((locale) => ({ locale, slug })));
+}
+
+// Normalizes a `guides` table row into the { en: {...}, fr: {...} } shape the
+// rest of this page expects, so the JSX below did not need to change when
+// guides moved from lib/guidePages.js into Supabase.
+function guideCopy(row) {
+  const build = (lang) => ({
+    title: row[`title_${lang}`],
+    description: row[`description_${lang}`],
+    intro: row[`intro_${lang}`],
+    sections: row[`sections_${lang}`] || [],
+    faq: row[`faq_${lang}`] || null,
+  });
+  return { en: build('en'), fr: build('fr') };
 }
 
 export async function generateMetadata({ params }) {
   const { locale, slug } = params;
-  const guide = getGuide(slug);
-  if (!guide) return {};
+  const row = await getGuideBySlug(slug);
+  if (!row) return {};
+  const guide = guideCopy(row);
   const copy = guide[locale] || guide.en;
   return { title: `${copy.title} | EarbudsTimeline`, description: copy.description, ...canonicalFor(`/${locale}/guides/${slug}`) };
 }
@@ -113,12 +130,34 @@ function ProductCard({ model, brand, intelligence, rank, copy, budget }) {
   const anc = scoreValue(intelligence?.anc_score);
   const value = scoreValue(model.value_per_dollar);
   const utility = scoreValue(model.utility_score);
-  return <Link href={`/ecouteurs/${model.id}`} className="bg-panel border border-line rounded-2xl p-5 hover:border-accent transition-colors block">
-    <div className="flex items-start justify-between gap-3"><div className="flex gap-3 min-w-0"><span className="font-mono text-accent text-sm shrink-0">#{rank}</span><div className="min-w-0"><div className="font-mono text-[10px] text-accent uppercase tracking-[0.12em] mb-1">{brand?.name || model.brand_id}</div><h3 className="font-display font-semibold text-[16px] leading-tight">{model.name}</h3></div></div>
-      {budget ? <div className="text-right shrink-0"><div className="font-display font-bold text-2xl">{value ?? '—'}</div><div className="font-mono text-[9px] text-accent">{copy.valueLabel}</div></div> : anc !== null && <div className="text-right shrink-0"><div className="font-display font-bold text-2xl">{anc}</div><div className="font-mono text-[9px] text-dim">ANC /100</div></div>}
+  const badgeValue = budget ? value : anc;
+  return <Link href={`/ecouteurs/${model.id}`} className="group bg-panel border border-line rounded-2xl overflow-hidden hover:border-accent transition-colors block">
+    <div className="relative w-full aspect-[4/3] bg-panel2 flex items-center justify-center overflow-hidden">
+      {model.image_url ? (
+        <Image
+          src={model.image_url}
+          alt={model.name}
+          fill
+          sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 360px"
+          className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+        />
+      ) : (
+        <EarbudsIcon color={brand?.color || '#9A9AA3'} className="w-16 h-16" />
+      )}
+      <span className="absolute top-2.5 left-2.5 font-mono text-[11px] bg-ink/85 backdrop-blur text-accent rounded-full w-6 h-6 flex items-center justify-center border border-accent/30">#{rank}</span>
+      {badgeValue !== null && (
+        <span className="absolute top-2.5 right-2.5 font-display font-bold text-base leading-none bg-ink/85 backdrop-blur rounded-lg px-2.5 py-1.5 border border-line">
+          {badgeValue}
+          <span className="block font-mono text-[8px] font-normal text-dim mt-0.5 text-center">{budget ? copy.valueLabel : 'ANC'}</span>
+        </span>
+      )}
     </div>
-    {budget ? <div className="mt-5 grid grid-cols-3 gap-2"><div className="rounded-lg border border-line p-2"><div className="font-mono text-[9px] text-dim">{copy.priceLabel}</div><div className="font-mono text-sm mt-1">${Number(model.price).toFixed(0)}</div></div><div className="rounded-lg border border-line p-2"><div className="font-mono text-[9px] text-dim">{copy.utilityLabel}</div><div className="font-mono text-sm mt-1">{utility ?? '—'}</div></div><div className="rounded-lg border border-line p-2"><div className="font-mono text-[9px] text-dim">{copy.valueLabel}</div><div className="font-mono text-sm mt-1">{value ?? '—'}</div></div></div> : intelligence ? <div className="mt-5 space-y-2.5">{copy.environments.map(([label, key]) => <ScoreBar key={key} label={label} value={intelligence[key]} />)}</div> : null}
-    {!budget && <div className="mt-5 pt-3 border-t border-line"><Coverage item={intelligence || {}} copy={copy} /></div>}
+    <div className="p-4">
+      <div className="font-mono text-[10px] text-accent uppercase tracking-[0.12em] mb-1">{brand?.name || model.brand_id}</div>
+      <h3 className="font-display font-semibold text-[15px] leading-tight">{model.name}</h3>
+      {budget ? <div className="mt-4 grid grid-cols-3 gap-2"><div className="rounded-lg border border-line p-2"><div className="font-mono text-[9px] text-dim">{copy.priceLabel}</div><div className="font-mono text-sm mt-1">${Number(model.price).toFixed(0)}</div></div><div className="rounded-lg border border-line p-2"><div className="font-mono text-[9px] text-dim">{copy.utilityLabel}</div><div className="font-mono text-sm mt-1">{utility ?? '—'}</div></div><div className="rounded-lg border border-line p-2"><div className="font-mono text-[9px] text-dim">{copy.valueLabel}</div><div className="font-mono text-sm mt-1">{value ?? '—'}</div></div></div> : intelligence ? <div className="mt-4 space-y-2.5">{copy.environments.map(([label, key]) => <ScoreBar key={key} label={label} value={intelligence[key]} />)}</div> : null}
+      {!budget && <div className="mt-4 pt-3 border-t border-line"><Coverage item={intelligence || {}} copy={copy} /></div>}
+    </div>
   </Link>;
 }
 
@@ -134,28 +173,28 @@ function FAQ({ items, title }) { return <section className="mt-14"><h2 className
 
 export default async function GuidePage({ params }) {
   const { locale, slug } = params;
-  const guide = getGuide(slug);
-  if (!guide) notFound();
+  const row = await getGuideBySlug(slug);
+  if (!row) notFound();
+  const guide = guideCopy(row);
   const copy = guide[locale] || guide.en;
-  const isANC = slug === 'best-noise-cancelling-earbuds';
-  const isBudget = slug === 'best-budget-earbuds';
+  const isANC = row.render_variant === 'anc';
+  const isBudget = row.render_variant === 'budget';
   const [models, brands, ancScores] = await Promise.all([getAllEarbuds(), getBrands(), isANC ? getAncIntelligence() : Promise.resolve([])]);
   const brandMap = new Map(brands.map((brand) => [brand.id, brand]));
   const enhanced = isANC ? ANC_CONTENT[locale] || ANC_CONTENT.en : isBudget ? BUDGET_CONTENT[locale] || BUDGET_CONTENT.en : null;
   const scoreMap = new Map(ancScores.map((item) => [item.earbud_id, item]));
 
-  let baseCandidates = models.filter((model) => !guide.filter || guide.filter(model));
-  if (guide.brand) baseCandidates = baseCandidates.filter((model) => model.brand_id === guide.brand);
+  const baseCandidates = applyFilter(models, row.filter);
 
   let candidates;
   if (isANC) {
     candidates = baseCandidates.map((model) => ({ model, intelligence: scoreMap.get(model.id) || null }));
     candidates.sort((a, b) => (scoreValue(b.intelligence?.anc_score) ?? -1) - (scoreValue(a.intelligence?.anc_score) ?? -1) || Number(b.intelligence?.source_count || 0) - Number(a.intelligence?.source_count || 0));
   } else if (isBudget) {
-    const ranked = rankByValuePerDollar(baseCandidates).filter((row) => row.value_per_dollar !== null);
-    candidates = ranked.sort((a, b) => b.value_per_dollar - a.value_per_dollar || b.utility_score - a.utility_score).slice(0, 12).map((row) => ({ model: { ...row.model, value_per_dollar: row.value_per_dollar, utility_score: row.utility_score }, intelligence: null }));
+    const ranked = rankByValuePerDollar(baseCandidates).filter((r) => r.value_per_dollar !== null);
+    candidates = ranked.sort((a, b) => b.value_per_dollar - a.value_per_dollar || b.utility_score - a.utility_score).slice(0, 12).map((r) => ({ model: { ...r.model, value_per_dollar: r.value_per_dollar, utility_score: r.utility_score }, intelligence: null }));
   } else {
-    candidates = guide.sort ? [...baseCandidates].sort(guide.sort) : [...baseCandidates];
+    candidates = applySort(baseCandidates, row.sort);
     candidates = candidates.slice(0, 12).map((model) => ({ model, intelligence: null }));
   }
 
@@ -165,13 +204,33 @@ export default async function GuidePage({ params }) {
   const title = copy.title;
   const description = copy.description;
   const sections = enhanced?.sections || copy.sections;
+  // Bespoke ANC/Budget pages carry their own hand-written FAQ (with a
+  // matching title). Standard DB-driven guides can also have a FAQ
+  // (guide.faq_en/faq_fr) — this used to only render for the two special
+  // variants, silently dropping any FAQ set on a normal guide.
+  const faqItems = enhanced?.faq || copy.faq;
+  const faqTitle = enhanced?.faqTitle || (locale === 'fr' ? 'Questions fréquentes' : 'Frequently asked questions');
   const jsonLd = { '@context': 'https://schema.org', '@type': 'Article', headline: title, description, url: `https://earbudstimeline.com/${locale}/guides/${slug}` };
-  if (enhanced?.faq) jsonLd.mainEntity = enhanced.faq.map(([question, answer]) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } }));
+  if (faqItems?.length) jsonLd.mainEntity = faqItems.map(([question, answer]) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } }));
 
   return <><JsonLd data={jsonLd} /><article className="max-w-6xl mx-auto">
     <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3">{enhanced?.kicker || 'Earbuds Guide'}</div>
-    <h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1>
-    <p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{copy.intro}</p>
+    <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-6 items-start">
+      <div>
+        <h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1>
+        <p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{copy.intro}</p>
+      </div>
+      {top[0] && (
+        <Link href={`/ecouteurs/${top[0].model.id}`} className="hidden sm:block relative bg-panel border border-line rounded-2xl aspect-square overflow-hidden shrink-0 group">
+          {top[0].model.image_url ? (
+            <Image src={top[0].model.image_url} alt={top[0].model.name} fill sizes="180px" className="object-contain p-4 group-hover:scale-105 transition-transform duration-300" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center"><EarbudsIcon color={brandMap.get(top[0].model.brand_id)?.color || '#9A9AA3'} className="w-16 h-16" /></div>
+          )}
+          <span className="absolute bottom-2 left-2 right-2 font-mono text-[9px] text-center bg-ink/85 backdrop-blur rounded px-1.5 py-1 truncate">{top[0].model.name}</span>
+        </Link>
+      )}
+    </div>
     {enhanced && <div className="mt-8 rounded-2xl border border-accent/30 bg-panel p-5 sm:p-6"><div className="font-mono text-xs text-accent uppercase tracking-[0.12em] mb-2">{enhanced.quickTitle}</div><p className="text-dim text-sm leading-7">{enhanced.methodology}</p></div>}
 
     {isANC ? <>
@@ -191,14 +250,14 @@ export default async function GuidePage({ params }) {
     />
 
     <div className="grid gap-8 mt-12">{sections.map(([heading, body]) => <section key={heading}><h2 className="font-display font-semibold text-[21px] mb-2">{heading}</h2><p className="text-dim text-[14px] leading-7">{body}</p></section>)}</div>
-    {enhanced?.faq && <>
+    {faqItems?.length > 0 && <>
       <AdSlot
         variant="native"
         zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_MID_KEY}
         invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_MID_DOMAIN}
         label={locale === 'en' ? 'Advertisement' : 'Publicité'}
       />
-      <FAQ items={enhanced.faq} title={enhanced.faqTitle} />
+      <FAQ items={faqItems} title={faqTitle} />
     </>}
     <div className="mt-10 flex flex-wrap gap-3 text-sm"><Link href="/trouver-mes-ecouteurs" className="px-4 py-2 rounded-lg border border-line hover:border-accent transition-colors">{locale === 'fr' ? 'Trouver mes écouteurs' : 'Find my earbuds'}</Link><Link href="/ecouteurs" className="px-4 py-2 rounded-lg border border-line hover:border-accent transition-colors">{locale === 'fr' ? 'Voir tous les modèles' : 'Browse all models'}</Link></div>
   </article><Footer locale={locale} /></>;

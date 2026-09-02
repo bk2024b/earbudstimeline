@@ -1,6 +1,10 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { canonicalFor, JsonLd } from '@/lib/seo';
-import { GUIDE_PAGES } from '@/lib/guidePages';
+import { getSupabase } from '@/lib/supabase';
+import { getAllEarbuds, getBrands } from '@/lib/queries';
+import { applyFilter, applySort } from '@/lib/guideFilters';
+import EarbudsIcon from '@/components/EarbudsIcon';
 import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
@@ -87,20 +91,50 @@ const GUIDE_CATEGORY = {
 const GUIDE_ICON = { 'Use case': '🎯', Brands: '🏷️', Comparisons: '⚖️', Features: '⚙️' };
 
 const curatedSlugs = new Set(curatedGuides.map((g) => g.slug));
-const generatedGuides = GUIDE_PAGES.filter((g) => !curatedSlugs.has(g.slug)).map((g) => {
-  const cat = GUIDE_CATEGORY[g.slug] || 'Features';
-  return {
-    slug: g.slug,
-    icon: GUIDE_ICON[cat],
-    en: g.en.title,
-    fr: g.fr.title,
-    enDesc: g.en.description,
-    frDesc: g.fr.description,
-    cat,
-  };
-});
 
-const guides = [...curatedGuides, ...generatedGuides];
+// Picks a representative model for a DB-driven guide's card thumbnail by
+// running its actual filter/sort against the real catalog — the same logic
+// the guide's own detail page uses — so the photo shown here always matches
+// what visitors land on, instead of a generic icon.
+async function loadGeneratedGuides() {
+  const supabase = getSupabase();
+  const { data: rows, error } = await supabase
+    .from('guides')
+    .select('slug, title_en, title_fr, description_en, description_fr, category, icon, filter, sort, render_variant')
+    .eq('status', 'published');
+  if (error || !rows?.length) return [];
+
+  const dbGuides = rows.filter((g) => !curatedSlugs.has(g.slug));
+  if (!dbGuides.length) return [];
+
+  const [models, brands] = await Promise.all([getAllEarbuds(), getBrands()]);
+  const brandMap = new Map(brands.map((b) => [b.id, b]));
+
+  return dbGuides.map((g) => {
+    const cat = g.category || GUIDE_CATEGORY[g.slug] || 'Features';
+    let thumbnail = null;
+    // Bespoke ANC/Budget pages rank by data this page doesn't have loaded
+    // (ANC intelligence scores, value-per-dollar) — skip the computed photo
+    // for those two and fall back to the icon tile, same as curated guides.
+    if (g.render_variant === 'standard') {
+      const filtered = applyFilter(models, g.filter);
+      const sorted = applySort(filtered, g.sort || []);
+      const pick = sorted[0];
+      if (pick?.image_url) thumbnail = { url: pick.image_url, name: pick.name, color: brandMap.get(pick.brand_id)?.color };
+      else if (pick) thumbnail = { url: null, name: pick.name, color: brandMap.get(pick.brand_id)?.color };
+    }
+    return {
+      slug: g.slug,
+      icon: g.icon || GUIDE_ICON[cat] || '📄',
+      en: g.title_en,
+      fr: g.title_fr,
+      enDesc: g.description_en,
+      frDesc: g.description_fr,
+      cat,
+      thumbnail,
+    };
+  });
+}
 
 const categories = ['All', 'Price', 'Use case', 'Audio', 'Sport', 'Travel', 'Work', 'Features', 'Devices', 'Fit', 'Lifestyle', 'Brands', 'Comparisons', 'Basics', 'Entertainment'];
 const categoryId = (category) => category.toLowerCase().replace(/\s+/g, '-');
@@ -128,6 +162,9 @@ export default async function GuidesPage({ params }) {
     url: `https://earbudstimeline.com/${locale}/guides`,
     inLanguage: locale,
   };
+
+  const generatedGuides = await loadGeneratedGuides();
+  const guides = [...curatedGuides, ...generatedGuides];
 
   const sections = categories
     .filter((c) => c !== 'All')
@@ -161,14 +198,35 @@ export default async function GuidesPage({ params }) {
             <h2 className="font-mono text-xs text-accent uppercase tracking-[0.12em] mb-4">{cat} · {items.length}</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {items.map((guide) => (
-                <Link key={guide.slug} href={`/${locale}/guides/${guide.slug}`} className="group block bg-panel border border-line rounded-2xl p-5 hover:border-accent transition-colors">
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="text-2xl" aria-hidden="true">{guide.icon}</span>
-                    <span className="font-mono text-[9px] uppercase text-dim border border-line rounded-full px-2 py-1">{guide.cat}</span>
+                <Link key={guide.slug} href={`/${locale}/guides/${guide.slug}`} className="group block bg-panel border border-line rounded-2xl overflow-hidden hover:border-accent transition-colors">
+                  <div className="relative w-full aspect-[16/9] bg-panel2 overflow-hidden">
+                    {guide.thumbnail?.url ? (
+                      <>
+                        <Image
+                          src={guide.thumbnail.url}
+                          alt={guide.thumbnail.name || ''}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+                          className="object-contain p-6 group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-panel via-transparent to-transparent opacity-70" />
+                      </>
+                    ) : guide.thumbnail?.color ? (
+                      <div className="w-full h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${guide.thumbnail.color}22, transparent)` }}>
+                        <EarbudsIcon color={guide.thumbnail.color} className="w-14 h-14" />
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-4xl opacity-80" aria-hidden="true">{guide.icon}</span>
+                      </div>
+                    )}
+                    <span className="absolute top-2.5 right-2.5 font-mono text-[9px] uppercase text-dim bg-ink/80 backdrop-blur border border-line rounded-full px-2 py-1">{guide.cat}</span>
                   </div>
-                  <h3 className="font-display font-semibold text-[19px] mt-5 group-hover:text-accent transition-colors">{fr ? guide.fr : guide.en}</h3>
-                  <p className="text-dim text-sm leading-6 mt-2">{fr ? guide.frDesc : guide.enDesc}</p>
-                  <div className="mt-5 text-accent font-mono text-[10px] uppercase">{fr ? 'Lire le guide →' : 'Read guide →'}</div>
+                  <div className="p-5">
+                    <h3 className="font-display font-semibold text-[17px] leading-snug group-hover:text-accent transition-colors">{fr ? guide.fr : guide.en}</h3>
+                    <p className="text-dim text-[13px] leading-6 mt-2 line-clamp-2">{fr ? guide.frDesc : guide.enDesc}</p>
+                    <div className="mt-4 text-accent font-mono text-[10px] uppercase">{fr ? 'Lire le guide →' : 'Read guide →'}</div>
+                  </div>
                 </Link>
               ))}
             </div>

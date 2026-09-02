@@ -12,6 +12,7 @@ export default function AdminSidebar() {
     { href: '/admin/brands', label: 'Marques', icon: '🏷️' },
     { href: '/admin/earbuds', label: 'Écouteurs', icon: '🎧' },
     { href: '/admin/articles', label: 'Articles', icon: '📰' },
+    { href: '/admin/guides', label: 'Guides', icon: '🧭' },
     { href: '/admin/newsletter', label: 'Newsletter', icon: '📬' },
   ];
 
