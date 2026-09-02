@@ -16,7 +16,8 @@ export default function ExploreUniverse({ journeys, activeBrandIndex, onBrandCha
       </div>
 
       <div className="universe-copy">
-        <div className="universe-kicker">{fr ? 'UNIVERS' : 'UNIVERSE'}</div>
+        <div className="universe-kicker">{fr ? 'UNIVERS DES MARQUES' : 'BRAND UNIVERSE'}</div>
+        <div className="universe-index">{String(index + 1).padStart(2, '0')}</div>
         <h1>{journey?.name}</h1>
         <p>{journey?.periodStart} — {journey?.periodEnd} · {journey?.totalCount} {fr ? 'modèles suivis' : 'tracked models'}</p>
         <button className="explore-primary-cta universe-journey-cta" onClick={() => onExploreJourney(index)}>
@@ -42,7 +43,7 @@ export default function ExploreUniverse({ journeys, activeBrandIndex, onBrandCha
         <button className="nav-circle" onClick={() => onBrandChange(activeBrandIndex + 1)} aria-label={fr ? 'Marque suivante' : 'Next brand'}><ChevronRight size={16} /></button>
       </div>
 
-      <div className="universe-hint">{fr ? 'Glisser · Molette · Flèches · Cliquer pour sélectionner' : 'Drag · Scroll · Arrows · Click to select'}</div>
+      <div className="universe-hint">{fr ? 'Glisser pour parcourir · Cliquer deux fois pour entrer' : 'Drag to explore · Click twice to enter'}</div>
     </section>
   );
 }
