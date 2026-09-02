@@ -2,6 +2,7 @@ import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import { Link } from '@/i18n/navigation';
 import InteractiveTimeline from '@/components/InteractiveTimeline';
+import DesignBibleTimeline from '@/components/DesignBibleTimeline';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -60,6 +61,8 @@ export default async function TimelinePage({ params }) {
           {locale === 'en' ? 'Explore aggregate data insights →' : 'Explorer les analyses et tendances globales →'}
         </Link>
       </div>
+
+      <DesignBibleTimeline locale={locale} />
 
       <InteractiveTimeline models={models} brands={brands} locale={locale} />
 
