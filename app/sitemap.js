@@ -69,6 +69,7 @@ export default async function sitemap() {
     { path: '/ecouteurs', priority: 0.85 },
     { path: '/marques', priority: 0.8 },
     { path: '/timeline', priority: 0.8 },
+    { path: '/insights', priority: 0.8 },
     { path: '/guides', priority: 0.75 },
     { path: '/comparaisons', priority: 0.7 },
     { path: '/comparer', priority: 0.7 },

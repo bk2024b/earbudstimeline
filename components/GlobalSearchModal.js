@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Search, X, ArrowRight, Loader2 } from 'lucide-react';
@@ -14,6 +15,7 @@ const DEBOUNCE_MS = 150;
 
 function GlobalSearchModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [q, setQ] = useState('');
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +25,10 @@ function GlobalSearchModal() {
   const requestIdRef = useRef(0);
   const router = useRouter();
   const t = useTranslations('searchBar');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Écouteur de raccourci clavier Cmd+K / Ctrl+K
   useEffect(() => {
@@ -108,8 +114,7 @@ function GlobalSearchModal() {
 
   return (
     <>
-      {/* Bouton déclencheur dans le Header — icône seule (desktop + mobile),
-          le champ complet n'apparaît que dans la modale au clic/raccourci. */}
+      {/* Bouton déclencheur dans le Header */}
       <button
         type="button"
         onClick={() => setIsOpen(true)}
@@ -119,18 +124,18 @@ function GlobalSearchModal() {
         <Search className="w-4 h-4" />
       </button>
 
-      {/* Modale plein écran */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 sm:pt-28 px-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          {/* Overlay clic pour fermer */}
-          <div className="fixed inset-0" onClick={() => setIsOpen(false)} />
-
+      {/* Overlay modal palette — monté via createPortal sur document.body */}
+      {isOpen && mounted && createPortal(
+        <div
+          className="fixed inset-0 z-[99999] bg-black/85 backdrop-blur-sm flex justify-center items-start pt-16 sm:pt-24 px-4 overflow-y-auto animate-fadeIn"
+          onClick={() => setIsOpen(false)}
+        >
           <div
-            className="relative w-full max-w-xl bg-panel border border-line rounded-2xl shadow-2xl overflow-hidden z-10 flex flex-col"
+            className="bg-[#111111] border border-line shadow-[0_25px_60px_rgba(0,0,0,0.95)] w-full max-w-2xl rounded-base p-5 sm:p-6 mb-12 relative text-fg"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Champ de recherche */}
-            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-line bg-panel2/50">
+            {/* Barre de recherche dans le panneau flottant */}
+            <div className="flex items-center gap-3 border-b border-line/80 pb-3.5 mb-4">
               {isLoading ? (
                 <Loader2 className="w-5 h-5 text-accent shrink-0 animate-spin" />
               ) : (
@@ -142,86 +147,105 @@ function GlobalSearchModal() {
                 onChange={(e) => setQ(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={t('placeholder')}
-                className="flex-1 bg-transparent text-sm sm:text-base text-fg placeholder:text-dim outline-none focus-visible:ring-2 focus-visible:ring-accent/60 rounded"
+                className="flex-1 bg-transparent text-base sm:text-lg font-display text-fg placeholder:text-dim outline-none focus-visible:ring-0"
               />
               {q && (
-                <button
-                  type="button"
-                  onClick={() => setQ('')}
-                  className="text-dim hover:text-fg p-1"
-                >
+                <button type="button" onClick={() => setQ('')} className="text-dim hover:text-fg p-1 shrink-0">
                   <X className="w-4 h-4" />
                 </button>
               )}
-              <kbd className="font-mono text-[10px] bg-panel border border-line px-2 py-0.5 rounded text-dim shrink-0">
-                ESC
-              </kbd>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-1 text-dim hover:text-fg text-xs font-mono px-2 py-1 rounded-base bg-[#181818] border border-line transition-colors shrink-0"
+              >
+                <span>ESC</span>
+              </button>
             </div>
 
-            {/* Liste des résultats */}
-            <div className="max-h-[60vh] overflow-y-auto divide-y divide-line/40">
-              {q.trim() && !isLoading && results.length === 0 && (
-                <div className="p-8 text-center text-dim text-sm">
-                  Aucun écouteur trouvé pour &laquo; {q} &raquo;.
+            {/* Résultats ou suggestions */}
+            {q.trim() && !isLoading && results.length === 0 && (
+              <div className="text-dim text-xs sm:text-sm py-8 text-center font-mono bg-[#151515] rounded-base border border-line/40 my-2">
+                Aucun écouteur trouvé pour « {q} ».
+              </div>
+            )}
+
+            {!q.trim() && (
+              <div className="py-3">
+                <div className="text-dim text-xs mb-3 font-mono">
+                  Recherches populaires :
                 </div>
-              )}
-
-              {!q.trim() && (
-                <div className="p-6 text-center text-xs text-dim">
-                  Tapez le nom d&apos;un modèle (ex: <i>AirPods Pro, WF-1000XM5, Galaxy Buds</i>) ou d&apos;une marque...
+                <div className="flex flex-wrap gap-2">
+                  {['AirPods Pro 2', 'WF-1000XM5', 'QuietComfort Ultra', 'Galaxy Buds3 Pro', 'Ear (a)'].map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => setQ(term)}
+                      className="px-3 py-1.5 rounded-base text-xs font-mono bg-[#181818] border border-line hover:border-accent hover:text-accent text-dim transition-colors"
+                    >
+                      {term}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              {results.map((m, idx) => {
-                const isSelected = idx === selectedIndex;
-                return (
-                  <div
-                    key={m.id}
-                    onClick={() => handleSelect(m)}
-                    onMouseEnter={() => setSelectedIndex(idx)}
-                    className={`flex items-center justify-between p-3.5 sm:px-4 cursor-pointer transition-colors ${
-                      isSelected ? 'bg-accent/15 text-fg' : 'hover:bg-panel2 text-dim'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="shrink-0">
-                        <BrandBadge brand={{ id: m.brand_id, name: m.brand_name, color: m.brand_color, image_url: m.brand_image_url }} size={24} />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold text-fg truncate flex items-center gap-2">
-                          <span>{m.name}</span>
-                          {m.anc && (
-                            <span className="text-[10px] bg-panel border border-line text-emerald-400 px-1.5 py-0.2 rounded font-normal shrink-0">
-                              ANC
-                            </span>
-                          )}
+            {results.length > 0 && (
+              <div className="mt-3">
+                <div className="path-indicator text-accent text-[11px] mb-2.5">
+                  Résultats ({results.length})
+                </div>
+                <div className="max-h-[55vh] overflow-y-auto space-y-2 pr-1">
+                  {results.map((m, idx) => {
+                    const isSelected = idx === selectedIndex;
+                    return (
+                      <div
+                        key={m.id}
+                        onClick={() => handleSelect(m)}
+                        onMouseEnter={() => setSelectedIndex(idx)}
+                        className={`flex items-center justify-between gap-3 p-3.5 cursor-pointer rounded-base border transition-colors ${
+                          isSelected
+                            ? 'bg-[#1e1e1e] border-accent text-fg'
+                            : 'bg-[#151515] border-line/50 hover:bg-[#1a1a1a] hover:border-line text-dim'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="shrink-0">
+                            <BrandBadge brand={{ id: m.brand_id, name: m.brand_name, color: m.brand_color, image_url: m.brand_image_url }} size={28} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold text-fg truncate flex items-center gap-2">
+                              <span>{m.name}</span>
+                              {m.anc && (
+                                <span className="text-[10px] bg-accent/10 border border-accent/30 text-accent px-1.5 py-0.2 rounded-base font-mono shrink-0">
+                                  ANC
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-dim truncate font-mono mt-0.5">
+                              {m.brand_name} · {m.gamme} · {m.release_date?.slice(0, 4)}
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-xs text-dim truncate">
-                          {m.brand_name} • {m.gamme} • {m.release_date?.slice(0, 4)}
+
+                        <div className="flex items-center gap-3 shrink-0 ml-3">
+                          {m.price && <span className="font-mono text-xs font-semibold text-fg">{m.price} $</span>}
+                          <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-accent translate-x-0.5' : 'text-dim/40'} transition-transform`} />
                         </div>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-                    <div className="flex items-center gap-3 shrink-0 ml-3">
-                      {m.price && (
-                        <span className="font-display text-sm font-bold text-fg">
-                          {m.price} $
-                        </span>
-                      )}
-                      <ArrowRight className={`w-4 h-4 ${isSelected ? 'text-accent' : 'text-dim/40'}`} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Pied de la modale */}
-            <div className="p-2.5 bg-panel2 border-t border-line text-[11px] text-dim flex items-center justify-between px-4">
+            <div className="mt-4 pt-3 border-t border-line/70 text-[11px] text-dim flex items-center justify-between font-mono">
               <span>↑↓ pour naviguer</span>
               <span>Entrée pour ouvrir</span>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

@@ -1,5 +1,8 @@
 {
   "nav": {
+    "database": "Database",
+    "explore": "Explore",
+    "insights": "Insights",
     "finder": "Find Earbuds",
     "brands": "Brands",
     "years": "Years",
@@ -25,7 +28,8 @@
     "comparator": "Comparator",
     "allComparisons": "All comparisons",
     "copyright": "© 2026 EarbudsTimeline — continuing PhoneTimeline",
-    "privacy": "Privacy policy"
+    "privacy": "Privacy policy",
+    "about": "About"
   },
   "common": {
     "compare": "Compare",
@@ -335,7 +339,8 @@
   },
   "searchBar": {
     "placeholder": "Search an earbud, a brand...",
-    "ariaLabel": "Search"
+    "ariaLabel": "Search",
+    "overlayTitle": "What are you looking for?"
   },
   "techHub": {
     "models": "Models",

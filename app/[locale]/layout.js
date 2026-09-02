@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { routing } from '@/i18n/routing';
 import { display, body, mono } from '@/lib/fonts';
 import Header from '@/components/Header';
+import DiscoveryTrail from '@/components/DiscoveryTrail';
 import MicrosoftClarity from '@/components/MicrosoftClarity';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import SocialBar from '@/components/SocialBar';
@@ -68,6 +69,7 @@ export default async function LocaleLayout({ children, params }) {
         <Header models={models} brands={brands} />
         <main id="main-content">{children}</main>
       </div>
+      <DiscoveryTrail locale={locale} />
       {/* Chargé ici (routes publiques [locale] uniquement) et pas dans le
           layout racine : Clarity fait de l'enregistrement de session, GA
           mesure du trafic réel — dans les deux cas on évite de compter

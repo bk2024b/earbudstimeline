@@ -1,5 +1,8 @@
 {
   "nav": {
+    "database": "Database",
+    "explore": "Explorer",
+    "insights": "Insights",
     "finder": "Trouver mes écouteurs",
     "brands": "Marques",
     "years": "Années",
@@ -25,7 +28,8 @@
     "comparator": "Comparateur",
     "allComparisons": "Toutes les comparaisons",
     "copyright": "© 2026 EarbudsTimeline — dans la continuité de PhoneTimeline",
-    "privacy": "Politique de confidentialité"
+    "privacy": "Politique de confidentialité",
+    "about": "À propos"
   },
   "common": {
     "compare": "Comparer",
@@ -335,7 +339,8 @@
   },
   "searchBar": {
     "placeholder": "Rechercher un écouteur, une marque...",
-    "ariaLabel": "Rechercher"
+    "ariaLabel": "Rechercher",
+    "overlayTitle": "Que recherchez-vous ?"
   },
   "techHub": {
     "models": "Modèles",

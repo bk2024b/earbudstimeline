@@ -38,8 +38,8 @@ export default function EvolutionChart({ models }) {
 
   if (series.length < 2) {
     return (
-      <div className="bg-panel border border-line rounded-2xl p-5">
-        <h2 className="text-[15px] m-0 mb-1">{t('title')}</h2>
+      <div className="hardware-card bg-panel p-5 sm:p-6">
+        <h2 className="font-display font-bold text-base m-0 mb-1">{t('title')}</h2>
         <p className="text-dim text-xs">{t('notEnough')}</p>
       </div>
     );
@@ -60,17 +60,20 @@ export default function EvolutionChart({ models }) {
   const gridLines = 4;
 
   return (
-    <div className="bg-panel border border-line rounded-2xl p-5">
-      <h2 className="text-[15px] m-0 mb-3.5">{t('title')}</h2>
+    <div className="hardware-card bg-panel p-5 sm:p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display font-bold text-base text-fg m-0">{t('title')}</h2>
+        <span className="path-indicator text-accent text-[11px]">{metricLabel}</span>
+      </div>
 
-      <div className="flex gap-1.5 mb-4 flex-wrap">
+      <div className="flex gap-1.5 mb-5 flex-wrap">
         {TABS.map((tab_) => (
           <button
             key={tab_.id}
             type="button"
             onClick={() => setTab(tab_.id)}
-            className={`px-2.5 py-1.5 rounded-md text-xs font-medium border ${
-              tab === tab_.id ? 'bg-accent text-ink border-accent' : 'bg-panel2 text-dim border-line hover:text-fg'
+            className={`px-3 py-1.5 rounded-base text-xs font-medium border transition-colors ${
+              tab === tab_.id ? 'bg-accent text-ink border-accent font-semibold' : 'bg-panel2 text-dim border-line hover:text-fg'
             }`}
           >
             {tab_.label}
@@ -88,25 +91,25 @@ export default function EvolutionChart({ models }) {
           const v = max + yPad - (i / gridLines) * (range + yPad * 2);
           return (
             <g key={i}>
-              <line x1={PAD_L} x2={W - PAD_R} y1={y} y2={y} stroke="#27272A" strokeWidth="1" />
-              <text x={0} y={y + 3} fontSize="9" fill="#9A9AA3" fontFamily="var(--font-mono)">
+              <line x1={PAD_L} x2={W - PAD_R} y1={y} y2={y} className="stroke-line" strokeWidth="1" />
+              <text x={0} y={y + 3} fontSize="9" className="fill-dim" fontFamily="var(--font-mono)">
                 {v.toFixed(metric.decimals)}
               </text>
             </g>
           );
         })}
 
-        <path d={areaPath} fill="#22D07A" fillOpacity="0.08" stroke="none" />
-        <path d={linePath} fill="none" stroke="#22D07A" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={areaPath} className="fill-accent" fillOpacity="0.08" stroke="none" />
+        <path d={linePath} fill="none" className="stroke-accent" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
 
         {series.map((p, i) => (
           <g key={p.year}>
-            <circle cx={xFor(i)} cy={yFor(p.value)} r="3.5" fill="#0A0A0B" stroke="#22D07A" strokeWidth="2" />
+            <circle cx={xFor(i)} cy={yFor(p.value)} r="3.5" className="fill-page stroke-accent" strokeWidth="2" />
             <text
               x={xFor(i)}
               y={H - PAD_B + 16}
               fontSize="9"
-              fill="#9A9AA3"
+              className="fill-dim"
               textAnchor="middle"
               fontFamily="var(--font-mono)"
             >

@@ -34,7 +34,7 @@ export default function EvolutionExplorer({ models, brands }) {
             setBrandId(e.target.value);
             setGamme('all');
           }}
-          className="bg-panel2 border border-line rounded-lg px-3 py-1.5 text-xs text-fg focus-visible:ring-2 focus-visible:ring-accent/60"
+          className="bg-panel border border-line rounded-base px-3 py-1.5 text-xs text-fg focus:border-accent outline-none font-medium"
         >
           <option value="all">{t('allBrands')}</option>
           {brands.map((b) => (
@@ -48,7 +48,7 @@ export default function EvolutionExplorer({ models, brands }) {
           <select
             value={gamme}
             onChange={(e) => setGamme(e.target.value)}
-            className="bg-panel2 border border-line rounded-lg px-3 py-1.5 text-xs text-fg focus-visible:ring-2 focus-visible:ring-accent/60"
+            className="bg-panel border border-line rounded-base px-3 py-1.5 text-xs text-fg focus:border-accent outline-none font-medium"
           >
             <option value="all">{t('allGammes')}</option>
             {gammes.map((g) => (

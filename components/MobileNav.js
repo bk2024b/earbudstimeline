@@ -8,6 +8,7 @@ import {
   Sparkles,
   Layers,
   Clock,
+  BarChart3,
   Calendar,
   Cpu,
   Swords,
@@ -45,9 +46,19 @@ function MobileNav() {
       icon: Layers,
     },
     {
+      href: '/ecouteurs',
+      label: t('explore') || 'Explorer',
+      icon: Compass,
+    },
+    {
       href: '/timeline',
       label: 'Timeline Historique',
       icon: Clock,
+    },
+    {
+      href: '/insights',
+      label: t('insights') || 'Insights',
+      icon: BarChart3,
     },
     {
       href: '/annees',
@@ -67,7 +78,7 @@ function MobileNav() {
     {
       href: '/guides/best-budget-earbuds',
       label: locale === 'en' ? 'Budget Buying Guide' : 'Guide d’achat Budget',
-      icon: Compass,
+      icon: Search,
     },
     {
       href: '/blog',

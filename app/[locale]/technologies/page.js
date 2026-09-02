@@ -22,10 +22,15 @@ function Card({ href, title, count, t }) {
   return (
     <Link
       href={href}
-      className="bg-panel border border-line rounded-2xl p-5 hover:border-accent hover:-translate-y-0.5 transition-all"
+      className="hardware-card group bg-panel p-5"
     >
-      <h3 className="m-0 mb-1 text-[15px]">{title}</h3>
-      <p className="m-0 text-dim text-xs">{t('modelsCount', { count })}</p>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="m-0 font-display font-bold text-base text-fg group-hover:text-accent transition-colors">{title}</h3>
+        <span className="font-mono text-[10px] text-accent/80 bg-accent/10 px-2 py-0.5 rounded-base font-semibold">
+          {count}
+        </span>
+      </div>
+      <p className="m-0 text-dim text-xs font-mono">{t('modelsCount', { count })}</p>
     </Link>
   );
 }
@@ -69,39 +74,41 @@ export default async function TechnologiesPage({ params }) {
         })}
       />
 
-      <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{t('hubTitle')}</div>
-      <h1 className="font-display font-bold text-[32px] mb-2">{t('hubTitle')}</h1>
-      <p className="text-dim text-[13.5px] mb-10">{ti('browseIntro', { count: models.length })}</p>
+      <div className="path-indicator text-accent mb-2">{t('hubTitle')}</div>
+      <h1 className="font-display font-bold text-3xl sm:text-4xl text-fg mb-2">{t('hubTitle')}</h1>
+      <p className="text-dim text-sm mb-10 leading-relaxed max-w-2xl">{ti('browseIntro', { count: models.length })}</p>
 
-      <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">{ti('featuresTitle')}</h2>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3.5 mb-10">
+      <div className="path-indicator text-accent text-[11px] mb-4">{ti('featuresTitle')}</div>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 mb-10">
         <Card href="/technologies/anc" title={ti('ancCard')} count={ancCount} t={t} />
         <Card href="/technologies/usb-c" title="USB-C" count={usbcCount} t={t} />
         <Card href="/technologies/multipoint" title={ti('multipointCard')} count={multipointCount} t={t} />
       </div>
 
-      <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">{ti('bluetoothVersionsTitle')}</h2>
+      <div className="path-indicator text-accent text-[11px] mb-4">{ti('bluetoothVersionsTitle')}</div>
       <div className="flex gap-2 flex-wrap mb-10">
         {btVersions.map((v) => (
           <Link
             key={v.version}
             href={`/technologies/bluetooth/${v.version}`}
-            className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors"
+            className="hardware-card group bg-panel px-3.5 py-1.5 rounded-base text-dim text-xs hover:text-fg transition-colors flex items-center gap-1.5"
           >
-            Bluetooth {v.version} · {v.count}
+            <span className="font-mono text-fg group-hover:text-accent transition-colors">Bluetooth {v.version}</span>
+            <span className="text-[10px] text-accent/80 font-mono">· {v.count}</span>
           </Link>
         ))}
       </div>
 
-      <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">{ti('codecsTitle')}</h2>
+      <div className="path-indicator text-accent text-[11px] mb-4">{ti('codecsTitle')}</div>
       <div className="flex gap-2 flex-wrap mb-12">
         {codecs.map((c) => (
           <Link
             key={c.slug}
             href={`/technologies/codecs/${c.slug}`}
-            className="px-3.5 py-1.5 rounded-full border border-line text-dim text-xs hover:border-accent hover:text-accent transition-colors"
+            className="hardware-card group bg-panel px-3.5 py-1.5 rounded-base text-dim text-xs hover:text-fg transition-colors flex items-center gap-1.5"
           >
-            {c.name} · {c.count}
+            <span className="font-mono text-fg group-hover:text-accent transition-colors">{c.name}</span>
+            <span className="text-[10px] text-accent/80 font-mono">· {c.count}</span>
           </Link>
         ))}
       </div>

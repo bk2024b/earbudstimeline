@@ -1,8 +1,7 @@
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
+import { Link } from '@/i18n/navigation';
 import InteractiveTimeline from '@/components/InteractiveTimeline';
-import EvolutionExplorer from '@/components/EvolutionExplorer';
-import BrandComparisonChart from '@/components/BrandComparisonChart';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -13,8 +12,8 @@ export async function generateMetadata({ params }) {
     title: locale === 'en' ? 'Timeline — EarbudsTimeline' : 'Timeline — EarbudsTimeline',
     description:
       locale === 'en'
-        ? 'The full interactive history of wireless earbuds, filterable by brand, ANC and Bluetooth version, plus how battery life, weight and price evolved over time.'
-        : "L'historique interactif complet des écouteurs sans fil, filtrable par marque, ANC et version Bluetooth, avec l'évolution de l'autonomie, du poids et du prix dans le temps.",
+        ? 'The full interactive history of wireless earbuds, filterable by brand, ANC and Bluetooth version.'
+        : "L'historique interactif complet des écouteurs sans fil, filtrable par marque, ANC et version Bluetooth.",
     ...canonicalFor(`/${locale}/timeline`),
   };
 }
@@ -47,25 +46,19 @@ export default async function TimelinePage({ params }) {
         })}
       />
 
-      <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{title}</div>
-      <h1 className="font-display font-bold text-[32px] mb-2">
+      <div className="path-indicator text-accent mb-2">{title}</div>
+      <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl text-fg mb-3 tracking-tight">
         {locale === 'en' ? 'The full wireless earbuds timeline' : "La timeline complète des écouteurs sans fil"}
       </h1>
-      <p className="text-dim text-[13.5px] mb-8 max-w-[640px]">
+      <p className="text-dim text-sm sm:text-base mb-3 max-w-2xl leading-relaxed">
         {locale === 'en'
-          ? `${models.length} models tracked, brand by brand, from the earliest true wireless earbuds to the latest releases. Filter below, or see how key specs evolved over the years.`
-          : `${models.length} modèles référencés, marque par marque, des tout premiers écouteurs true wireless aux sorties les plus récentes. Filtrez ci-dessous, ou explorez l'évolution des caractéristiques clés au fil du temps.`}
+          ? `${models.length} models tracked, brand by brand, from the earliest true wireless earbuds to the latest releases. Filter below by brand, ANC or Bluetooth version.`
+          : `${models.length} modèles référencés, marque par marque, des tout premiers écouteurs true wireless aux sorties les plus récentes. Filtrez ci-dessous par marque, ANC ou version Bluetooth.`}
       </p>
-
       <div className="mb-8">
-        <h2 className="text-xs uppercase tracking-[0.1em] text-dim mb-4">
-          {locale === 'en' ? 'Evolution over time' : 'Évolution dans le temps'}
-        </h2>
-        <EvolutionExplorer models={models} brands={brands} />
-      </div>
-
-      <div className="mb-12">
-        <BrandComparisonChart models={models} brands={brands} />
+        <Link href="/insights" className="entity-bridge">
+          {locale === 'en' ? 'Explore aggregate data insights →' : 'Explorer les analyses et tendances globales →'}
+        </Link>
       </div>
 
       <InteractiveTimeline models={models} brands={brands} locale={locale} />

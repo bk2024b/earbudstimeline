@@ -12,27 +12,27 @@ export default async function HomeComparisons({ pairs, brandOf, locale }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[15px] m-0">{t('popular')}</h2>
-        <Link href="/comparaisons" className="text-xs text-accent hover:underline">
+        <div className="path-indicator text-accent text-[11px]">{t('popular')}</div>
+        <Link href="/comparaisons" className="text-xs text-accent hover:underline font-mono">
           {tc('seeAll')} →
         </Link>
       </div>
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-3">
         {pairs.map(({ a, b }) => (
           <div
             key={`${a.id}-${b.id}`}
-            className="flex items-center justify-between gap-3 bg-panel border border-line rounded-xl px-4 py-3"
+            className="hardware-card group flex items-center justify-between gap-3 bg-panel p-3.5"
           >
-            <div className="flex items-center gap-2 min-w-0 text-[13.5px]">
+            <div className="flex items-center gap-2 min-w-0 text-sm font-medium">
               <EarbudsIcon color={brandOf(a.brand_id)?.color || '#9A9AA3'} className="w-6 h-6 shrink-0" />
-              <span className="truncate">{a.name}</span>
-              <span className="text-dim shrink-0">{tc('vs')}</span>
-              <span className="truncate">{b.name}</span>
+              <span className="truncate text-fg">{a.name}</span>
+              <span className="text-accent font-mono text-xs px-1.5 py-0.5 bg-accent/10 rounded-base shrink-0">{tc('vs')}</span>
+              <span className="truncate text-fg">{b.name}</span>
               <EarbudsIcon color={brandOf(b.brand_id)?.color || '#9A9AA3'} className="w-6 h-6 shrink-0" />
             </div>
             <Link
               href={`/comparaisons/${buildComparisonSlug(a.id, b.id)}`}
-              className="shrink-0 bg-accent text-ink font-semibold rounded-lg px-3 py-1.5 text-xs"
+              className="shrink-0 bg-accent text-ink font-semibold rounded-base px-3 py-1.5 text-xs hover:opacity-90 transition-opacity"
             >
               {tc('compare')}
             </Link>

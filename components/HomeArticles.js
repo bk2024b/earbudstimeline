@@ -20,26 +20,26 @@ export default async function HomeArticles({ articles, locale }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[15px] m-0">{t('featured')}</h2>
-        <Link href="/blog" className="text-xs text-accent hover:underline">
-          {t('seeAllArticles')}
+        <div className="path-indicator text-accent text-[11px]">{t('featured')}</div>
+        <Link href="/blog" className="text-xs text-accent hover:underline font-mono">
+          {t('seeAllArticles')} →
         </Link>
       </div>
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-3">
         {articles.map((a) => (
           <Link
             key={a.id}
             href={`/blog/${a.id}`}
-            className="flex items-center gap-3.5 bg-panel border border-line rounded-xl p-3 hover:border-accent transition-colors"
+            className="hardware-card group flex items-center gap-3.5 bg-panel p-3"
           >
-            <div className="relative w-16 h-16 rounded-lg bg-panel2 shrink-0 overflow-hidden">
+            <div className="relative w-16 h-16 rounded-base bg-panel2 shrink-0 overflow-hidden">
               {a.cover_image_url && (
-                <Image src={a.cover_image_url} alt="" fill sizes="64px" className="object-cover" />
+                <Image src={a.cover_image_url} alt="" fill sizes="64px" className="object-cover group-hover:scale-105 transition-transform duration-300" />
               )}
             </div>
             <div className="min-w-0">
-              <p className="m-0 text-[13.5px] font-medium truncate">{a.title}</p>
-              <p className="m-0 text-dim text-[11px] mt-0.5">
+              <p className="m-0 text-sm font-semibold text-fg group-hover:text-accent transition-colors truncate">{a.title}</p>
+              <p className="m-0 text-dim text-[11px] font-mono mt-1">
                 {fmtPublished(a.published_at, locale)} · {a.reading_minutes} {tc('minutesRead')}
               </p>
             </div>

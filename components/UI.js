@@ -4,9 +4,9 @@ import { getBrands, getAllEarbuds } from '@/lib/queries';
 
 export function Stat({ value, label }) {
   return (
-    <div>
-      <b className="block font-display font-bold text-[28px]">{value}</b>
-      <span className="text-dim text-[12.5px] uppercase tracking-[0.08em]">{label}</span>
+    <div className="flex flex-col">
+      <b className="block font-display font-bold text-3xl sm:text-4xl text-accent tracking-tight leading-none mb-1.5">{value}</b>
+      <span className="text-dim text-[11px] font-mono uppercase tracking-wider">{label}</span>
     </div>
   );
 }
@@ -54,9 +54,13 @@ export async function Footer({ locale }) {
         </FooterCol>
       </div>
 
-      <p className="text-dim text-xs text-center pt-5 border-t border-line">
-        {t('copyright')}{' '}
-        <span className="mx-1">·</span>
+      <p className="text-dim text-xs text-center pt-5 border-t border-line flex items-center justify-center gap-3 flex-wrap">
+        <span>{t('copyright')}</span>
+        <span>·</span>
+        <Link href="/about" className="hover:text-accent transition-colors">
+          {t('about') || (locale === 'en' ? 'About' : 'À propos')}
+        </Link>
+        <span>·</span>
         <Link href="/confidentialite" className="hover:text-accent transition-colors">
           {t('privacy')}
         </Link>

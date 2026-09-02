@@ -47,30 +47,35 @@ export default async function MarquesPage({ params }) {
         })}
       />
 
-      <div className="font-mono text-xs text-accent uppercase tracking-[0.14em] mb-3.5">{title}</div>
-      <h1 className="font-display font-bold text-[32px] mb-2">{title}</h1>
-      <p className="text-dim text-[13.5px] mb-8">
+      <div className="path-indicator text-accent mb-2">{title}</div>
+      <h1 className="font-display font-bold text-3xl sm:text-4xl text-fg mb-2">{title}</h1>
+      <p className="text-dim text-sm mb-8">
         {locale === 'en'
           ? `${sortedBrands.length} brands, ${models.length} models tracked.`
           : `${sortedBrands.length} marques, ${models.length} modèles référencés.`}
       </p>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3.5">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
         {sortedBrands.map((b) => {
           const bModels = models.filter((m) => m.brand_id === b.id);
           const years = bModels.map((m) => Number(m.release_date.slice(0, 4)));
+          const minYear = years.length > 0 ? Math.min(...years) : 2016;
+          const maxYear = years.length > 0 ? Math.max(...years) : 2026;
           return (
             <Link
               key={b.id}
               href={`/marques/${b.id}`}
-              className="bg-panel border border-line rounded-2xl p-5 hover:border-accent hover:-translate-y-0.5 transition-all"
+              className="hardware-card group bg-panel p-5"
             >
-              <div className="mb-3.5">
-                <BrandBadge brand={b} size={28} />
+              <div className="mb-4 flex items-center justify-between">
+                <BrandBadge brand={b} size={32} />
+                <span className="font-mono text-[11px] text-accent/80 bg-accent/10 px-2 py-0.5 rounded-base font-semibold">
+                  {b.count}
+                </span>
               </div>
-              <h2 className="m-0 mb-1 text-[17px]">{b.name}</h2>
-              <p className="m-0 text-dim text-xs">
-                {Math.min(...years)} → {Math.max(...years)} ·{' '}
+              <h2 className="m-0 mb-1 font-display font-bold text-lg text-fg group-hover:text-accent transition-colors">{b.name}</h2>
+              <p className="m-0 text-dim text-xs font-mono">
+                {minYear} → {maxYear} ·{' '}
                 {locale === 'en' ? `${b.count} models` : `${b.count} modèles`}
               </p>
             </Link>
