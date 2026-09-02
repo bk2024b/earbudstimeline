@@ -182,7 +182,7 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
     scene.add(cardGroup);
     const cardWidth = isMobile ? 0.92 : 1.15;
     const cardHeight = isMobile ? 1.26 : 1.58;
-    const cardDepth = isMobile ? 0.10 : 0.13;
+    const cardDepth = isMobile ? 0.05 : 0.065;
     const radius = Math.max(isMobile ? 2.15 : 2.55, (count * (cardWidth + 0.28)) / (2 * Math.PI));
     const cardGeometry = new THREE.BoxGeometry(cardWidth, cardHeight, cardDepth);
     const cardMeshes = journeys.map((journey, i) => {
