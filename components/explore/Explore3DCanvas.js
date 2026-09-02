@@ -3,6 +3,30 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
+function getBrandIdentity(journey) {
+  const key = `${journey.id || ''} ${journey.name || ''}`.toLowerCase();
+  const identities = [
+    { match: ['apple'], bg: '#F4F4F2', panel: '#E8E8E5', text: '#111111', muted: '#686865', accent: '#111111' },
+    { match: ['sony'], bg: '#10151D', panel: '#18212D', text: '#F5F7FA', muted: '#8D99A8', accent: '#6EA8FF' },
+    { match: ['samsung'], bg: '#0D1B33', panel: '#132B50', text: '#F4F8FF', muted: '#91A6C5', accent: '#6EA8FF' },
+    { match: ['jbl'], bg: '#19130E', panel: '#2A1C12', text: '#FFF8EF', muted: '#BCA58E', accent: '#FF8A2A' },
+    { match: ['bose'], bg: '#E9E6DF', panel: '#DCD8D0', text: '#161616', muted: '#706D67', accent: '#111111' },
+    { match: ['google'], bg: '#F2F3F5', panel: '#E4E7EB', text: '#202124', muted: '#70757A', accent: '#4285F4' },
+    { match: ['nothing'], bg: '#ECECEA', panel: '#DCDCD8', text: '#111111', muted: '#6B6B67', accent: '#E53935' },
+    { match: ['beats'], bg: '#171113', panel: '#27191E', text: '#FFF5F6', muted: '#B49CA2', accent: '#FF365F' },
+    { match: ['oneplus'], bg: '#1B1110', panel: '#2A1715', text: '#FFF5F2', muted: '#B99A92', accent: '#F04438' },
+    { match: ['xiaomi'], bg: '#19120D', panel: '#2A1B12', text: '#FFF7F0', muted: '#B79E8C', accent: '#FF6900' },
+  ];
+
+  return identities.find((identity) => identity.match.some((term) => key.includes(term))) || {
+    bg: '#151619',
+    panel: '#202125',
+    text: '#F5F5F5',
+    muted: '#96989E',
+    accent: journey.color || '#AAB0B8',
+  };
+}
+
 function createCardTexture(journey, isFr) {
   const canvas = document.createElement('canvas');
   canvas.width = 640;
@@ -10,38 +34,42 @@ function createCardTexture(journey, isFr) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
-  const accent = journey.color || '#22D07A';
+  const identity = getBrandIdentity(journey);
   const grad = ctx.createLinearGradient(0, 0, 640, 820);
-  grad.addColorStop(0, '#19191C');
-  grad.addColorStop(0.52, '#101012');
-  grad.addColorStop(1, '#070708');
+  grad.addColorStop(0, identity.bg);
+  grad.addColorStop(0.58, identity.bg);
+  grad.addColorStop(1, identity.panel);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 640, 820);
 
-  // Editorial frame + oversized brand mark give every card its own identity.
+  // Double editorial frame: the card feels like a collectible archive object.
   ctx.strokeStyle = 'rgba(255,255,255,.16)';
   ctx.lineWidth = 3;
   ctx.strokeRect(10, 10, 620, 800);
-  ctx.strokeStyle = `${accent}66`;
+  ctx.strokeStyle = identity.accent;
+  ctx.globalAlpha = 0.35;
   ctx.lineWidth = 2;
   ctx.strokeRect(22, 22, 596, 776);
+  ctx.globalAlpha = 1;
 
-  ctx.fillStyle = accent;
+  ctx.fillStyle = identity.accent;
   ctx.fillRect(44, 48, 86, 7);
 
-  // Brand image is loaded asynchronously; initials remain as a graceful fallback.
   const logoX = 48;
   const logoY = 92;
   const logoSize = 150;
-  ctx.fillStyle = '#1D1D21';
-  ctx.strokeStyle = `${accent}55`;
+  ctx.fillStyle = identity.panel;
+  ctx.strokeStyle = identity.accent;
+  ctx.globalAlpha = 0.5;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.roundRect(logoX, logoY, logoSize, logoSize, 28);
   ctx.fill();
   ctx.stroke();
+  ctx.globalAlpha = 1;
 
-  ctx.fillStyle = accent;
+  // Brand image, with initials as a resilient fallback.
+  ctx.fillStyle = identity.accent;
   ctx.font = '700 52px "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -75,21 +103,20 @@ function createCardTexture(journey, isFr) {
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = 'rgba(255,255,255,.42)';
+  ctx.fillStyle = identity.muted;
   ctx.font = '700 16px "IBM Plex Mono", monospace';
-  ctx.letterSpacing = '3px';
   ctx.fillText(isFr ? 'BRAND ARCHIVE' : 'BRAND ARCHIVE', 48, 305);
 
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = identity.text;
   ctx.font = '700 58px "Space Grotesk", sans-serif';
   ctx.fillText(journey.name || 'Brand', 48, 610);
 
-  ctx.fillStyle = '#A3A3A8';
+  ctx.fillStyle = identity.muted;
   ctx.font = '20px "IBM Plex Mono", monospace';
   ctx.fillText(`${journey.totalCount || 0} ${isFr ? 'modèles' : 'models'}`, 48, 652);
   ctx.fillText(`${journey.periodStart} — ${journey.periodEnd}`, 48, 684);
 
-  ctx.fillStyle = accent;
+  ctx.fillStyle = identity.accent;
   ctx.font = '700 14px "IBM Plex Mono", monospace';
   ctx.fillText(isFr ? 'CHRONOLOGIE HARDWARE' : 'HARDWARE TIMELINE', 48, 754);
 
@@ -123,13 +150,13 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
     container.appendChild(renderer.domElement);
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-    const greenSpot = new THREE.SpotLight(0x22d07a, 3.5, 12, Math.PI / 4, 0.4, 1.2);
-    greenSpot.position.set(0, 2.5, 4);
-    greenSpot.target.position.set(0, 0, 0);
-    scene.add(greenSpot, greenSpot.target);
-    const backRimLight = new THREE.PointLight(0x22d07a, 1.2, 8);
-    backRimLight.position.set(0, -1, 1);
-    scene.add(backRimLight);
+    const whiteKeyLight = new THREE.SpotLight(0xffffff, 3.2, 12, Math.PI / 4, 0.5, 1.1);
+    whiteKeyLight.position.set(0, 2.5, 4);
+    whiteKeyLight.target.position.set(0, 0, 0);
+    scene.add(whiteKeyLight, whiteKeyLight.target);
+    const rimLight = new THREE.PointLight(0x8a8f98, 1.1, 8);
+    rimLight.position.set(0, -1, 1);
+    scene.add(rimLight);
 
     const starCount = isMobile ? 450 : 800;
     const starGeometry = new THREE.BufferGeometry();
@@ -140,29 +167,29 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
       starPositions[i3] = (Math.random() - 0.5) * 20;
       starPositions[i3 + 1] = (Math.random() - 0.5) * 14;
       starPositions[i3 + 2] = (Math.random() - 0.5) * 15 - 2;
-      const green = Math.random() > 0.85;
-      starColors[i3] = green ? 0.13 : 0.8;
-      starColors[i3 + 1] = green ? 0.81 : 0.8;
-      starColors[i3 + 2] = green ? 0.48 : 0.85;
+      const neutral = Math.random() > 0.85;
+      starColors[i3] = neutral ? 0.8 : 0.68;
+      starColors[i3 + 1] = neutral ? 0.8 : 0.7;
+      starColors[i3 + 2] = neutral ? 0.85 : 0.76;
     }
     starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
     starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
-    const starMaterial = new THREE.PointsMaterial({ size: isMobile ? 0.032 : 0.04, vertexColors: true, transparent: true, opacity: 0.75 });
+    const starMaterial = new THREE.PointsMaterial({ size: isMobile ? 0.032 : 0.04, vertexColors: true, transparent: true, opacity: 0.72 });
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
     const cardGroup = new THREE.Group();
     scene.add(cardGroup);
-    // Smaller cards, especially on mobile, leave breathing room around the active brand.
     const cardWidth = isMobile ? 0.92 : 1.15;
     const cardHeight = isMobile ? 1.26 : 1.58;
     const cardDepth = isMobile ? 0.10 : 0.13;
     const radius = Math.max(isMobile ? 2.15 : 2.55, (count * (cardWidth + 0.28)) / (2 * Math.PI));
     const cardGeometry = new THREE.BoxGeometry(cardWidth, cardHeight, cardDepth);
     const cardMeshes = journeys.map((journey, i) => {
+      const identity = getBrandIdentity(journey);
       const texture = createCardTexture(journey, isFr);
-      const sideMaterial = new THREE.MeshStandardMaterial({ color: new THREE.Color(journey.color || '#22D07A'), roughness: 0.5, metalness: 0.25 });
-      const faceMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.32, metalness: 0.18, transparent: true });
+      const sideMaterial = new THREE.MeshStandardMaterial({ color: new THREE.Color(identity.accent), roughness: 0.5, metalness: 0.25 });
+      const faceMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.32, metalness: 0.08, transparent: true });
       const material = [sideMaterial, sideMaterial, sideMaterial, sideMaterial, faceMaterial, faceMaterial];
       const mesh = new THREE.Mesh(cardGeometry, material);
       mesh.userData = { index: i, journey };
