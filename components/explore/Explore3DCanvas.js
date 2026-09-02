@@ -5,47 +5,94 @@ import * as THREE from 'three';
 
 function createCardTexture(journey, isFr) {
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 700;
+  canvas.width = 640;
+  canvas.height = 820;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
-  const grad = ctx.createLinearGradient(0, 0, 512, 700);
-  grad.addColorStop(0, '#161618');
-  grad.addColorStop(0.7, '#0E0E10');
-  grad.addColorStop(1, '#08080A');
+
+  const accent = journey.color || '#22D07A';
+  const grad = ctx.createLinearGradient(0, 0, 640, 820);
+  grad.addColorStop(0, '#19191C');
+  grad.addColorStop(0.52, '#101012');
+  grad.addColorStop(1, '#070708');
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 512, 700);
-  ctx.strokeStyle = 'rgba(255,255,255,.12)';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(4, 4, 504, 692);
-  ctx.fillStyle = journey.color || '#22D07A';
-  ctx.fillRect(40, 40, 60, 6);
-  ctx.fillStyle = '#1A1A1E';
-  ctx.strokeStyle = 'rgba(255,255,255,.1)';
+  ctx.fillRect(0, 0, 640, 820);
+
+  // Editorial frame + oversized brand mark give every card its own identity.
+  ctx.strokeStyle = 'rgba(255,255,255,.16)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(10, 10, 620, 800);
+  ctx.strokeStyle = `${accent}66`;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(22, 22, 596, 776);
+
+  ctx.fillStyle = accent;
+  ctx.fillRect(44, 48, 86, 7);
+
+  // Brand image is loaded asynchronously; initials remain as a graceful fallback.
+  const logoX = 48;
+  const logoY = 92;
+  const logoSize = 150;
+  ctx.fillStyle = '#1D1D21';
+  ctx.strokeStyle = `${accent}55`;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.roundRect(40, 70, 90, 90, 16);
+  ctx.roundRect(logoX, logoY, logoSize, logoSize, 28);
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = journey.color || '#22D07A';
-  ctx.font = 'bold 36px "Space Grotesk", sans-serif';
+
+  ctx.fillStyle = accent;
+  ctx.font = '700 52px "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText((journey.name || 'BT').slice(0, 2).toUpperCase(), 85, 115);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 44px "Space Grotesk", sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(journey.name || 'Brand', 40, 540);
-  ctx.fillStyle = '#A3A3A3';
-  ctx.font = '22px "IBM Plex Mono", monospace';
-  ctx.fillText(`${journey.totalCount || 0} ${isFr ? 'modèles' : 'models'} · ${journey.periodStart}–${journey.periodEnd}`, 40, 590);
-  ctx.fillStyle = journey.color || '#22D07A';
-  ctx.font = 'bold 18px "IBM Plex Mono", monospace';
-  ctx.fillText(isFr ? 'CHRONOLOGIE HARDWARE' : 'HARDWARE TIMELINE', 40, 635);
+  ctx.fillText((journey.name || 'BT').slice(0, 2).toUpperCase(), logoX + logoSize / 2, logoY + logoSize / 2);
+
   const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
+
+  if (journey.imageUrl) {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(logoX + 10, logoY + 10, logoSize - 20, logoSize - 20, 20);
+      ctx.clip();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(logoX + 10, logoY + 10, logoSize - 20, logoSize - 20);
+      const ratio = Math.min((logoSize - 20) / image.width, (logoSize - 20) / image.height);
+      const drawW = image.width * ratio;
+      const drawH = image.height * ratio;
+      ctx.drawImage(image, logoX + logoSize / 2 - drawW / 2, logoY + logoSize / 2 - drawH / 2, drawW, drawH);
+      ctx.restore();
+      texture.needsUpdate = true;
+    };
+    image.onerror = () => {};
+    image.src = journey.imageUrl;
+  }
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = 'rgba(255,255,255,.42)';
+  ctx.font = '700 16px "IBM Plex Mono", monospace';
+  ctx.letterSpacing = '3px';
+  ctx.fillText(isFr ? 'BRAND ARCHIVE' : 'BRAND ARCHIVE', 48, 305);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '700 58px "Space Grotesk", sans-serif';
+  ctx.fillText(journey.name || 'Brand', 48, 610);
+
+  ctx.fillStyle = '#A3A3A8';
+  ctx.font = '20px "IBM Plex Mono", monospace';
+  ctx.fillText(`${journey.totalCount || 0} ${isFr ? 'modèles' : 'models'}`, 48, 652);
+  ctx.fillText(`${journey.periodStart} — ${journey.periodEnd}`, 48, 684);
+
+  ctx.fillStyle = accent;
+  ctx.font = '700 14px "IBM Plex Mono", monospace';
+  ctx.fillText(isFr ? 'CHRONOLOGIE HARDWARE' : 'HARDWARE TIMELINE', 48, 754);
+
   return texture;
 }
 
@@ -54,7 +101,6 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
   const stateRef = useRef({ activeIndex, targetAngle: 0, currentAngle: 0, isDragging: false, startX: 0, startAngle: 0, pointerVelocity: 0, lastX: 0, lastTime: 0 });
   stateRef.current.activeIndex = activeIndex;
 
-  // Keep the WebGL scene alive while React changes the selected brand.
   useEffect(() => {
     if (!journeys.length) return;
     stateRef.current.targetAngle = -(activeIndex * (2 * Math.PI / journeys.length));
@@ -65,15 +111,17 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
     if (!container || !journeys.length) return undefined;
     const count = journeys.length;
     const isFr = locale !== 'en';
+    const isMobile = window.innerWidth < 768;
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-    camera.position.set(0, 0.2, 5.2);
+    const camera = new THREE.PerspectiveCamera(isMobile ? 40 : 45, container.clientWidth / container.clientHeight, 0.1, 100);
+    camera.position.set(0, 0.15, isMobile ? 4.8 : 5.2);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
     container.appendChild(renderer.domElement);
+
     scene.add(new THREE.AmbientLight(0xffffff, 0.85));
     const greenSpot = new THREE.SpotLight(0x22d07a, 3.5, 12, Math.PI / 4, 0.4, 1.2);
     greenSpot.position.set(0, 2.5, 4);
@@ -83,7 +131,7 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
     backRimLight.position.set(0, -1, 1);
     scene.add(backRimLight);
 
-    const starCount = 800;
+    const starCount = isMobile ? 450 : 800;
     const starGeometry = new THREE.BufferGeometry();
     const starPositions = new Float32Array(starCount * 3);
     const starColors = new Float32Array(starCount * 3);
@@ -99,19 +147,23 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
     }
     starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
     starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
-    const starMaterial = new THREE.PointsMaterial({ size: 0.04, vertexColors: true, transparent: true, opacity: 0.75 });
+    const starMaterial = new THREE.PointsMaterial({ size: isMobile ? 0.032 : 0.04, vertexColors: true, transparent: true, opacity: 0.75 });
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
 
     const cardGroup = new THREE.Group();
     scene.add(cardGroup);
-    const cardWidth = 1.35;
-    const cardHeight = 1.85;
-    const radius = Math.max(2.4, (count * (cardWidth + 0.3)) / (2 * Math.PI));
-    const cardGeometry = new THREE.PlaneGeometry(cardWidth, cardHeight);
+    // Smaller cards, especially on mobile, leave breathing room around the active brand.
+    const cardWidth = isMobile ? 0.92 : 1.15;
+    const cardHeight = isMobile ? 1.26 : 1.58;
+    const cardDepth = isMobile ? 0.10 : 0.13;
+    const radius = Math.max(isMobile ? 2.15 : 2.55, (count * (cardWidth + 0.28)) / (2 * Math.PI));
+    const cardGeometry = new THREE.BoxGeometry(cardWidth, cardHeight, cardDepth);
     const cardMeshes = journeys.map((journey, i) => {
       const texture = createCardTexture(journey, isFr);
-      const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide, roughness: 0.35, metalness: 0.25, transparent: true });
+      const sideMaterial = new THREE.MeshStandardMaterial({ color: new THREE.Color(journey.color || '#22D07A'), roughness: 0.5, metalness: 0.25 });
+      const faceMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.32, metalness: 0.18, transparent: true });
+      const material = [sideMaterial, sideMaterial, sideMaterial, sideMaterial, faceMaterial, faceMaterial];
       const mesh = new THREE.Mesh(cardGeometry, material);
       mesh.userData = { index: i, journey };
       cardGroup.add(mesh);
@@ -159,10 +211,14 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
         if (intersects.length) {
           const clickedIndex = intersects[0].object.userData.index;
           if (clickedIndex === stateRef.current.activeIndex) onOpenHistory?.(clickedIndex);
-          else { onActiveIndexChange?.(clickedIndex); stateRef.current.targetAngle = -clickedIndex * angleStep; }
+          else {
+            onActiveIndexChange?.(clickedIndex);
+            stateRef.current.targetAngle = -clickedIndex * angleStep;
+          }
         }
       }
     }
+
     let wheelAcc = 0;
     let wheelTimer = null;
     function onWheel(e) {
@@ -196,7 +252,7 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
     function animate(time) {
       animationFrameId = requestAnimationFrame(animate);
       camera.position.x += (mouse.x * 0.2 - camera.position.x) * 0.05;
-      camera.position.y += (0.2 + mouse.y * 0.15 - camera.position.y) * 0.05;
+      camera.position.y += (0.15 + mouse.y * 0.15 - camera.position.y) * 0.05;
       camera.lookAt(0, 0, 0);
       const lerpSpeed = stateRef.current.isDragging ? 0.18 : 0.055;
       stateRef.current.currentAngle += (stateRef.current.targetAngle - stateRef.current.currentAngle) * lerpSpeed;
@@ -207,9 +263,9 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
         mesh.position.set(x, 0, z);
         mesh.rotation.y = cardAngle;
         const cosDist = Math.cos(cardAngle);
-        const scale = cosDist > 0.88 ? 1.05 : Math.max(0.55, cosDist * 0.85);
+        const scale = cosDist > 0.88 ? (isMobile ? 0.94 : 1.0) : Math.max(isMobile ? 0.52 : 0.55, cosDist * 0.82);
         mesh.scale.set(scale, scale, scale);
-        mesh.material.opacity = Math.max(0.2, (cosDist + 1) / 2);
+        mesh.material.forEach((material) => { material.opacity = Math.max(0.2, (cosDist + 1) / 2); });
       });
       stars.rotation.y = time * 0.00004;
       stars.rotation.x = time * 0.00002;
@@ -228,7 +284,12 @@ export default function Explore3DCanvas({ journeys, activeIndex, onActiveIndexCh
       starGeometry.dispose();
       starMaterial.dispose();
       cardGeometry.dispose();
-      cardMeshes.forEach((mesh) => { if (mesh.material.map) mesh.material.map.dispose(); mesh.material.dispose(); });
+      cardMeshes.forEach((mesh) => {
+        mesh.material.forEach((material) => {
+          if (material.map) material.map.dispose();
+          material.dispose();
+        });
+      });
       renderer.dispose();
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
     };
