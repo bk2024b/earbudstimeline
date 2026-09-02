@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import JourneyHeader from './JourneyHeader';
 import JourneyProgress from './JourneyProgress';
 import JourneyStory from './JourneyStory';
@@ -10,6 +10,7 @@ import JourneyNavigation from './JourneyNavigation';
 export default function ExploreJourney({ journey, chapterIndex, onChapterChange, onComplete, onBack, locale = 'fr' }) {
   const [changing, setChanging] = useState(false);
   const touchStartX = useRef(null);
+  const transitionTimer = useRef(null);
   const fr = locale !== 'en';
   const chapters = journey?.chapters || [];
   const chapter = chapters[chapterIndex];
@@ -17,18 +18,25 @@ export default function ExploreJourney({ journey, chapterIndex, onChapterChange,
 
   const story = useMemo(() => ({ chapter, previous }), [chapter, previous]);
 
-  const goTo = (nextIndex) => {
+  const goTo = useCallback((nextIndex) => {
     const clamped = Math.max(0, Math.min(chapters.length - 1, nextIndex));
-    if (clamped === chapterIndex) return;
+    if (clamped === chapterIndex || changing) return;
+    if (transitionTimer.current) window.clearTimeout(transitionTimer.current);
     setChanging(true);
-    window.setTimeout(() => {
+    transitionTimer.current = window.setTimeout(() => {
       onChapterChange(clamped);
       setChanging(false);
+      transitionTimer.current = null;
     }, 220);
-  };
+  }, [chapters.length, chapterIndex, changing, onChapterChange]);
+
+  useEffect(() => () => {
+    if (transitionTimer.current) window.clearTimeout(transitionTimer.current);
+  }, []);
 
   useEffect(() => {
     const onKey = (event) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target.isContentEditable) return;
       if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
         event.preventDefault();
         goTo(chapterIndex + 1);
@@ -39,7 +47,7 @@ export default function ExploreJourney({ journey, chapterIndex, onChapterChange,
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [chapterIndex, chapters.length]);
+  }, [chapterIndex, goTo]);
 
   if (!chapter) return null;
 
