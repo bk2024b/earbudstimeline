@@ -10,8 +10,6 @@ import EraExplorer from './EraExplorer';
 import EvolutionCompare from './EvolutionCompare';
 import './explore.css';
 
-const EXPERIENCES = ['intro', 'universe', 'journey', 'complete', 'tools', 'era', 'compare'];
-
 export default function ExploreExperience({ journeys = [], locale = 'fr', onExit }) {
   const fr = locale !== 'en';
   const [experience, setExperience] = useState('intro');
@@ -23,23 +21,14 @@ export default function ExploreExperience({ journeys = [], locale = 'fr', onExit
   const currentJourney = journeys[brandIndex] || journeys[0] || null;
   const periodBounds = useMemo(() => {
     if (!journeys.length) return { min: 2016, max: new Date().getFullYear() };
-    return {
-      min: Math.min(...journeys.map((journey) => journey.periodStart)),
-      max: Math.max(...journeys.map((journey) => journey.periodEnd)),
-    };
+    return { min: Math.min(...journeys.map((journey) => journey.periodStart)), max: Math.max(...journeys.map((journey) => journey.periodEnd)) };
   }, [journeys]);
 
   useEffect(() => {
-    try {
-      setIntroReady(window.localStorage.getItem('explore-intro-seen') === '1');
-    } catch {
-      setIntroReady(false);
-    }
+    try { setIntroReady(window.localStorage.getItem('explore-intro-seen') === '1'); }
+    catch { setIntroReady(false); }
   }, []);
-
-  useEffect(() => {
-    if (introReady) setExperience('universe');
-  }, [introReady]);
+  useEffect(() => { if (introReady) setExperience('universe'); }, [introReady]);
 
   const beginExplore = useCallback(() => {
     try { window.localStorage.setItem('explore-intro-seen', '1'); } catch {}
@@ -49,15 +38,15 @@ export default function ExploreExperience({ journeys = [], locale = 'fr', onExit
 
   const goToBrand = useCallback((index) => {
     if (!journeys.length) return;
-    const next = ((index % journeys.length) + journeys.length) % journeys.length;
-    setBrandIndex(next);
+    setBrandIndex(((index % journeys.length) + journeys.length) % journeys.length);
   }, [journeys.length]);
 
-  const openJourney = useCallback((index = brandIndex) => {
-    if (index !== brandIndex) setBrandIndex(index);
+  // Stable callback: changing the active brand must not recreate the WebGL scene.
+  const openJourney = useCallback((index) => {
+    if (typeof index === 'number') setBrandIndex(index);
     setChapterIndex(0);
     setExperience('journey');
-  }, [brandIndex]);
+  }, []);
 
   const completeJourney = useCallback(() => {
     if (!currentJourney) return;
@@ -67,11 +56,10 @@ export default function ExploreExperience({ journeys = [], locale = 'fr', onExit
 
   const exploreAnother = useCallback(() => {
     if (!journeys.length) return;
-    const next = (brandIndex + 1) % journeys.length;
-    setBrandIndex(next);
+    setBrandIndex((index) => (index + 1) % journeys.length);
     setChapterIndex(0);
     setExperience('universe');
-  }, [brandIndex, journeys.length]);
+  }, [journeys.length]);
 
   const goBackToUniverse = useCallback(() => setExperience('universe'), []);
 
@@ -81,31 +69,20 @@ export default function ExploreExperience({ journeys = [], locale = 'fr', onExit
       if (event.key === 'Escape') {
         event.preventDefault();
         if (experience === 'universe') onExit?.();
-        else if (experience === 'journey' || experience === 'tools' || experience === 'era' || experience === 'compare' || experience === 'complete') setExperience('universe');
+        else setExperience('universe');
         return;
       }
       if (experience === 'universe') {
         if (event.key === 'ArrowRight') goToBrand(brandIndex + 1);
         if (event.key === 'ArrowLeft') goToBrand(brandIndex - 1);
-        if (event.key === 'Enter') openJourney();
-      }
-      if (experience === 'journey' && event.code === 'Space') {
-        // Deliberately no autoplay: space is reserved for future media controls.
-        event.preventDefault();
+        if (event.key === 'Enter') openJourney(brandIndex);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [experience, brandIndex, goToBrand, openJourney, onExit]);
 
-  if (!journeys.length) {
-    return (
-      <div className="explore">
-        <div className="explore-stars" />
-        <div className="explore-empty">{fr ? 'Aucune donnée disponible pour le moment.' : 'No data available yet.'}</div>
-      </div>
-    );
-  }
+  if (!journeys.length) return <div className="explore"><div className="explore-stars" /><div className="explore-empty">{fr ? 'Aucune donnée disponible pour le moment.' : 'No data available yet.'}</div></div>;
 
   const showTopbar = experience !== 'intro';
 
@@ -113,7 +90,6 @@ export default function ExploreExperience({ journeys = [], locale = 'fr', onExit
     <div className="explore" role="application" aria-label={fr ? "Explorer l'histoire des écouteurs" : 'Explore earbuds history'}>
       <div className="explore-stars" />
       <div className="explore-ambient-glow" style={{ background: `radial-gradient(circle at 50% 45%, ${currentJourney?.color || '#22D07A'}18 0%, transparent 65%)` }} />
-
       {showTopbar && (
         <div className="explore-topbar">
           <button className="explore-logo" onClick={() => setExperience('universe')}>Earbuds<b>Timeline</b></button>
@@ -123,67 +99,15 @@ export default function ExploreExperience({ journeys = [], locale = 'fr', onExit
           </div>
         </div>
       )}
-
-      <div className="explore-progress-pill" aria-label={fr ? 'Progression Explore' : 'Explore progress'}>
-        {completedBrands.length > 0 ? `${completedBrands.length} ${fr ? 'parcours' : 'journeys'}` : (fr ? 'Explore' : 'Explore')}
-      </div>
+      <div className="explore-progress-pill">{completedBrands.length > 0 ? `${completedBrands.length} ${fr ? 'parcours' : 'journeys'}` : 'Explore'}</div>
 
       {experience === 'intro' && <ExploreIntro locale={locale} onBegin={beginExplore} onSkip={beginExplore} />}
-
-      {experience === 'universe' && (
-        <ExploreUniverse
-          journeys={journeys}
-          activeBrandIndex={brandIndex}
-          onBrandChange={goToBrand}
-          onExploreJourney={openJourney}
-          onExit={onExit}
-          locale={locale}
-        />
-      )}
-
-      {experience === 'journey' && currentJourney && (
-        <ExploreJourney
-          journey={currentJourney}
-          chapterIndex={chapterIndex}
-          onChapterChange={setChapterIndex}
-          onComplete={completeJourney}
-          onBack={goBackToUniverse}
-          locale={locale}
-        />
-      )}
-
-      {experience === 'complete' && currentJourney && (
-        <JourneyComplete
-          journey={currentJourney}
-          onExploreAnother={exploreAnother}
-          onViewProducts={() => onExit?.()}
-          onCompare={() => setExperience('compare')}
-          locale={locale}
-        />
-      )}
-
-      {experience === 'tools' && (
-        <ExploreTools
-          onEra={() => setExperience('era')}
-          onCompare={() => setExperience('compare')}
-          onBack={goBackToUniverse}
-          locale={locale}
-        />
-      )}
-
-      {experience === 'era' && (
-        <EraExplorer
-          journeys={journeys}
-          periodBounds={periodBounds}
-          onBack={() => setExperience('tools')}
-          onOpenJourney={openJourney}
-          locale={locale}
-        />
-      )}
-
-      {experience === 'compare' && currentJourney && (
-        <EvolutionCompare journey={currentJourney} onBack={() => setExperience('tools')} locale={locale} />
-      )}
+      {experience === 'universe' && <ExploreUniverse journeys={journeys} activeBrandIndex={brandIndex} onBrandChange={goToBrand} onExploreJourney={openJourney} onExit={onExit} locale={locale} />}
+      {experience === 'journey' && currentJourney && <ExploreJourney journey={currentJourney} chapterIndex={chapterIndex} onChapterChange={setChapterIndex} onComplete={completeJourney} onBack={goBackToUniverse} locale={locale} />}
+      {experience === 'complete' && currentJourney && <JourneyComplete journey={currentJourney} onExploreAnother={exploreAnother} onViewProducts={onExit} onCompare={() => setExperience('compare')} locale={locale} />}
+      {experience === 'tools' && <ExploreTools onEra={() => setExperience('era')} onCompare={() => setExperience('compare')} onBack={goBackToUniverse} locale={locale} />}
+      {experience === 'era' && <EraExplorer journeys={journeys} periodBounds={periodBounds} onBack={() => setExperience('tools')} onOpenJourney={openJourney} locale={locale} />}
+      {experience === 'compare' && currentJourney && <EvolutionCompare journey={currentJourney} onBack={() => setExperience('tools')} locale={locale} />}
     </div>
   );
 }
