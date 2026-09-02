@@ -3,22 +3,40 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import { ArrowLeftRight, Search, X, Check } from 'lucide-react';
+import { ArrowLeftRight, Search, X } from 'lucide-react';
 import BrandBadge from './BrandBadge';
+import { buildComparisonSlug } from '@/lib/compareSlug';
 
-export default function CompareSelectors({ brands = [], models = [], a, b }) {
+export default function CompareSelectors({ brands = [], models = [] }) {
   const t = useTranslations('comparer');
   const router = useRouter();
+  const [a, setA] = useState('');
+  const [b, setB] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setA(params.get('a') || '');
+    setB(params.get('b') || '');
+  }, []);
 
   const brandMap = useMemo(() => Object.fromEntries(brands.map((br) => [br.id, br])), [brands]);
   const modelA = useMemo(() => models.find((m) => m.id === a), [models, a]);
   const modelB = useMemo(() => models.find((m) => m.id === b), [models, b]);
 
   function navigate(newA, newB) {
+    setA(newA || '');
+    setB(newB || '');
+
+    if (newA && newB) {
+      router.replace(`/comparaisons/${buildComparisonSlug(newA, newB)}`);
+      return;
+    }
+
     const params = new URLSearchParams();
     if (newA) params.set('a', newA);
     if (newB) params.set('b', newB);
-    router.push(`/comparer?${params.toString()}`);
+    const query = params.toString();
+    router.replace(query ? `/comparer?${query}` : '/comparer');
   }
 
   function handleSwap() {
@@ -27,7 +45,6 @@ export default function CompareSelectors({ brands = [], models = [], a, b }) {
 
   return (
     <div className="relative grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-4 mb-8">
-      {/* Colonne A */}
       <ModelAutocompleteInput
         placeholder={t('optionA') || 'Choisir le premier modèle...'}
         selectedModel={modelA}
@@ -38,7 +55,6 @@ export default function CompareSelectors({ brands = [], models = [], a, b }) {
         label="Modèle A"
       />
 
-      {/* Bouton Inverser */}
       <div className="flex justify-center sm:self-center py-1">
         <button
           type="button"
@@ -51,7 +67,6 @@ export default function CompareSelectors({ brands = [], models = [], a, b }) {
         </button>
       </div>
 
-      {/* Colonne B */}
       <ModelAutocompleteInput
         placeholder={t('optionB') || 'Choisir le second modèle...'}
         selectedModel={modelB}
@@ -70,12 +85,9 @@ function ModelAutocompleteInput({ placeholder, selectedModel, brandMap, models, 
   const [query, setQuery] = useState('');
   const wrapperRef = useRef(null);
 
-  // Fermeture si clic à l'extérieur
   useEffect(() => {
     function handleClickOutside(e) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setIsOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -86,8 +98,8 @@ function ModelAutocompleteInput({ placeholder, selectedModel, brandMap, models, 
     if (!term) return models.slice(0, 10);
     return models
       .filter((m) => {
-        const b = brandMap[m.brand_id]?.name || m.brand_id;
-        return `${m.name} ${b} ${m.gamme}`.toLowerCase().includes(term);
+        const brand = brandMap[m.brand_id]?.name || m.brand_id;
+        return `${m.name} ${brand} ${m.gamme}`.toLowerCase().includes(term);
       })
       .slice(0, 10);
   }, [query, models, brandMap]);
@@ -135,14 +147,13 @@ function ModelAutocompleteInput({ placeholder, selectedModel, brandMap, models, 
             />
           </div>
 
-          {/* Menu déroulant de suggestions */}
           {isOpen && (
             <div className="absolute top-full mt-1.5 left-0 right-0 max-h-64 overflow-y-auto bg-panel border border-line rounded-xl shadow-2xl z-30 divide-y divide-line/40">
               {filtered.length === 0 ? (
                 <div className="p-4 text-xs text-dim text-center">Aucun modèle correspondant</div>
               ) : (
                 filtered.map((m) => {
-                  const b = brandMap[m.brand_id];
+                  const brand = brandMap[m.brand_id];
                   return (
                     <div
                       key={m.id}
@@ -154,10 +165,10 @@ function ModelAutocompleteInput({ placeholder, selectedModel, brandMap, models, 
                       className="p-3 hover:bg-panel2 cursor-pointer flex items-center justify-between gap-3 text-xs transition-colors"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <BrandBadge brand={b || { id: m.brand_id, name: m.brand_id, color: '#6C8CFF' }} size={20} />
+                        <BrandBadge brand={brand || { id: m.brand_id, name: m.brand_id, color: '#6C8CFF' }} size={20} />
                         <div className="min-w-0">
                           <span className="font-semibold text-fg block truncate text-sm">{m.name}</span>
-                          <span className="text-dim text-[11px] block">{b?.name} • {m.gamme}</span>
+                          <span className="text-dim text-[11px] block">{brand?.name} • {m.gamme}</span>
                         </div>
                       </div>
                       <span className="font-mono text-dim shrink-0">{m.release_date?.slice(0, 4)}</span>
