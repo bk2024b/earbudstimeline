@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 function SpecGrid({ chapter, locale }) {
   const fr = locale !== 'en';
   const specs = [
@@ -12,7 +10,6 @@ function SpecGrid({ chapter, locale }) {
 }
 
 export default function JourneyProduct({ chapter, locale = 'fr' }) {
-  const fr = locale !== 'en';
   return (
     <div className="journey-product">
       <div className="journey-product-frame">
@@ -29,9 +26,6 @@ export default function JourneyProduct({ chapter, locale = 'fr' }) {
         )}
       </div>
       <SpecGrid chapter={chapter} locale={locale} />
-      <Link className="journey-product-link" href={`/${locale}/earbuds/${chapter.id}`}>
-        {fr ? 'Voir la fiche produit' : 'View product'} →
-      </Link>
     </div>
   );
 }
