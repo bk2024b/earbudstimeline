@@ -6,27 +6,13 @@ import { ShoppingCart, ExternalLink } from 'lucide-react';
 import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { fmtH, fmtG, fmtMoney, yearOf } from '@/lib/format';
 import { parseComparisonSlug, buildComparisonSlug, isCanonicalSlug } from '@/lib/compareSlug';
-import { getGenerationalPairs, getRivalPairs } from '@/lib/compare';
-import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
-import { routing } from '@/i18n/routing';
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, ogDefaults, JsonLd } from '@/lib/seo';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import EntityGraph from '@/components/EntityGraph';
 import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
-
-// Mêmes paires que celles listées dans app/sitemap.js (getGenerationalPairs +
-// getRivalPairs, plafonné à 40) — pré-générées au build au lieu d'un rendu à
-// la demande. C'est la plus grosse famille de pages du site (~470 paires ×
-// 2 langues), et ce sont exactement les pages sur lesquelles le trafic SEO
-// long-tail atterrit directement.
-export async function generateStaticParams() {
-  const [models] = await Promise.all([getAllEarbuds()]);
-  const pairs = [...getGenerationalPairs(models), ...getRivalPairs(models, 40)];
-  const slugs = new Set(pairs.map(({ a, b }) => buildComparisonSlug(a.id, b.id)));
-  return routing.locales.flatMap((locale) => [...slugs].map((slug) => ({ locale, slug })));
-}
 
 async function loadPair(slug) {
   const parsed = parseComparisonSlug(slug);
@@ -53,26 +39,93 @@ function lineagePosition(model, models) {
   return { prev: idx > 0 ? lineup[idx - 1] : null, next: idx >= 0 && idx < lineup.length - 1 ? lineup[idx + 1] : null };
 }
 
+// Calcule les 1-2 différences les plus notables entre deux modèles, pour générer
+// une meta description unique par paire plutôt qu'un texte générique répété sur
+// toutes les pages de comparaison. Priorité : ANC (feature binaire très recherchée)
+// > prix (le plus décisif pour le clic) > autonomie > poids. Retourne un tableau
+// de phrases déjà formulées dans la langue demandée, prêtes à être jointes.
+function topDifferentiators(a, b, locale) {
+  const totalBatt = (m) => (Number(m.battery_bud_h) || 0) + (Number(m.battery_case_h) || 0);
+  const battA = totalBatt(a);
+  const battB = totalBatt(b);
+  const battDiff = Math.round(Math.abs(battA - battB) * 10) / 10;
+  const priceDiff = Math.abs((Number(a.price) || 0) - (Number(b.price) || 0));
+  const weightDiff = Math.abs((Number(a.weight_g) || 0) - (Number(b.weight_g) || 0));
+  const ancMismatch = Boolean(a.anc) !== Boolean(b.anc);
+
+  const winner = (condition) => (condition ? a : b);
+  const phrases = [];
+
+  if (ancMismatch) {
+    const withAnc = a.anc ? a : b;
+    const withoutAnc = a.anc ? b : a;
+    phrases.push(
+      locale === 'en'
+        ? `${withAnc.name} has ANC, ${withoutAnc.name} doesn't`
+        : `${withAnc.name} a l'ANC, pas ${withoutAnc.name}`
+    );
+  }
+
+  if (priceDiff >= 5 && a.price && b.price) {
+    const cheaper = winner(a.price < b.price);
+    phrases.push(
+      locale === 'en'
+        ? `${cheaper.name} is $${priceDiff} cheaper`
+        : `${cheaper.name} coûte ${priceDiff} $ de moins`
+    );
+  }
+
+  if (battDiff >= 1 && battA && battB) {
+    const longer = winner(battA > battB);
+    phrases.push(
+      locale === 'en'
+        ? `${longer.name} lasts ${fmtH(battDiff)} longer`
+        : `${longer.name} tient ${fmtH(battDiff)} de plus`
+    );
+  }
+
+  if (weightDiff >= 3 && a.weight_g && b.weight_g && phrases.length < 2) {
+    const lighter = winner(a.weight_g < b.weight_g);
+    phrases.push(
+      locale === 'en'
+        ? `${lighter.name} is ${fmtG(weightDiff)} lighter`
+        : `${lighter.name} pèse ${fmtG(weightDiff)} de moins`
+    );
+  }
+
+  return phrases.slice(0, 2);
+}
+
 export async function generateMetadata({ params }) {
   const { locale, slug } = params;
   const { a, b, brands } = await loadPair(slug);
   if (!a || !b) return { title: 'Not found — EarbudsTimeline' };
 
   const brandName = (id) => brands.find((br) => br.id === id)?.name || id;
+  const diffs = topDifferentiators(a, b, locale);
 
   const title = `${a.name} vs ${b.name} — ${locale === 'en' ? 'Full comparison' : 'Comparatif complet'} | EarbudsTimeline`;
-  const description =
+
+  const genericTail =
     locale === 'en'
-      ? `${a.name} (${brandName(a.brand_id)}) vs ${b.name} (${brandName(b.brand_id)}): battery life, noise cancellation, weight, price, USB-C, multipoint and codecs compared in detail.`
-      : `${a.name} (${brandName(a.brand_id)}) contre ${b.name} (${brandName(b.brand_id)}) : autonomie, réduction de bruit, poids, prix, USB-C, multipoint et codecs comparés en détail.`;
+      ? 'battery life, noise cancellation, weight, price, USB-C, multipoint and codecs compared in detail.'
+      : 'autonomie, réduction de bruit, poids, prix, USB-C, multipoint et codecs comparés en détail.';
+
+  const description = diffs.length
+    ? `${a.name} (${brandName(a.brand_id)}) vs ${b.name} (${brandName(b.brand_id)}): ${diffs.join(', ')}. ${
+        locale === 'en' ? 'Full spec comparison inside.' : 'Comparatif complet des caractéristiques.'
+      }`
+    : `${a.name} (${brandName(a.brand_id)}) ${locale === 'en' ? 'vs' : 'contre'} ${b.name} (${brandName(b.brand_id)}): ${genericTail}`;
 
   return {
     title,
     description,
     ...canonicalFor(`/${locale}/comparaisons/${buildComparisonSlug(a.id, b.id)}`),
     openGraph: {
+      ...ogDefaults(`/${locale}/comparaisons/${buildComparisonSlug(a.id, b.id)}`, locale),
       title: `${a.name} vs ${b.name}`,
       description: locale === 'en' ? `Full comparison between the ${a.name} and the ${b.name}.` : `Comparatif complet entre le ${a.name} et le ${b.name}.`,
+      images: [a.image_url || b.image_url || '/og-image.png'],
     },
   };
 }
