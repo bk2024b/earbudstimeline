@@ -58,6 +58,7 @@ const ANC_CONTENT = {
     faqTitle: 'Noise cancelling earbuds FAQ',
     faq: [
       ['What are the best noise cancelling earbuds?', 'The best verified model is the one with the strongest documented ANC performance across the environments that matter to you.'],
+      ['Are noise cancelling earbuds and ANC earbuds the same thing?', 'Yes — "noise cancelling earbuds" and "ANC earbuds" refer to the same active noise cancelling technology; this page ranks them the same way regardless of which phrase a product listing uses.'],
       ['Why are some ANC earbuds not ranked?', 'We avoid assigning an overall score when environment-specific evidence is insufficient.'],
       ['Is the ANC score a laboratory measurement?', 'No. It is an evidence-derived intelligence score, not a single laboratory dB measurement.'],
       ['Which ANC score should I use?', 'Use Travel for transport, Office for work, Traffic for engines and commuting, and Voices when conversations are the main problem.'],
@@ -81,6 +82,7 @@ const ANC_CONTENT = {
     faqTitle: 'FAQ sur les écouteurs avec réduction de bruit',
     faq: [
       ['Quels sont les meilleurs écouteurs ANC ?', 'Le meilleur modèle vérifié est celui dont les performances ANC sont les mieux documentées dans les environnements qui vous concernent.'],
+      ['Écouteurs à réduction de bruit et écouteurs ANC, est-ce la même chose ?', 'Oui — "écouteurs à réduction de bruit" et "écouteurs ANC" désignent la même technologie de réduction de bruit active ; cette page les classe de la même façon quelle que soit l’expression utilisée sur la fiche produit.'],
       ['Pourquoi certains écouteurs ANC ne sont-ils pas classés ?', 'Nous évitons de calculer un score global lorsque les preuves par environnement sont insuffisantes.'],
       ['Le score ANC est-il une mesure de laboratoire ?', 'Non. Il s’agit d’un score d’intelligence dérivé des preuves, pas d’une unique mesure en dB.'],
       ['Quel sous-score ANC dois-je regarder ?', 'Travel pour les transports, Office pour le travail, Traffic pour les moteurs et Voices lorsque les conversations sont le principal problème.'],
