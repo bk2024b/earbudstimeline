@@ -3,6 +3,7 @@ import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
 import AdSlot from '@/components/AdSlot';
+import { fmtDate } from '@/lib/format';
 
 export const revalidate = 3600;
 const n = (v) => Number.isFinite(Number(v)) ? Number(v) : null;
@@ -36,8 +37,32 @@ function Card({ row, brand, locale }) {
 
 export async function generateMetadata({ params }) {
   const { locale } = params;
-  const title = locale === 'fr' ? 'Meilleurs écouteurs pour le sport en 2026' : 'Best Sport Earbuds in 2026';
-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour le sport selon la résistance à l’eau, le poids, l’autonomie et les données disponibles.' : 'Compare the best sport earbuds using water resistance, weight, battery life and available specifications.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-sport`) };
+  const fr = locale === 'fr';
+  const year = new Date().getFullYear();
+  const titleBase = fr ? 'Meilleurs écouteurs pour le sport' : 'Best Sport Earbuds';
+
+  // Le pick n°1 change selon la page (chaque guide a sa propre fonction de score
+  // ci-dessus), donc l'inclure dans la description rend chaque page unique aux yeux
+  // de Google au lieu de répéter un texte quasi identique sur les 22 guides
+  // "best-earbuds-for-*". Si la requête échoue, on retombe sur la description
+  // générique existante — jamais de meta vide ou cassée.
+  let topPickLine = '';
+  try {
+    const models = await getAllEarbuds();
+    const top = [...models].sort((a, b) => sportScore(b) - sportScore(a))[0];
+    if (top) topPickLine = fr ? ` Top actuel : ${top.name}.` : ` Current top pick: ${top.name}.`;
+  } catch {}
+
+  const description =
+    (fr
+      ? 'Comparez les meilleurs écouteurs pour le sport selon la résistance à l’eau, le poids, l’autonomie et les données disponibles.'
+      : 'Compare the best sport earbuds using water resistance, weight, battery life and available specifications.') + topPickLine;
+
+  return {
+    title: `${titleBase} ${fr ? 'en' : 'in'} ${year} | EarbudsTimeline`,
+    description,
+    ...canonicalFor(`/${locale}/guides/best-earbuds-for-sport`),
+  };
 }
 
 export default async function Page({ params }) {
@@ -50,12 +75,15 @@ export default async function Page({ params }) {
   const under100 = rows.filter(r => n(r.model.price) != null && n(r.model.price) <= 100).slice(0, 5);
   const water = rows.filter(r => `${r.model.water_rating || r.model.ip_rating || ''}`.trim()).slice(0, 5);
   const light = [...rows].filter(r => n(r.model.weight_g) != null).sort((a, b) => n(a.model.weight_g) - n(b.model.weight_g)).slice(0, 5);
-  const title = fr ? 'Meilleurs écouteurs pour le sport en 2026' : 'Best Sport Earbuds in 2026';
+  const year = new Date().getFullYear();
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const updatedLabel = fmtDate(todayIso, locale);
+  const title = fr ? `Meilleurs écouteurs pour le sport en ${year}` : `Best Sport Earbuds in ${year}`;
   const intro = fr ? 'Une sélection pensée pour la course, la salle et les entraînements, basée sur la résistance à l’eau, le poids et l’autonomie disponibles dans notre catalogue. Le score Sport est un indice de spécifications et ne garantit pas le maintien pendant un mouvement réel.' : 'A selection for running, gym and workouts based on water resistance, weight and battery data available in our catalog. The Sport score is a specification index and does not guarantee fit during real-world movement.';
-  const jsonLd = { '@context': 'https://schema.org', '@type': 'Article', headline: title, description: intro, url: `https://earbudstimeline.com/${locale}/guides/best-earbuds-for-sport`, dateModified: '2026-08-24', inLanguage: locale };
+  const jsonLd = { '@context': 'https://schema.org', '@type': 'Article', headline: title, description: intro, url: `https://earbudstimeline.com/${locale}/guides/best-earbuds-for-sport`, dateModified: todayIso, inLanguage: locale };
   const guideHref = slug => `/${locale}/guides/${slug}`;
   const section = (h, items, s) => <section className="mt-12"><h2 className="font-display font-semibold text-[25px]">{h}</h2><p className="text-dim text-sm mt-1">{s}</p><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">{items.map(r => <Card key={r.model.id} row={r} brand={bm.get(r.model.brand_id)} locale={locale} />)}</div></section>;
-  return <><JsonLd data={jsonLd}/><article className="max-w-6xl mx-auto"><div className="font-mono text-xs text-accent uppercase mb-3">Sport · 2026</div><h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1><p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{intro}</p><div className="mt-4 text-[10px] font-mono text-dim">{fr ? 'Dernière mise à jour : 24 août 2026' : 'Last updated: August 24, 2026'}</div>
+  return <><JsonLd data={jsonLd}/><article className="max-w-6xl mx-auto"><div className="font-mono text-xs text-accent uppercase mb-3">Sport · {year}</div><h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1><p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{intro}</p><div className="mt-4 text-[10px] font-mono text-dim">{fr ? `Dernière mise à jour : ${updatedLabel}` : `Last updated: ${updatedLabel}`}</div>
   <section className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">{[['overall','OVERALL',best],['under100','UNDER $100',under100],['water','WATER',water],['light','LIGHTEST',light]].map(([id,l,x]) => <a key={id} href={`#${id}`} className="bg-panel border border-line rounded-xl p-4 hover:border-accent"><div className="font-mono text-accent text-xs">{l}</div><div className="font-display font-semibold mt-1">{x.length} picks</div></a>)}</section>
   <section id="overall" className="mt-12"><h2 className="font-display font-semibold text-[25px] mb-5">🏃 {fr ? 'Meilleurs écouteurs pour le sport' : 'Best Sport Earbuds Overall'}</h2><div className="overflow-x-auto border border-line rounded-2xl bg-panel"><table className="w-full text-left text-xs"><thead className="border-b border-line font-mono text-[10px] text-dim uppercase"><tr><th className="p-4">#</th><th className="p-4">Earbuds</th><th className="p-4">Price</th><th className="p-4">Sport</th><th className="p-4">Water</th><th className="p-4">Weight</th></tr></thead><tbody>{best.map((r,i) => <tr key={r.model.id} className="border-b border-line last:border-0"><td className="p-4 text-accent">{i+1}</td><td className="p-4"><Link href={`/${locale}/ecouteurs/${r.model.id}`} className="font-semibold hover:text-accent">{r.model.name}</Link><div className="text-dim text-[10px]">{bm.get(r.model.brand_id)?.name || r.model.brand_id}</div></td><td className="p-4 font-mono">{price(r.model.price)}</td><td className="p-4 font-bold">{r.score}</td><td className="p-4">{r.model.water_rating || r.model.ip_rating || '—'}</td><td className="p-4">{n(r.model.weight_g) != null ? `${n(r.model.weight_g)}g` : '—'}</td></tr>)}</tbody></table></div></section>
   <div id="under100">{section(fr ? '💵 Meilleurs écouteurs sport sous 100 $' : '💵 Best Sport Earbuds Under $100', under100, fr ? 'Sélection sous 100 $.' : 'Under-$100 selection.')}</div><div id="water">{section(fr ? '💦 Meilleurs écouteurs résistants à l’eau' : '💦 Best Water-Resistant Sport Earbuds', water, fr ? 'Modèles avec une donnée de résistance à l’eau disponible.' : 'Models with available water-resistance data.')}</div><div id="light">{section(fr ? '⚖️ Écouteurs sport les plus légers' : '⚖️ Lightest Sport Earbuds', light, fr ? 'Classés par poids.' : 'Ranked by weight.')}</div>

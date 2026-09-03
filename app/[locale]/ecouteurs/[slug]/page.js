@@ -49,10 +49,13 @@ export async function generateMetadata({ params }) {
   const year = yearOf(m.release_date);
   const tagline = displayTagline(m, locale);
 
+  // Sur les noms de produits longs (ex. certains modèles Baseus/Redmi), "Full
+  // specs and comparisons" / "Fiche complète, specs et comparaisons" poussait
+  // le title au-delà de 70 caractères. Formulation plus courte, même intention.
   const title =
     locale === 'en'
-      ? `${m.name} — Full specs and comparisons | EarbudsTimeline`
-      : `${m.name} — Fiche complète, specs et comparaisons | EarbudsTimeline`;
+      ? `${m.name} — Specs & price | EarbudsTimeline`
+      : `${m.name} — Fiche & prix | EarbudsTimeline`;
   const description =
     locale === 'en'
       ? `${m.name} (${brand?.name || m.brand_id}${year ? `, ${year}` : ''}): ${tagline} Battery life, ANC, Bluetooth, launch price and comparisons.`

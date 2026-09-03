@@ -70,9 +70,13 @@ function ProductCard({ row, brand, badge, fr }) {
 
 export async function generateMetadata({ params }) {
   const { locale } = params;
+  // Titre le plus long du site (80 caractères) — le suffixe ": sélection et
+  // comparatif" / ": Top Picks Compared" n'apportait rien que la description
+  // ne dise déjà, et poussait "| EarbudsTimeline" bien hors de la zone
+  // visible du SERP.
   const title = locale === 'fr'
-    ? 'Meilleurs écouteurs sans fil en 2026 : sélection et comparatif'
-    : 'Best Wireless Earbuds in 2026: Top Picks Compared';
+    ? 'Meilleurs écouteurs sans fil en 2026'
+    : 'Best Wireless Earbuds in 2026: Top Picks';
   const description = locale === 'fr'
     ? 'Comparez les meilleurs écouteurs sans fil en 2026 selon l’ANC, l’autonomie, le poids, la résistance à l’eau, les fonctionnalités et le prix.'
     : 'Discover the best wireless earbuds in 2026, compared for ANC, battery life, weight, water resistance, features and price.';

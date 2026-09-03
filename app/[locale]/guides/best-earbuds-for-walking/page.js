@@ -3,6 +3,7 @@ import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
 import AdSlot from '@/components/AdSlot';
+import { fmtDate } from '@/lib/format';
 
 export const revalidate = 3600;
 
@@ -12,8 +13,32 @@ const score = (m) => Math.min(100, 50 + (m.transparency_mode || m.transparency ?
 
 export async function generateMetadata({ params }) {
   const { locale } = params;
-  const title = locale === 'fr' ? 'Meilleurs écouteurs pour marcher en 2026' : 'Best Earbuds for Walking in 2026';
-  return { title: `${title} | EarbudsTimeline`, description: locale === 'fr' ? 'Comparez les écouteurs pour la marche selon confort, autonomie, transparence et résistance disponibles.' : 'Compare earbuds for walking using available comfort, battery, transparency and resistance factors.', ...canonicalFor(`/${locale}/guides/best-earbuds-for-walking`) };
+  const fr = locale === 'fr';
+  const year = new Date().getFullYear();
+  const titleBase = fr ? 'Meilleurs écouteurs pour marcher' : 'Best Earbuds for Walking';
+
+  // Le pick n°1 change selon la page (chaque guide a sa propre fonction de score
+  // ci-dessus), donc l'inclure dans la description rend chaque page unique aux yeux
+  // de Google au lieu de répéter un texte quasi identique sur les 22 guides
+  // "best-earbuds-for-*". Si la requête échoue, on retombe sur la description
+  // générique existante — jamais de meta vide ou cassée.
+  let topPickLine = '';
+  try {
+    const models = await getAllEarbuds();
+    const top = [...models].sort((a, b) => score(b) - score(a))[0];
+    if (top) topPickLine = fr ? ` Top actuel : ${top.name}.` : ` Current top pick: ${top.name}.`;
+  } catch {}
+
+  const description =
+    (fr
+      ? 'Comparez les écouteurs pour la marche selon confort, autonomie, transparence et résistance disponibles.'
+      : 'Compare earbuds for walking using available comfort, battery, transparency and resistance factors.') + topPickLine;
+
+  return {
+    title: `${titleBase} ${fr ? 'en' : 'in'} ${year} | EarbudsTimeline`,
+    description,
+    ...canonicalFor(`/${locale}/guides/best-earbuds-for-walking`),
+  };
 }
 
 export default async function Page({ params }) {
@@ -24,9 +49,12 @@ export default async function Page({ params }) {
   const rows = models.map((model) => ({ model, score: score(model) })).sort((a, b) => b.score - a.score);
   const best = rows.slice(0, 10);
   const budget = rows.filter((r) => n(r.model.price) != null && n(r.model.price) <= 100).slice(0, 6);
-  const title = fr ? 'Meilleurs écouteurs pour marcher en 2026' : 'Best Earbuds for Walking in 2026';
+  const year = new Date().getFullYear();
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const updatedLabel = fmtDate(todayIso, locale);
+  const title = fr ? `Meilleurs écouteurs pour marcher en ${year}` : `Best Earbuds for Walking in ${year}`;
   const intro = fr ? 'Une sélection pour les promenades et la marche quotidienne, basée sur autonomie, poids, transparence et résistance lorsqu’elles sont disponibles.' : 'A selection for walks and everyday walking based on battery life, weight, transparency and resistance when available.';
-  const jsonLd = { '@context': 'https://schema.org', '@type': 'Article', headline: title, description: intro, url: `https://earbudstimeline.com/${locale}/guides/best-earbuds-for-walking`, dateModified: '2026-08-26', inLanguage: locale };
+  const jsonLd = { '@context': 'https://schema.org', '@type': 'Article', headline: title, description: intro, url: `https://earbudstimeline.com/${locale}/guides/best-earbuds-for-walking`, dateModified: todayIso, inLanguage: locale };
   const card = (r) => (
     <Link key={r.model.id} href={`/${locale}/ecouteurs/${r.model.id}`} className="block bg-panel border border-line rounded-2xl p-5 hover:border-accent">
       <div className="font-mono text-[10px] text-accent">{bm.get(r.model.brand_id)?.name || r.model.brand_id}</div>
@@ -36,10 +64,10 @@ export default async function Page({ params }) {
   );
   return (
     <><JsonLd data={jsonLd}/><article className="max-w-6xl mx-auto">
-      <div className="font-mono text-xs text-accent uppercase mb-3">Walking · 2026</div>
+      <div className="font-mono text-xs text-accent uppercase mb-3">Walking · {year}</div>
       <h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1>
       <p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{intro}</p>
-      <div className="mt-4 text-[10px] font-mono text-dim">{fr ? 'Dernière mise à jour : 26 août 2026' : 'Last updated: August 26, 2026'}</div>
+      <div className="mt-4 text-[10px] font-mono text-dim">{fr ? `Dernière mise à jour : ${updatedLabel}` : `Last updated: ${updatedLabel}`}</div>
       <section className="mt-10"><h2 className="font-display font-semibold text-[25px]">🚶 {fr ? 'Meilleurs écouteurs pour marcher' : 'Best Earbuds for Walking Overall'}</h2><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">{best.map(card)}</div></section>
       <section className="mt-12"><h2 className="font-display font-semibold text-[25px]">💵 {fr ? 'Meilleurs choix sous 100 $' : 'Best Walking Earbuds Under $100'}</h2><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">{budget.map(card)}</div></section>
       <section className="mt-12"><h2 className="font-display font-semibold text-[25px]">👂 {fr ? 'Confort et maintien' : 'Comfort and fit'}</h2><p className="text-dim text-sm leading-7 max-w-3xl mt-3">{fr ? 'Pour la marche, le confort sur de longues périodes et un maintien stable peuvent être plus importants que des fonctions avancées. Le confort réel varie selon la forme de l’oreille et les embouts.' : 'For walking, long-term comfort and stable fit can matter more than advanced features. Real-world comfort varies with ear shape and eartips.'}</p></section>

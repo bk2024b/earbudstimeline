@@ -33,10 +33,15 @@ export async function generateMetadata({ params }) {
   const years = models.map((m) => yearOf(m.release_date)).filter(Boolean);
   const period = years.length ? `${Math.min(...years)}–${Math.max(...years)}` : '';
 
+  // Title raccourci : l'ancienne version répétait deux fois le nom de la marque
+  // ("Xiaomi/Redmi — All Xiaomi/Redmi earbuds") et dépassait souvent 65-70
+  // caractères, ce qui pousse "| EarbudsTimeline" hors de la zone visible du
+  // SERP. Le nombre réel de modèles remplace la répétition — plus court, et
+  // plus informatif pour le clic.
   const title =
     locale === 'en'
-      ? `${brand.name} — All ${brand.name} earbuds (${period}) | EarbudsTimeline`
-      : `${brand.name} — Tous les écouteurs ${brand.name} (${period}) | EarbudsTimeline`;
+      ? `${brand.name} earbuds — ${models.length} models (${period}) | EarbudsTimeline`
+      : `${brand.name} — ${models.length} écouteurs (${period}) | EarbudsTimeline`;
   const description =
     locale === 'en'
       ? `Complete history of ${brand.name} earbuds: ${models.length} models tracked from ${period}. Battery life, ANC, launch price and generation-by-generation evolution.`

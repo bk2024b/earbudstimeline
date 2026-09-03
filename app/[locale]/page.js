@@ -15,8 +15,48 @@ import HomeArticles from '@/components/HomeArticles';
 import TrustBar from '@/components/TrustBar';
 import AdSlot from '@/components/AdSlot';
 import { Stat, Footer } from '@/components/UI';
+import { canonicalFor, ogDefaults } from '@/lib/seo';
 
 export const revalidate = 3600;
+
+// La homepage n'avait pas de generateMetadata propre et héritait du title/description
+// générique de app/[locale]/layout.js. On la rend data-driven comme /marques/[brand]
+// et /technologies/* : les vrais chiffres du catalogue (modèles, marques, période)
+// remplacent un texte statique qui ne bougeait jamais.
+export async function generateMetadata({ params }) {
+  const { locale } = params;
+  const isEn = locale === 'en';
+
+  const [models, brands] = await Promise.all([
+    getAllEarbuds().catch(() => []),
+    getBrands().catch(() => []),
+  ]);
+  const modelCount = models.length;
+  const brandCount = brands.length;
+  const years = models
+    .map((m) => Number((m.release_date || '').slice(0, 4)))
+    .filter(Boolean);
+  const period = years.length ? `${Math.min(...years)}–${Math.max(...years)}` : '';
+
+  const title = isEn
+    ? `EarbudsTimeline — ${modelCount} wireless earbuds tracked, ${brandCount} brands (${period})`
+    : `EarbudsTimeline — ${modelCount} écouteurs sans fil référencés, ${brandCount} marques (${period})`;
+  const description = isEn
+    ? `The complete history of wireless earbuds: ${modelCount} models across ${brandCount} brands, from ${period}. Battery life, ANC, launch price and generation-by-generation comparisons.`
+    : `L'historique complet des écouteurs sans fil : ${modelCount} modèles chez ${brandCount} marques, de ${period}. Autonomie, ANC, prix de lancement et comparaisons génération par génération.`;
+
+  return {
+    title,
+    description,
+    ...canonicalFor(`/${locale}`),
+    openGraph: {
+      ...ogDefaults(`/${locale}`, locale),
+      title: 'EarbudsTimeline',
+      description,
+      images: ['/og-image.png'],
+    },
+  };
+}
 
 export default async function HomePage({ params }) {
   const { locale } = params;

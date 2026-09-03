@@ -3,6 +3,7 @@ import { getAllEarbuds, getBrands } from '@/lib/queries';
 import { canonicalFor, JsonLd } from '@/lib/seo';
 import { Footer } from '@/components/UI';
 import AdSlot from '@/components/AdSlot';
+import { fmtDate } from '@/lib/format';
 
 export const revalidate = 3600;
 
@@ -12,11 +13,31 @@ const score = (m) => Math.min(100, 50 + (m.anc ? 15 : 0) + (m.transparency_mode 
 
 export async function generateMetadata({ params }) {
   const { locale } = params;
-  const title = locale === 'fr' ? 'Meilleurs écouteurs pour podcasts en 2026' : 'Best Earbuds for Podcasts in 2026';
+  const fr = locale === 'fr';
+  const year = new Date().getFullYear();
+  const titleBase = fr ? 'Meilleurs écouteurs pour podcasts' : 'Best Earbuds for Podcasts';
+
+  // Le pick n°1 change selon la page (chaque guide a sa propre fonction de score
+  // ci-dessus), donc l'inclure dans la description rend chaque page unique aux yeux
+  // de Google au lieu de répéter un texte quasi identique sur les 22 guides
+  // "best-earbuds-for-*". Si la requête échoue, on retombe sur la description
+  // générique existante — jamais de meta vide ou cassée.
+  let topPickLine = '';
+  try {
+    const models = await getAllEarbuds();
+    const top = [...models].sort((a, b) => score(b) - score(a))[0];
+    if (top) topPickLine = fr ? ` Top actuel : ${top.name}.` : ` Current top pick: ${top.name}.`;
+  } catch {}
+
+  const description =
+    (fr
+      ? 'Comparez les meilleurs écouteurs pour écouter des podcasts selon autonomie, transparence, ANC et confort indicatif.'
+      : 'Compare the best earbuds for podcasts using battery life, transparency, ANC and indicative comfort factors.') + topPickLine;
+
   return {
-    title: `${title} | EarbudsTimeline`,
-    description: locale === 'fr' ? 'Comparez les meilleurs écouteurs pour écouter des podcasts selon autonomie, transparence, ANC et confort indicatif.' : 'Compare the best earbuds for podcasts using battery life, transparency, ANC and indicative comfort factors.',
-    ...canonicalFor(`/${locale}/guides/best-earbuds-for-podcasts`)
+    title: `${titleBase} ${fr ? 'en' : 'in'} ${year} | EarbudsTimeline`,
+    description,
+    ...canonicalFor(`/${locale}/guides/best-earbuds-for-podcasts`),
   };
 }
 
@@ -28,7 +49,10 @@ export default async function Page({ params }) {
   const rows = models.map((model) => ({ model, score: score(model) })).sort((a, b) => b.score - a.score);
   const best = rows.slice(0, 10);
   const budget = rows.filter((r) => n(r.model.price) != null && n(r.model.price) <= 100).slice(0, 6);
-  const title = fr ? 'Meilleurs écouteurs pour podcasts en 2026' : 'Best Earbuds for Podcasts in 2026';
+  const year = new Date().getFullYear();
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const updatedLabel = fmtDate(todayIso, locale);
+  const title = fr ? `Meilleurs écouteurs pour podcasts en ${year}` : `Best Earbuds for Podcasts in ${year}`;
   const intro = fr ? 'Une sélection pour les podcasts, livres audio et contenus parlés, basée sur les caractéristiques disponibles dans notre catalogue.' : 'A selection for podcasts, audiobooks and spoken-word content based on specifications available in our catalog.';
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -36,7 +60,7 @@ export default async function Page({ params }) {
     headline: title,
     description: intro,
     url: `https://earbudstimeline.com/${locale}/guides/best-earbuds-for-podcasts`,
-    dateModified: '2026-08-26',
+    dateModified: todayIso,
     inLanguage: locale
   };
   const card = (r) => (
@@ -56,10 +80,10 @@ export default async function Page({ params }) {
     <>
       <JsonLd data={jsonLd} />
       <article className="max-w-6xl mx-auto">
-        <div className="font-mono text-xs text-accent uppercase mb-3">Podcasts · 2026</div>
+        <div className="font-mono text-xs text-accent uppercase mb-3">Podcasts · {year}</div>
         <h1 className="font-display font-bold text-[34px] sm:text-[48px] leading-tight mb-4">{title}</h1>
         <p className="text-dim text-[15px] sm:text-[17px] leading-7 max-w-3xl">{intro}</p>
-        <div className="mt-4 text-[10px] font-mono text-dim">{fr ? 'Dernière mise à jour : 26 août 2026' : 'Last updated: August 26, 2026'}</div>
+        <div className="mt-4 text-[10px] font-mono text-dim">{fr ? `Dernière mise à jour : ${updatedLabel}` : `Last updated: ${updatedLabel}`}</div>
         <section className="mt-10">
           <h2 className="font-display font-semibold text-[25px]">🎙️ {fr ? 'Meilleurs écouteurs pour podcasts' : 'Best Earbuds for Podcasts Overall'}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">{best.map(card)}</div>

@@ -11,7 +11,7 @@ export const revalidate = 3600;
 export async function generateMetadata({ params }) {
   const { locale } = params;
   return {
-    title: locale === 'en' ? 'Insights — EarbudsTimeline' : 'Insights — EarbudsTimeline',
+    title: 'Insights — EarbudsTimeline',
     description:
       locale === 'en'
         ? 'What the history of wireless earbuds tells us: battery life, ANC adoption, price and weight trends across hundreds of models.'

@@ -42,10 +42,14 @@ export async function generateMetadata({ params }) {
   const last = models[models.length - 1];
   const period = first.id === last.id ? yearOf(first.release_date) : `${yearOf(first.release_date)}–${yearOf(last.release_date)}`;
 
+  // "All models and their evolution" à lui seul ajoutait ~30 caractères ; ce
+  // template combiné à un nom de marque+gamme long dépassait 75 caractères
+  // (ex. "Sony LinkBuds — All models and their evolution (2021–2026)"). Le
+  // compte réel de modèles dit la même chose en beaucoup moins de place.
   const title =
     locale === 'en'
-      ? `${brand.name} ${gammeName} — All models and their evolution (${period}) | EarbudsTimeline`
-      : `${brand.name} ${gammeName} — Tous les modèles et leur évolution (${period}) | EarbudsTimeline`;
+      ? `${brand.name} ${gammeName} — ${models.length} models (${period}) | EarbudsTimeline`
+      : `${brand.name} ${gammeName} — ${models.length} modèles (${period}) | EarbudsTimeline`;
   const description =
     locale === 'en'
       ? `Complete timeline of the ${brand.name} ${gammeName} line: ${models.length} model${models.length > 1 ? 's' : ''} from ${period}, generation-by-generation evolution, battery life, ANC and price.`
