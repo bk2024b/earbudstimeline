@@ -13,6 +13,7 @@ import {
   isIos,
   isIosSafari,
 } from '@/lib/installPrompt';
+import { claimPopupSlot, releasePopupSlot } from '@/lib/popupSlot';
 import { Download, Share, SquarePlus, X } from 'lucide-react';
 
 // Durée de présence active (hors onglet en arrière-plan) avant de proposer
@@ -61,6 +62,7 @@ export default function InstallPrompt() {
     if (isExcludedRoute(pathname)) return;
     if (isRunningStandalone()) return;
     if (!canShowInstallPrompt()) return;
+    if (!claimPopupSlot()) return; // un autre popup (ex. EbookOfferPopup) occupe déjà la place
     setPlatform(kind);
     setVisible(true);
     trackEvent('a2hs_prompt_shown');
@@ -90,6 +92,7 @@ export default function InstallPrompt() {
     }
     function handleAppInstalled() {
       markInstallPromptInstalled();
+      releasePopupSlot();
       setVisible(false);
     }
 
@@ -167,6 +170,7 @@ export default function InstallPrompt() {
 
   function handleDismiss() {
     markInstallPromptDismissed();
+    releasePopupSlot();
     setVisible(false);
     trackEvent('a2hs_prompt_dismissed');
   }
@@ -177,6 +181,7 @@ export default function InstallPrompt() {
     promptEvent.prompt();
     const choice = await promptEvent.userChoice.catch(() => null);
     deferredPromptRef.current = null;
+    releasePopupSlot();
     setVisible(false);
     if (choice?.outcome === 'accepted') {
       markInstallPromptInstalled();
