@@ -6,7 +6,6 @@ import { canonicalFor, JsonLd } from '@/lib/seo';
 import { applyFilter, applySort } from '@/lib/guideFilters';
 import { rankByValuePerDollar } from '@/lib/budgetValue';
 import EarbudsIcon from '@/components/EarbudsIcon';
-import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -244,21 +243,10 @@ export default async function GuidePage({ params }) {
       <section className="mt-10"><h2 className="font-display font-semibold text-[23px] mb-4">{locale === 'fr' ? 'Comparatif Value per Dollar' : 'Value per Dollar comparison'}</h2><BudgetTable rows={candidates} copy={enhanced} locale={locale} /></section>
     </> : <section className="mt-10"><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">{candidates.map((row, i) => <ProductCard key={row.model.id} {...row} brand={brandMap.get(row.model.brand_id)} rank={i + 1} copy={{ environments: [], coverage: 'Coverage', evidence: 'evidence', sources: 'sources', incompleteNote: '' }} />)}</div></section>}
 
-    <AdSlot
-      variant="native"
-      zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_AFTER_INTRO_KEY}
-      invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_AFTER_INTRO_DOMAIN}
-      label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-    />
 
     <div className="grid gap-8 mt-12">{sections.map(([heading, body]) => <section key={heading}><h2 className="font-display font-semibold text-[21px] mb-2">{heading}</h2><p className="text-dim text-[14px] leading-7">{body}</p></section>)}</div>
     {faqItems?.length > 0 && <>
-      <AdSlot
-        variant="native"
-        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_MID_KEY}
-        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_MID_DOMAIN}
-        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-      />
+      
       <FAQ items={faqItems} title={faqTitle} />
     </>}
     <div className="mt-10 flex flex-wrap gap-3 text-sm"><Link href="/trouver-mes-ecouteurs" className="px-4 py-2 rounded-lg border border-line hover:border-accent transition-colors">{locale === 'fr' ? 'Trouver mes écouteurs' : 'Find my earbuds'}</Link><Link href="/ecouteurs" className="px-4 py-2 rounded-lg border border-line hover:border-accent transition-colors">{locale === 'fr' ? 'Voir tous les modèles' : 'Browse all models'}</Link></div>
