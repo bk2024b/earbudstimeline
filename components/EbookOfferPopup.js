@@ -11,20 +11,17 @@ import { X, BookOpen } from 'lucide-react';
 
 const CHECKOUT_URL = 'https://yrseymcg.mychariow.shop/howtochoosetherightearbuds';
 
-// Plus haut que ENGAGEMENT_MS d'InstallPrompt (15s) : proposer un achat est
-// plus intrusif que proposer une installation, on laisse plus de temps de
-// lecture avant de le faire. Combiné à un seuil de scroll — les deux
-// doivent être atteints — pour ne cibler que les lecteurs réellement engagés
-// dans le contenu, pas juste quelqu'un qui a laissé l'onglet ouvert.
-const ENGAGEMENT_MS = 30000;
-const SCROLL_THRESHOLD = 0.5; // 50% de la page
+// Déclenchement au temps de présence seul, sans condition de scroll.
+const ENGAGEMENT_MS = 10000;
 
 // Pages à forte intention d'achat : guides et articles (le lecteur évalue
-// activement des écouteurs), comparaisons et fiches produit. Pas la home ni
-// les pages de listing (marques, technologies, index guides/blog) — moins
+// activement des écouteurs), comparaisons, fiches produit, et la home
+// (vitrine principale, trafic le plus large). Pas les pages de listing
+// secondaires (marques, technologies, index guides/blog) — moins
 // contextuel à cet endroit précis.
 function isEligibleRoute(pathname) {
   if (!pathname) return false;
+  if (pathname === '/') return true;
   const prefixes = ['/guides/', '/blog/', '/comparaisons/', '/ecouteurs/'];
   return prefixes.some((p) => pathname.startsWith(p));
 }
@@ -37,46 +34,21 @@ function trackEvent(name) {
   }
 }
 
-function getScrollFraction() {
-  const doc = document.documentElement;
-  const scrollable = doc.scrollHeight - doc.clientHeight;
-  if (scrollable <= 0) return 1; // page plus courte que l'écran : considérée "lue"
-  return Math.min(1, window.scrollY / scrollable);
-}
-
 export default function EbookOfferPopup() {
   const t = useTranslations('ebookOffer');
   const pathname = usePathname();
 
   const [visible, setVisible] = useState(false);
   const engagedRef = useRef(false);
-  const scrolledEnoughRef = useRef(false);
 
   function tryShow() {
-    if (!engagedRef.current || !scrolledEnoughRef.current) return;
+    if (!engagedRef.current) return;
     if (!isEligibleRoute(pathname)) return;
     if (!canShowEbookOffer()) return;
     if (!claimPopupSlot()) return; // InstallPrompt (ou un futur popup) occupe déjà la place
     setVisible(true);
     trackEvent('ebook_offer_shown');
   }
-
-  useEffect(() => {
-    if (!isEligibleRoute(pathname) || !canShowEbookOffer()) return;
-
-    function handleScroll() {
-      if (getScrollFraction() >= SCROLL_THRESHOLD) {
-        scrolledEnoughRef.current = true;
-        tryShow();
-        window.removeEventListener('scroll', handleScroll);
-      }
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // au cas où la page est déjà courte / déjà scrollée au montage
-
-    return () => window.removeEventListener('scroll', handleScroll);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
 
   useEffect(() => {
     if (!isEligibleRoute(pathname) || !canShowEbookOffer()) return;
