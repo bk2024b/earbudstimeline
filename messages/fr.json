@@ -405,5 +405,13 @@
     "iosStep1": "Appuyez sur l'icône Partager",
     "iosStep2": "Puis sur \"Sur l'écran d'accueil\"",
     "iosDismiss": "Compris"
+  },
+  "ebookOffer": {
+    "badge": "Guide pratique",
+    "title": "How to Choose the Right Earbuds",
+    "body": "Le guide complet pour choisir des écouteurs adaptés à votre usage réel — pas au classement d'un site d'avis.",
+    "price": "9 $",
+    "cta": "Obtenir le guide",
+    "dismiss": "Non merci"
   }
 }

@@ -10,6 +10,7 @@ import MicrosoftClarity from '@/components/MicrosoftClarity';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import CookieConsent from '@/components/CookieConsent';
 import InstallPrompt from '@/components/InstallPrompt';
+import EbookOfferPopup from '@/components/EbookOfferPopup';
 import { SITE_URL, ogDefaults } from '@/lib/seo';
 
 export function generateStaticParams() {
@@ -85,7 +86,11 @@ export default async function LocaleLayout({ children, params }) {
           qu'InstallPrompt (juste en dessous) attend que ce choix soit fait
           avant de démarrer son propre minuteur — voir lib/installPrompt.js. */}
       <CookieConsent />
+      {/* InstallPrompt et EbookOfferPopup se coordonnent via
+          lib/popupSlot.js pour ne jamais s'afficher tous les deux en même
+          temps (voir ce fichier) — premier arrivé, premier affiché. */}
       <InstallPrompt />
+      <EbookOfferPopup />
     </NextIntlClientProvider>
   );
 }

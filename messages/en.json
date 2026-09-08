@@ -405,5 +405,13 @@
     "iosStep1": "Tap the Share icon",
     "iosStep2": "Then \"Add to Home Screen\"",
     "iosDismiss": "Got it"
+  },
+  "ebookOffer": {
+    "badge": "Field Guide",
+    "title": "How to Choose the Right Earbuds",
+    "body": "The complete buyer's guide to choosing earbuds that actually fit your needs — not a review site's ranking.",
+    "price": "$9",
+    "cta": "Get the guide",
+    "dismiss": "No thanks"
   }
 }
