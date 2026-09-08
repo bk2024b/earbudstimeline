@@ -391,9 +391,19 @@
     "details": "Fiche technique"
   },
   "cookieConsent": {
-    "message": "On utilise des cookies pour mesurer l'audience (Google Analytics, Microsoft Clarity) et afficher des publicités. Vous pouvez accepter ou continuer avec le strict nécessaire.",
+    "message": "On utilise des cookies pour mesurer l'audience (Google Analytics, Microsoft Clarity). Vous pouvez accepter ou continuer avec le strict nécessaire.",
     "accept": "Accepter",
     "decline": "Continuer sans accepter",
     "learnMore": "En savoir plus"
+  },
+  "installPrompt": {
+    "title": "Installer EarbudsTimeline",
+    "body": "Accès direct au comparateur et à votre historique d'exploration, sans repasser par Google.",
+    "install": "Installer",
+    "dismiss": "Plus tard",
+    "iosBody": "Ajoutez EarbudsTimeline à votre écran d'accueil pour un accès direct.",
+    "iosStep1": "Appuyez sur l'icône Partager",
+    "iosStep2": "Puis sur \"Sur l'écran d'accueil\"",
+    "iosDismiss": "Compris"
   }
 }

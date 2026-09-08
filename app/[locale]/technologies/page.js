@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { getAllEarbuds } from '@/lib/queries';
 import { getBluetoothVersionList, getCodecList } from '@/lib/tech';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
-import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -113,12 +112,7 @@ export default async function TechnologiesPage({ params }) {
         ))}
       </div>
 
-      <AdSlot
-        variant="native"
-        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
-        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
-        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-      />
+      
 
       <Footer locale={locale} />
     </>

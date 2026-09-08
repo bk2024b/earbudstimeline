@@ -7,7 +7,6 @@ import { yearOf } from '@/lib/format';
 import { buildCollectionPageJsonLd, canonicalFor, JsonLd } from '@/lib/seo';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import CompareSelectors from '@/components/CompareSelectors';
-import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -65,12 +64,7 @@ export default async function ComparaisonsPage({ params }) {
 
       {generational.length > 0 && <Section title={t('generational')} pairs={generational} brandOf={brandOf} vs={tc('vs')} />}
 
-      <AdSlot
-        variant="native"
-        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_COMPARISON_KEY}
-        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_COMPARISON_DOMAIN}
-        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-      />
+      
 
       {rivals.length > 0 && <Section title={t('rivals')} pairs={rivals} brandOf={brandOf} vs={tc('vs')} />}
 

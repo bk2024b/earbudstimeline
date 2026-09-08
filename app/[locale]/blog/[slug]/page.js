@@ -21,10 +21,9 @@ import TableOfContents from '@/components/TableOfContents';
 import ArticleSummary from '@/components/ArticleSummary';
 import ArticleProductCard from '@/components/ArticleProductCard';
 import NewsletterSignup from '@/components/NewsletterSignup';
-import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 import { Calendar, Clock, ArrowLeft, Globe, Share2, Sparkles, BookOpen } from 'lucide-react';
-import { splitArticleSections, computeAdPositions } from '@/lib/splitArticleSections';
+import { splitArticleSections } from '@/lib/splitArticleSections';
 
 export const revalidate = 600;
 
@@ -97,7 +96,6 @@ export default async function ArticlePage({ params }) {
   });
 
   const articleSections = splitArticleSections(safeHtml);
-  const adPositions = computeAdPositions(articleSections);
 
   const [t, tc, td, ts, tn, allArticles, allEarbuds, brands] = await Promise.all([
     getTranslations({ locale, namespace: 'blog' }),
@@ -219,34 +217,10 @@ export default async function ArticlePage({ params }) {
           {/* Résumé "En bref" */}
           <ArticleSummary text={article.excerpt} label={t('inBrief') || 'En Bref'} />
 
-          {/* Corps de l'article riche, avec emplacements pub interleaved */}
+          {/* Corps de l'article riche */}
           <div className="prose max-w-none w-full leading-relaxed text-[15.5px] sm:text-base">
             {articleSections.map((section, i) => (
               <div key={i}>
-                {i === 1 && adPositions.afterIntro && (
-                  <AdSlot
-                    variant="native"
-                    zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_AFTER_INTRO_KEY}
-                    invokeDomain="pl30973227.profitableratecpmnetwork.com"
-                    label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-                  />
-                )}
-                {i === adPositions.mid && (
-                  <AdSlot
-                    variant="native"
-                    zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_MID_KEY}
-                    invokeDomain="pl30973227.profitableratecpmnetwork.com"
-                    label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-                  />
-                )}
-                {i === adPositions.beforeFaq && (
-                  <AdSlot
-                    variant="native"
-                    zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_BEFORE_FAQ_KEY}
-                    invokeDomain="pl30973227.profitableratecpmnetwork.com"
-                    label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-                  />
-                )}
                 <div dangerouslySetInnerHTML={{ __html: section }} />
               </div>
             ))}

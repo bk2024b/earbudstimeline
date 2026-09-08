@@ -13,7 +13,6 @@ import StatTile from '@/components/StatTile';
 import HomeComparisons from '@/components/HomeComparisons';
 import HomeArticles from '@/components/HomeArticles';
 import TrustBar from '@/components/TrustBar';
-import AdSlot from '@/components/AdSlot';
 import { Stat, Footer } from '@/components/UI';
 import { canonicalFor, ogDefaults } from '@/lib/seo';
 
@@ -262,12 +261,7 @@ export default async function HomePage({ params }) {
         </div>
       </div>
 
-      <AdSlot
-        variant="native"
-        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
-        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
-        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-      />
+      
 
       {/* Comparaisons populaires + Articles à la une */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
@@ -275,12 +269,7 @@ export default async function HomePage({ params }) {
         <HomeArticles articles={articles.slice(0, 3)} locale={locale} />
       </div>
 
-      <AdSlot
-        variant="native"
-        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_AFTER_INTRO_KEY}
-        invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_ARTICLE_AFTER_INTRO_DOMAIN}
-        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-      />
+      
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
         <div>

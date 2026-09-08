@@ -27,6 +27,14 @@ export const metadata = {
   title: "EarbudsTimeline — l'historique complet des écouteurs sans fil",
   description: "L'historique complet des écouteurs sans fil, marque par marque.",
   alternates: { canonical: '/' },
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
   verification: {
     google: 'ZilcoLVCMEUHQtUAAU3aOgfPqvd9MSjazLClBqS-CVA',
   },
@@ -35,6 +43,10 @@ export const metadata = {
     description: "L'historique complet des écouteurs sans fil, marque par marque.",
     images: ['/og-image.png'],
   },
+};
+
+export const viewport = {
+  themeColor: '#0B0B0B',
 };
 
 export default async function RootLayout({ children }) {

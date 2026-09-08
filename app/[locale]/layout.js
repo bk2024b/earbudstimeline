@@ -8,7 +8,8 @@ import Header from '@/components/Header';
 import DiscoveryTrail from '@/components/DiscoveryTrail';
 import MicrosoftClarity from '@/components/MicrosoftClarity';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
-import SocialBar from '@/components/SocialBar';
+import CookieConsent from '@/components/CookieConsent';
+import InstallPrompt from '@/components/InstallPrompt';
 import { SITE_URL, ogDefaults } from '@/lib/seo';
 
 export function generateStaticParams() {
@@ -76,7 +77,15 @@ export default async function LocaleLayout({ children, params }) {
           l'usage de /admin comme du trafic visiteur. */}
       <MicrosoftClarity />
       <GoogleAnalytics />
-      <SocialBar />
+      {/* CookieConsent existait déjà dans le repo mais n'était monté nulle
+          part : le bandeau ne s'affichait donc jamais et le cookie de
+          consentement n'était jamais posé, alors même que GoogleAnalytics.js
+          et MicrosoftClarity.js sont écrits pour attendre ce cookie. Ajouté
+          ici pour que le flux fonctionne réellement, et parce
+          qu'InstallPrompt (juste en dessous) attend que ce choix soit fait
+          avant de démarrer son propre minuteur — voir lib/installPrompt.js. */}
+      <CookieConsent />
+      <InstallPrompt />
     </NextIntlClientProvider>
   );
 }

@@ -25,7 +25,6 @@ import CuriosityHook from '@/components/CuriosityHook';
 import EvolutionHook from '@/components/EvolutionHook';
 import DataHook from '@/components/DataHook';
 import TechnologyHook from '@/components/TechnologyHook';
-import AdSlot from '@/components/AdSlot';
 import { Badge, Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -335,12 +334,7 @@ export default async function ModelPage({ params }) {
           </SpecGroup>
         </div>
 
-        <AdSlot
-          variant="native"
-          zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_KEY}
-          invokeDomain={process.env.NEXT_PUBLIC_ADSTERRA_SITEWIDE_NATIVE_DOMAIN}
-          label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-        />
+        
 
         <ComparisonSuggestions
           model={m}

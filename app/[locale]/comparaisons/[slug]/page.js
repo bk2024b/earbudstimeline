@@ -9,7 +9,6 @@ import { parseComparisonSlug, buildComparisonSlug, isCanonicalSlug } from '@/lib
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, canonicalFor, ogDefaults, JsonLd } from '@/lib/seo';
 import EarbudsIcon from '@/components/EarbudsIcon';
 import EntityGraph from '@/components/EntityGraph';
-import AdSlot from '@/components/AdSlot';
 import { Footer } from '@/components/UI';
 
 export const revalidate = 3600;
@@ -212,12 +211,7 @@ export default async function ComparisonPage({ params }) {
         <EntityGraph model={b} brand={brandOf(b.brand_id)} prev={posB.prev} next={posB.next} locale={locale} />
       </div>
 
-      <AdSlot
-        variant="native"
-        zoneKey={process.env.NEXT_PUBLIC_ADSTERRA_COMPARISON_KEY}
-        invokeDomain="pl30973227.profitableratecpmnetwork.com"
-        label={locale === 'en' ? 'Advertisement' : 'Publicité'}
-      />
+      
 
       <Footer locale={locale} />
     </>

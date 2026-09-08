@@ -8,17 +8,19 @@ import { CONSENT_GRANTED, CONSENT_DENIED, readConsentClient, writeConsentClient 
 
 // CMP minimal : un seul choix binaire (accepter / continuer sans accepter),
 // pas de granularité par catégorie. Ajouté suite à un audit — le site
-// charge Google Analytics, Microsoft Clarity (enregistrement de session) et
-// des publicités Adsterra sans qu'aucun consentement ne soit demandé, ce qui
-// pose un problème pour le trafic UE (RGPD) et fait tourner ces scripts pour
-// tout le monde, y compris les visiteurs qui préféreraient les refuser.
+// charge Google Analytics et Microsoft Clarity (enregistrement de session)
+// sans qu'aucun consentement ne soit demandé, ce qui pose un problème pour
+// le trafic UE (RGPD) et fait tourner ces scripts pour tout le monde, y
+// compris les visiteurs qui préféreraient les refuser.
 //
 // GoogleAnalytics.js et MicrosoftClarity.js (Server Components) lisent ce
 // même cookie via next/headers `cookies()` et ne rendent leur <Script> que
-// si le consentement est accordé. AdSlot.js (Client Component) le lit côté
-// client de la même façon. router.refresh() après un choix permet aux
-// Server Components de re-render avec la nouvelle valeur du cookie sans
+// si le consentement est accordé. router.refresh() après un choix permet
+// aux Server Components de re-render avec la nouvelle valeur du cookie sans
 // recharger toute la page.
+//
+// (Le site n'affiche plus aucune publicité — ce cookie ne sert plus qu'à
+// Google Analytics et Microsoft Clarity.)
 export default function CookieConsent() {
   const [status, setStatus] = useState('loading'); // 'loading' | 'hidden' | 'visible'
   const router = useRouter();

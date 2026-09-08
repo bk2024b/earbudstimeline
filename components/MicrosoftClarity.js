@@ -11,7 +11,7 @@ import { CONSENT_COOKIE_NAME, CONSENT_GRANTED } from '@/lib/consent';
 //
 // Ne charge le script que si l'utilisateur a accepté les cookies (voir
 // components/CookieConsent.js) : Clarity enregistre des sessions, c'est le
-// plus sensible des trois scripts tiers du site (GA, Clarity, Adsterra).
+// plus sensible des deux scripts tiers du site (GA, Clarity).
 export default async function MicrosoftClarity() {
   const projectId = process.env.NEXT_PUBLIC_CLARITY_ID;
   if (!projectId) return null;
